@@ -24,18 +24,18 @@ public class DepthNormalsEdgeDetectionRenderPass : EdgeDetectionRenderPass
         public Material mat;
     }
     
-    public override void Setup(EdgeDetectionMethod method, EdgeDetectionSource source, Material mat, float outlineThreshold)
+    public override void Setup(EdgeDetectionPassData passData, Material mat)
     {
-        base.Setup(method, source, mat, outlineThreshold);
+        base.Setup(passData, mat);
 
-        switch (source)
+        switch (passData.Source)
         {
-            case EdgeDetectionSource.COLOR:
+            case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
                 break;
-            case EdgeDetectionSource.DEPTH:
+            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
                 ConfigureInput(ScriptableRenderPassInput.Depth); 
                 break;
-            case EdgeDetectionSource.DEPTH_NORMALS:
+            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal); 
                 break;
         }
@@ -55,13 +55,13 @@ public class DepthNormalsEdgeDetectionRenderPass : EdgeDetectionRenderPass
         dstDesc.clearBuffer = false;
 
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
-        TextureHandle dstDepth = source == EdgeDetectionSource.DEPTH_NORMALS ? renderGraph.CreateTexture(dstDesc) : dst;
+        TextureHandle dstDepth = passData.Source == EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS ? renderGraph.CreateTexture(dstDesc) : dst;
 
         //Pass 0 = Depth Outlines
         RenderGraphUtils.BlitMaterialParameters depthParams = new(srcDepth, dstDepth, edgeDetectionMaterial, 0);
         renderGraph.AddBlitPass(depthParams, passName: PassName);
 
-        if (source == EdgeDetectionSource.DEPTH_NORMALS)
+        if (passData.Source == EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS)
         {
             TextureHandle srcNormals = resourceData.cameraNormalsTexture;
             dstDesc.name = "NormalOutlines";

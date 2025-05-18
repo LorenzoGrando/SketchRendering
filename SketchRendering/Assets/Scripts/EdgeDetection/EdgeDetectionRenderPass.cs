@@ -7,20 +7,18 @@ using UnityEngine.Rendering.Universal;
 public abstract class EdgeDetectionRenderPass : ScriptableRenderPass
 {
     protected abstract string PassName { get; }
-
-    protected EdgeDetectionMethod method;
-    protected EdgeDetectionSource source;
+    
     protected Material edgeDetectionMaterial;
-    protected float outlineThreshold;
+    protected EdgeDetectionPassData passData;
     
     protected static readonly int outlineThresholdShaderID = Shader.PropertyToID("_OutlineThreshold");
+    protected static readonly int outlineAngleSensitivityShaderID = Shader.PropertyToID("_OutlineShallowThresholdSensitivity");
+    protected static readonly int outlineAngleConstraintShaderID = Shader.PropertyToID("_OutlineShallowThresholdStrength");
 
-    public virtual void Setup(EdgeDetectionMethod method, EdgeDetectionSource source, Material mat, float outlineThreshold)
+    public virtual void Setup(EdgeDetectionPassData passData, Material mat)
     {
-        this.method = method;
-        this.source = source;
+        this.passData = passData;
         edgeDetectionMaterial = mat;
-        this.outlineThreshold = outlineThreshold;
         
         //inherited
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
@@ -31,7 +29,9 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass
 
     public virtual void ConfigureMaterial()
     {
-        edgeDetectionMaterial.SetFloat(outlineThresholdShaderID, outlineThreshold);
+        edgeDetectionMaterial.SetFloat(outlineThresholdShaderID, passData.OutlineThreshold);
+        edgeDetectionMaterial.SetFloat(outlineAngleSensitivityShaderID, passData.OutlineAngleSensitivity);
+        edgeDetectionMaterial.SetFloat(outlineAngleConstraintShaderID, passData.OutlineAngleConstraint);
     }
 
     public virtual void Dispose() {}

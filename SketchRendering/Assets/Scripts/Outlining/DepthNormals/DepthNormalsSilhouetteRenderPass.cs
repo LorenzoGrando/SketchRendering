@@ -9,27 +9,41 @@ using UnityEngine.Rendering.Universal;
 public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
 {
     protected override string PassName => "DepthNormalsSilhouette";
-
-    private const string DEPTH_KEYWORD = "SOURCE_DEPTH";
-    private const string DEPTH_NORMALS_KEYWORD = "SOURCE_DEPTH_NORMALS";
     
-    public override void Setup(EdgeDetectionMethod method, EdgeDetectionSource source, Material mat, float outlineThreshold)
+    
+    public override void Setup(EdgeDetectionPassData passData, Material mat)
     {
-        base.Setup(method, source, mat, outlineThreshold);
+        base.Setup(passData, mat);
 
-        switch (source)
+        switch (passData.Method)
         {
-            case EdgeDetectionSource.COLOR:
+            case EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3:
+                mat.EnableKeyword(EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
+                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
                 break;
-            case EdgeDetectionSource.DEPTH:
+            case EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_1X3:
+                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
+                mat.EnableKeyword(EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
+                break;
+            case EdgeDetectionGlobalData.EdgeDetectionMethod.ROBERTS_CROSS:
+                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
+                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
+                break;
+        }
+
+        switch (passData.Source)
+        {
+            case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
+                break;
+            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
                 ConfigureInput(ScriptableRenderPassInput.Depth);
-                mat.EnableKeyword(DEPTH_KEYWORD);
-                mat.DisableKeyword(DEPTH_NORMALS_KEYWORD);
+                mat.EnableKeyword(EdgeDetectionGlobalData.DEPTH_KEYWORD);
+                mat.DisableKeyword(EdgeDetectionGlobalData.DEPTH_NORMALS_KEYWORD);
                 break;
-            case EdgeDetectionSource.DEPTH_NORMALS:
+            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal);
-                mat.DisableKeyword(DEPTH_KEYWORD);
-                mat.EnableKeyword(DEPTH_NORMALS_KEYWORD);
+                mat.DisableKeyword(EdgeDetectionGlobalData.DEPTH_KEYWORD);
+                mat.EnableKeyword(EdgeDetectionGlobalData.DEPTH_NORMALS_KEYWORD);
                 break;
         }
     }
@@ -44,13 +58,15 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
         var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
         dstDesc.name = "OutlineTexture";
         dstDesc.clearBuffer = true;
-        dstDesc.format = GraphicsFormat.R8G8B8A8_SRGB;
         dstDesc.msaaSamples = MSAASamples.None;
 
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
+        
+        //Ensure A has same precision for ping in sobel
+        dstDesc.format = GraphicsFormat.R8G8B8A8_SRGB;
         TextureHandle ping = renderGraph.CreateTexture(dstDesc);
 
-        if (method == EdgeDetectionMethod.SOBEL)
+        if (passData.Method == EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_1X3 || passData.Method == EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3)
         {
             //Pass 0 = Sobel Horizontal Pass
             RenderGraphUtils.BlitMaterialParameters horParams = new(dst, ping, edgeDetectionMaterial, 0);

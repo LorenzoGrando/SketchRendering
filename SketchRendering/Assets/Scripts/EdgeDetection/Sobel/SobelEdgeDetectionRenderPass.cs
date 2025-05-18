@@ -8,9 +8,9 @@ public class SobelEdgeDetectionRenderPass : EdgeDetectionRenderPass
 {
     protected override string PassName => "SobelEdgeDetectionPass";
 
-    public override void Setup(EdgeDetectionMethod method, EdgeDetectionSource source, Material mat, float outlineThreshold)
+    public override void Setup(EdgeDetectionPassData passData, Material mat)
     {
-        base.Setup(method, source, mat, outlineThreshold);
+        base.Setup(passData, mat);
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)

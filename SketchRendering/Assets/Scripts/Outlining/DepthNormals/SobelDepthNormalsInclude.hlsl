@@ -4,65 +4,116 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
 
-float SobelDepthHorizontalKernel(float2 uL, float2 cL, float2 dL, float2 uR, float2 cR, float2 dR)
-{
-    float vUL = LinearEyeDepth(SampleSceneDepth(uL), _ZBufferParams).r * -1;
-    float vCL = LinearEyeDepth(SampleSceneDepth(cL), _ZBufferParams).r * -2;
-    float vDL = LinearEyeDepth(SampleSceneDepth(dL), _ZBufferParams).r * -1;
-    float vUR = LinearEyeDepth(SampleSceneDepth(uR), _ZBufferParams).r * 1;
-    float vCR = LinearEyeDepth(SampleSceneDepth(cR), _ZBufferParams).r * 2;
-    float vDR = LinearEyeDepth(SampleSceneDepth(dR), _ZBufferParams).r * 1;
+    //Matrices in HLSL are columns based, so this visual below is the transposed kernel
+    static float3x3 BaseSobel3X3HorizontalKernel = {
+        float3(-1, -2, -1),
+        float3(0, 0, 0),
+        float3(1, 2, 1)
+    };
 
-    return (vUL + vCL + vDL + vUR + vCR + vDR);
-}
+    static float3x3 BaseSobel3X3VerticalKernel = {
+        float3(-1, 0, 1),
+        float3(-2, 0, 2),
+        float3(-1, 0, 1)
+    };
 
-float SobelDepthVerticalKernel(float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
-{
-    float3 vUL = LinearEyeDepth(SampleSceneDepth(uL), _ZBufferParams) * -1;
-    float3 vUC = LinearEyeDepth(SampleSceneDepth(uC), _ZBufferParams) * -2;
-    float3 vUR = LinearEyeDepth(SampleSceneDepth(uR), _ZBufferParams) * -1;
-    float3 vDL = LinearEyeDepth(SampleSceneDepth(dL), _ZBufferParams) * 1;
-    float3 vDC = LinearEyeDepth(SampleSceneDepth(dC), _ZBufferParams) * 2;
-    float3 vDR = LinearEyeDepth(SampleSceneDepth(dR), _ZBufferParams) * 1;
-               
-    return (vUL + vUC + vUR + vDL + vDC + vDR);
-}
+    static float3x3 ModifiedSobel3X3HorizontalKernel = {
+        float3(-3, -10, -3),
+        float3(0, 0, 0),
+        float3(3, 10, 3)
+    };
 
-float3 FullRangeNormal(float3 normal)
-{
-    return (normal * 2) - 1;
-}
+    static float3x3 ModifiedSobel3X3VerticalKernel = {
+        float3(-3, 0, 3),
+        float3(-10, 0, 10),
+        float3(-3, 0, 3)
+    };
 
-float3 SobelNormalHorizontalKernel(float2 uL, float2 cL, float2 dL, float2 uR, float2 cR, float2 dR)
-{
-    float3 vUL = FullRangeNormal(SampleSceneNormals(uL)) * -1;
-    float3 vCL = FullRangeNormal(SampleSceneNormals(cL)) * -2;
-    float3 vDL = FullRangeNormal(SampleSceneNormals(dL)) * -1;
-    float3 vUR = FullRangeNormal(SampleSceneNormals(uR)) * 1;
-    float3 vCR = FullRangeNormal(SampleSceneNormals(cR)) * 2;
-    float3 vDR = FullRangeNormal(SampleSceneNormals(dR)) * 1;
+    static float3 Sobel1X3Kernel = {
+        -1, 0, 1
+    };
 
-    float sX = (vUL.x + vCL.x + vDL.x + vUR.x + vCR.x + vDR.x);
-    float sY = (vUL.y + vCL.y + vDL.y + vUR.y + vCR.y + vDR.y);
-    float sZ = (vUL.z + vCL.z + vDL.z + vUR.z + vCR.z + vDR.z);
-    
-    return float3(sX, sY, sZ);
-}
+    float SobelDepthHorizontal3X3(float3x3 kernel, float2 uL, float2 cL, float2 dL, float2 uR, float2 cR, float2 dR)
+    {
+        float vUL = LinearEyeDepth(SampleSceneDepth(uL), _ZBufferParams) * kernel._11;
+        float vCL = LinearEyeDepth(SampleSceneDepth(cL), _ZBufferParams) * kernel._21;
+        float vDL = LinearEyeDepth(SampleSceneDepth(dL), _ZBufferParams) * kernel._31;
+        float vUR = LinearEyeDepth(SampleSceneDepth(uR), _ZBufferParams) * kernel._13;
+        float vCR = LinearEyeDepth(SampleSceneDepth(cR), _ZBufferParams) * kernel._23;
+        float vDR = LinearEyeDepth(SampleSceneDepth(dR), _ZBufferParams) * kernel._33;
 
-float3 SobelNormalVerticalKernel(float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
-{
-    float3 vUL = FullRangeNormal(SampleSceneNormals(uL)) * -1;
-    float3 vUC = FullRangeNormal(SampleSceneNormals(uC)) * -2;
-    float3 vUR = FullRangeNormal(SampleSceneNormals(uR)) * -1;
-    float3 vDL = FullRangeNormal(SampleSceneNormals(dL)) * 1;
-    float3 vDC = FullRangeNormal(SampleSceneNormals(dC)) * 2;
-    float3 vDR = FullRangeNormal(SampleSceneNormals(dR)) * 1;
+        return (vUL + vCL + vDL + vUR + vCR + vDR);
+    }
 
-    float sX = (vUL.x + vUC.x + vUR.x + vDL.x + vDC.x + vDR.x);
-    float sY = (vUL.y + vUC.y + vUR.y + vDL.y + vDC.y + vDR.y);
-    float sZ = (vUL.z + vUC.z + vUR.z + vDL.z + vDC.z + vDR.z);
-    
-    return float3(sX, sY, sZ);
-}
+    float SobelDepthVertical3X3(float3x3 kernel, float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
+    {
+        float vUL = LinearEyeDepth(SampleSceneDepth(uL), _ZBufferParams) * kernel._11;
+        float vUC = LinearEyeDepth(SampleSceneDepth(uC), _ZBufferParams) * kernel._12;
+        float vUR = LinearEyeDepth(SampleSceneDepth(uR), _ZBufferParams) * kernel._13;
+        float vDL = LinearEyeDepth(SampleSceneDepth(dL), _ZBufferParams) * kernel._31;
+        float vDC = LinearEyeDepth(SampleSceneDepth(dC), _ZBufferParams) * kernel._32;
+        float vDR = LinearEyeDepth(SampleSceneDepth(dR), _ZBufferParams) * kernel._33;
+                   
+        return (vUL + vUC + vUR + vDL + vDC + vDR);
+    }
+
+    float SobelDepth1X3(float3 kernel, float2 uv0, float2 uv1, float2 uv2)
+    {
+        float v0 = LinearEyeDepth(SampleSceneDepth(uv0), _ZBufferParams) * kernel.r;
+        float v1 = LinearEyeDepth(SampleSceneDepth(uv1), _ZBufferParams) * kernel.g;
+        float v2 = LinearEyeDepth(SampleSceneDepth(uv1), _ZBufferParams) * kernel.b;
+
+        return (v0 + v1 + v2);
+    }
+
+    float3 FullRangeNormal(float3 normal)
+    {
+        return (normal * 2) - 1;
+    }
+
+    float3 SobelNormalHorizontal3x3(float3x3 kernel, float2 uL, float2 cL, float2 dL, float2 uR, float2 cR, float2 dR)
+    {
+        float3 vUL = FullRangeNormal(SampleSceneNormals(uL)) * kernel._11;
+        float3 vCL = FullRangeNormal(SampleSceneNormals(cL)) * kernel._21;
+        float3 vDL = FullRangeNormal(SampleSceneNormals(dL)) * kernel._31;
+        float3 vUR = FullRangeNormal(SampleSceneNormals(uR)) * kernel._13;
+        float3 vCR = FullRangeNormal(SampleSceneNormals(cR)) * kernel._23;
+        float3 vDR = FullRangeNormal(SampleSceneNormals(dR)) * kernel._33;
+
+        float sX = (vUL.x + vCL.x + vDL.x + vUR.x + vCR.x + vDR.x);
+        float sY = (vUL.y + vCL.y + vDL.y + vUR.y + vCR.y + vDR.y);
+        float sZ = (vUL.z + vCL.z + vDL.z + vUR.z + vCR.z + vDR.z);
+        
+        return float3(sX, sY, sZ);
+    }
+
+    float3 SobelNormalVertical3x3(float3x3 kernel, float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
+    {
+        float3 vUL = FullRangeNormal(SampleSceneNormals(uL)) * kernel._11;
+        float3 vUC = FullRangeNormal(SampleSceneNormals(uC)) * kernel._12;
+        float3 vUR = FullRangeNormal(SampleSceneNormals(uR)) * kernel._13;
+        float3 vDL = FullRangeNormal(SampleSceneNormals(dL)) * kernel._31;
+        float3 vDC = FullRangeNormal(SampleSceneNormals(dC)) * kernel._32;
+        float3 vDR = FullRangeNormal(SampleSceneNormals(dR)) * kernel._33;
+
+        float sX = (vUL.x + vUC.x + vUR.x + vDL.x + vDC.x + vDR.x);
+        float sY = (vUL.y + vUC.y + vUR.y + vDL.y + vDC.y + vDR.y);
+        float sZ = (vUL.z + vUC.z + vUR.z + vDL.z + vDC.z + vDR.z);
+        
+        return float3(sX, sY, sZ);
+    }
+
+    float3 SobelNormal1X3(float3 kernel, float2 uv0, float2 uv1, float2 uv2)
+    {
+        float3 v0 = FullRangeNormal(SampleSceneNormals(uv0)) * kernel.r;
+        float3 v1 = FullRangeNormal(SampleSceneNormals(uv1)) * kernel.g;
+        float3 v2 = FullRangeNormal(SampleSceneNormals(uv2)) * kernel.b;
+
+        float sX = (v0.x + v1.x + v2.x);
+        float sY = (v0.y + v1.y + v2.y);
+        float sZ = (v0.z + v1.z + v2.z);
+
+        return float3(sX, sY, sZ);
+    }
 
 #endif
