@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class SmoothOutlineRendererFeature : ScriptableRendererFeature
@@ -9,13 +10,12 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     public EdgeDetectionMethod EdgeDetection = EdgeDetectionMethod.SOBEL;
     [Range(0, 1)]
     public float OutlineThreshold = 0f;
-    
-    
-    [Header("Components")]
-    [Space(5)]
-    [SerializeField] private Shader sobelEdgeDetectionShader;
-    [SerializeField] private Shader depthNormalsEdgeDetectionShader;
-    [SerializeField] private Shader outlineShader;
+
+    [SerializeField] [HideInInspector] [Reload("Scripts/EdgeDetection/Sobel/SobelEdgeDetection.shader")]
+    private Shader sobelEdgeDetectionShader;
+    [SerializeField] [HideInInspector] [Reload("Scripts/EdgeDetection/DepthNormals/DepthNormalsEdgeDetection.shader")]
+    private Shader depthNormalsEdgeDetectionShader;
+    private Shader outlineShader;
     
     private Material edgeDetectionMaterial;
     private Material outlineMaterial;
@@ -41,8 +41,30 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         if(!renderingData.postProcessingEnabled)
             return;
         
+        if(!AreAllMaterialsValid())
+            return;
+        
         edgeDetectionPass.Setup(EdgeDetection, edgeDetectionMaterial, OutlineThreshold);
         renderer.EnqueuePass(edgeDetectionPass);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        edgeDetectionPass?.Dispose();
+        edgeDetectionPass = null;
+
+        if (Application.isPlaying)
+        {
+            if (edgeDetectionMaterial)
+                Destroy(edgeDetectionMaterial);
+            if (outlineMaterial)
+                Destroy(outlineMaterial);
+        }
+    }
+
+    private bool AreAllMaterialsValid()
+    {
+        return edgeDetectionMaterial != null; //&& outlineMaterial != null;
     }
 
     private Material CreateEdgeDetectionMaterial(EdgeDetectionMethod edgeDetectionMethod)
