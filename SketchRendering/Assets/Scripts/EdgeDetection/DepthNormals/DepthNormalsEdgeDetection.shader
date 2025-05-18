@@ -1,4 +1,4 @@
-Shader "DepthNormalsEdgeDetection"
+Shader "Hidden/DepthNormalsEdgeDetection"
 {
    SubShader
    {
@@ -39,8 +39,8 @@ Shader "DepthNormalsEdgeDetection"
                // sample depth
                float2 uv = input.texcoord.xy;
                float depth = DepthSample(_BlitTexture, sampler_LinearRepeat, uv);
-
-               depth = (depth > _OutlineThreshold) ? 1 : 0;
+               
+               depth = step(_OutlineThreshold, depth);
                
                return float4(depth.rrr, 1);
            }
@@ -61,26 +61,25 @@ Shader "DepthNormalsEdgeDetection"
 
            float _OutlineThreshold;
 
-           float3 ConvertNormalsToFullRange(float3 normal)
+           float2 ConvertNormalsToFullRange(float2 normal)
            {
                return normal * 2 - 1;
            }
            
-           float NormalsSample(Texture2D tex, SamplerState samp, float2 uv)
+           float2 NormalsSample(Texture2D tex, SamplerState samp, float2 uv)
            {
                //Keep z as 0 to signify no offset
                float3 coordinateOffset = float3(1.0/_ScreenParams.x, 1.0/_ScreenParams.y, 0);
                
-               float3 center = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv, _BlitMipLevel).rgb);
-               float3 up = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv + coordinateOffset.zy, _BlitMipLevel).rgb);
-               float3 down = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv - coordinateOffset.zy, _BlitMipLevel).rgb);
-               float3 right = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv + coordinateOffset.zx, _BlitMipLevel).rgb);
-               float3 left = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv - coordinateOffset.zx, _BlitMipLevel).rgb);
+               float2 center = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv, _BlitMipLevel).rg);
+               float2 up = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv + coordinateOffset.zy, _BlitMipLevel).rg);
+               float2 down = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv - coordinateOffset.zy, _BlitMipLevel).rg);
+               float2 right = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv + coordinateOffset.zx, _BlitMipLevel).rg);
+               float2 left = ConvertNormalsToFullRange(SAMPLE_TEXTURE2D_X_LOD(tex, samp, uv - coordinateOffset.zx, _BlitMipLevel).rg);
 
                float sampleX = abs(up.x- center.x) + abs(down.x - center.x) + abs(left.x - center.x) + abs(right.x - center.x);
                float sampleY = abs(up.y- center.y) + abs(down.y - center.y) + abs(left.y - center.y) + abs(right.y - center.y);
-               float sampleZ = abs(up.z- center.z) + abs(down.z - center.z) + abs(left.z - center.z) + abs(right.z - center.z);
-               return max(sampleX, max(sampleY, sampleZ));
+               return float2(sampleX, sampleY);
            }
            
            float4 Frag(Varyings input) : SV_Target0
@@ -89,11 +88,13 @@ Shader "DepthNormalsEdgeDetection"
     
                // sample depth
                float2 uv = input.texcoord.xy;
-               float normal = NormalsSample(_BlitTexture, sampler_LinearRepeat, uv);
+               float2 normal = NormalsSample(_BlitTexture, sampler_LinearRepeat, uv);
 
-               normal = (normal > _OutlineThreshold) ? 1 : 0;
+               float normalEdge = (max(normal.x, normal.y));
+
+               normalEdge = step(_OutlineThreshold, normalEdge);
                
-               return float4(normal.rrr, 1);
+               return float4(normalEdge.rrr, 1);
            }
 
            ENDHLSL

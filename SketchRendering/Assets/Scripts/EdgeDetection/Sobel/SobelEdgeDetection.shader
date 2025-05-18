@@ -1,4 +1,4 @@
-Shader "SobelEdgeDetection"
+Shader "Hidden/SobelEdgeDetection"
 {
    SubShader
    {

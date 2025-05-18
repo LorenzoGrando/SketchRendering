@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -23,10 +24,21 @@ public class DepthNormalsEdgeDetectionRenderPass : EdgeDetectionRenderPass
         public Material mat;
     }
     
-    public override void Setup(EdgeDetectionMethod method, Material mat, float outlineThreshold)
+    public override void Setup(EdgeDetectionMethod method, EdgeDetectionSource source, Material mat, float outlineThreshold)
     {
-        base.Setup(method, mat, outlineThreshold);
-        renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+        base.Setup(method, source, mat, outlineThreshold);
+
+        switch (source)
+        {
+            case EdgeDetectionSource.COLOR:
+                break;
+            case EdgeDetectionSource.DEPTH:
+                ConfigureInput(ScriptableRenderPassInput.Depth); 
+                break;
+            case EdgeDetectionSource.DEPTH_NORMALS:
+                ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal); 
+                break;
+        }
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -43,13 +55,13 @@ public class DepthNormalsEdgeDetectionRenderPass : EdgeDetectionRenderPass
         dstDesc.clearBuffer = false;
 
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
-        TextureHandle dstDepth = method == EdgeDetectionMethod.DEPTH_NORMALS ? renderGraph.CreateTexture(dstDesc) : dst;
+        TextureHandle dstDepth = source == EdgeDetectionSource.DEPTH_NORMALS ? renderGraph.CreateTexture(dstDesc) : dst;
 
         //Pass 0 = Depth Outlines
         RenderGraphUtils.BlitMaterialParameters depthParams = new(srcDepth, dstDepth, edgeDetectionMaterial, 0);
         renderGraph.AddBlitPass(depthParams, passName: PassName);
 
-        if (method == EdgeDetectionMethod.DEPTH_NORMALS)
+        if (source == EdgeDetectionSource.DEPTH_NORMALS)
         {
             TextureHandle srcNormals = resourceData.cameraNormalsTexture;
             dstDesc.name = "NormalOutlines";

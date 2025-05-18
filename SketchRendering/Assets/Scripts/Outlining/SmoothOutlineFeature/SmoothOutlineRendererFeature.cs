@@ -7,13 +7,14 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
 {
     [Header("Parameters")]
     [Space(5)]
-    public EdgeDetectionMethod EdgeDetection = EdgeDetectionMethod.SOBEL;
+    public EdgeDetectionMethod EdgeDetectionMethod = EdgeDetectionMethod.SOBEL;
+    public EdgeDetectionSource EdgeDetectionSource = EdgeDetectionSource.DEPTH_NORMALS;
     [Range(0, 1)]
     public float OutlineThreshold = 0f;
 
-    [SerializeField] [HideInInspector] [Reload("Scripts/EdgeDetection/Sobel/SobelEdgeDetection.shader")]
+    [SerializeField]
     private Shader sobelEdgeDetectionShader;
-    [SerializeField] [HideInInspector] [Reload("Scripts/EdgeDetection/DepthNormals/DepthNormalsEdgeDetection.shader")]
+    [SerializeField]
     private Shader depthNormalsEdgeDetectionShader;
     private Shader outlineShader;
     
@@ -29,8 +30,8 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     
     public override void Create()
     {
-        edgeDetectionMaterial = CreateEdgeDetectionMaterial(EdgeDetection);
-        edgeDetectionPass = CreateEdgeDetectionPass(EdgeDetection);
+        edgeDetectionMaterial = CreateEdgeDetectionMaterial(EdgeDetectionSource);
+        edgeDetectionPass = CreateEdgeDetectionPass(EdgeDetectionSource);
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -44,7 +45,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         if(!AreAllMaterialsValid())
             return;
         
-        edgeDetectionPass.Setup(EdgeDetection, edgeDetectionMaterial, OutlineThreshold);
+        edgeDetectionPass.Setup(EdgeDetectionMethod, EdgeDetectionSource, edgeDetectionMaterial, OutlineThreshold);
         renderer.EnqueuePass(edgeDetectionPass);
     }
 
@@ -67,16 +68,16 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         return edgeDetectionMaterial != null; //&& outlineMaterial != null;
     }
 
-    private Material CreateEdgeDetectionMaterial(EdgeDetectionMethod edgeDetectionMethod)
+    private Material CreateEdgeDetectionMaterial(EdgeDetectionSource edgeDetectionMethod)
     {
         Material mat;
         switch (edgeDetectionMethod)
         {
-            case EdgeDetectionMethod.SOBEL:
-                mat =  new Material(sobelEdgeDetectionShader);
+            case EdgeDetectionSource.COLOR:
+                mat = null;
                 break;
-            case EdgeDetectionMethod.DEPTH:
-            case EdgeDetectionMethod.DEPTH_NORMALS:
+            case EdgeDetectionSource.DEPTH:
+            case EdgeDetectionSource.DEPTH_NORMALS:
                 mat =  new Material(depthNormalsEdgeDetectionShader);
                 break;
             default:
@@ -85,17 +86,17 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         return mat;
     }
 
-    private EdgeDetectionRenderPass CreateEdgeDetectionPass(EdgeDetectionMethod edgeDetectionMethod)
+    private EdgeDetectionRenderPass CreateEdgeDetectionPass(EdgeDetectionSource source)
     {
-        switch (edgeDetectionMethod)
+        switch (source)
         {
-            case EdgeDetectionMethod.SOBEL:
-                return new SobelEdgeDetectionRenderPass();
-            case EdgeDetectionMethod.DEPTH:
-            case EdgeDetectionMethod.DEPTH_NORMALS:
-                return new DepthNormalsEdgeDetectionRenderPass();
+            case EdgeDetectionSource.COLOR:
+                //return new SobelEdgeDetectionRenderPass();
+            case EdgeDetectionSource.DEPTH:
+            case EdgeDetectionSource.DEPTH_NORMALS:
+                return new DepthNormalsSilhouetteRenderPass();
             default:
-                throw new ArgumentOutOfRangeException(nameof(edgeDetectionMethod), edgeDetectionMethod, null);
+                throw new ArgumentOutOfRangeException(nameof(source), source, null);
         }
     }
 }

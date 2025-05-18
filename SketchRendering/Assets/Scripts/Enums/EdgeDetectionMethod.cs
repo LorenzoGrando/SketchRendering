@@ -1,4 +1,4 @@
 public enum EdgeDetectionMethod
 {
-    SOBEL, DEPTH, DEPTH_NORMALS
+    SOBEL, ROBERTS_CROSS
 }
