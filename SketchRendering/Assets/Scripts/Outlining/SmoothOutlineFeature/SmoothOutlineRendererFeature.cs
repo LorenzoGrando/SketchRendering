@@ -13,17 +13,10 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     private Shader sobelEdgeDetectionShader;
     [SerializeField]
     private Shader depthNormalsEdgeDetectionShader;
-    private Shader outlineShader;
     
     private Material edgeDetectionMaterial;
-    private Material outlineMaterial;
-    
-    private SobelEdgeDetectionRenderPass sobelEdgeDetectionPass;
-    private DepthNormalsEdgeDetectionRenderPass depthNormalsEdgeDetectionPass;
-    private SmoothOutlineRenderPass smoothOutlineRenderPass;
     
     private EdgeDetectionRenderPass edgeDetectionPass;
-    private ScriptableRenderPass outlinePass;
     
     public override void Create()
     {
@@ -55,8 +48,6 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         {
             if (edgeDetectionMaterial)
                 Destroy(edgeDetectionMaterial);
-            if (outlineMaterial)
-                Destroy(outlineMaterial);
         }
     }
 
@@ -67,15 +58,17 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
 
     private Material CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource edgeDetectionMethod)
     {
-        Material mat;
+        Material mat = null;
         switch (edgeDetectionMethod)
         {
             case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
-                mat = null;
+                if(sobelEdgeDetectionShader != null)
+                    mat = new Material(sobelEdgeDetectionShader);
                 break;
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
-                mat =  new Material(depthNormalsEdgeDetectionShader);
+                if(depthNormalsEdgeDetectionShader != null)
+                    mat =  new Material(depthNormalsEdgeDetectionShader);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(edgeDetectionMethod), edgeDetectionMethod, null);

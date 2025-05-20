@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class EdgeDetectionPassData
+public class EdgeDetectionPassData : ISketchRenderPassData
 {
     public EdgeDetectionGlobalData.EdgeDetectionMethod Method;
     public EdgeDetectionGlobalData.EdgeDetectionSource Source;

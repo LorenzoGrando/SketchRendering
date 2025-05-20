@@ -1,5 +1,21 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-1607903443327025348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 836b0123195b49a2876b1801384b52bd, type: 3}
+  m_Name: SketchRenderer
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  passData:
+    debugMode: 0
+  sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27,7 +43,9 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: 5934963878110555133}
-  m_RendererFeatureMap: ad6b866f10d7b46cfdeb8dcd333a5d52
+  - {fileID: 5881595255929910442}
+  - {fileID: -1607903443327025348}
+  m_RendererFeatureMap: ad6b866f10d7b46cfdeb8dcd333a5d52aa345326b99f9f513c7f5d5b5694afe9
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -53,6 +71,20 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &5881595255929910442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d98ca53a1b614dfb9a36e1346e683444, type: 3}
+  m_Name: QuantizeLuminance
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  quantizeLuminanceShader: {fileID: 4800000, guid: 99d2e5a16c2b435f9a2a99cafb68a4d2, type: 3}
 --- !u!114 &5934963878110555133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,7 +95,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70d21521743bc98459d8d263ffa1defd, type: 3}
-  m_Name: SmoothOutlineRendererFeature
+  m_Name: SmoothOutline
   m_EditorClassIdentifier: 
   m_Active: 1
   EdgeDetectionPassData:
@@ -89,7 +121,7 @@ MonoBehaviour:
   m_Active: 0
   m_Settings:
     AOMethod: 0
-    Downsample: 0
+    Downsample: 1
     AfterOpaque: 0
     Source: 1
     NormalSamples: 1

@@ -4,9 +4,9 @@ using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
 
-public abstract class EdgeDetectionRenderPass : ScriptableRenderPass
+public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRenderPass<EdgeDetectionPassData>
 {
-    protected abstract string PassName { get; }
+    public abstract string PassName { get; }
     
     protected Material edgeDetectionMaterial;
     protected EdgeDetectionPassData passData;
@@ -22,7 +22,6 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass
         
         //inherited
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
-        requiresIntermediateTexture = true;
         
         ConfigureMaterial();
     }

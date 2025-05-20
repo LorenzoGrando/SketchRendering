@@ -12,7 +12,7 @@ Shader "Hidden/DepthNormalsSilhouette"
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
            #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-           #include "Assets/Scripts/Outlining/DepthNormals/SobelDepthNormalsInclude.hlsl"
+           #include "Assets/Scripts/EdgeDetection/DepthNormals/SobelDepthNormalsInclude.hlsl"
 
            #pragma multi_compile_local SOURCE_DEPTH SOURCE_DEPTH_NORMALS
            #pragma multi_compile_local SOBEL_KERNEL_3X3 SOBEL_KERNEL_1X3
@@ -24,8 +24,6 @@ Shader "Hidden/DepthNormalsSilhouette"
            {
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 uv = input.texcoord;
-
-               
                
                //DepthSamples
                //UV positions for samples
@@ -71,7 +69,7 @@ Shader "Hidden/DepthNormalsSilhouette"
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
            #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-           #include "Assets/Scripts/Outlining/DepthNormals/SobelDepthNormalsInclude.hlsl"
+           #include "Assets/Scripts/EdgeDetection/DepthNormals/SobelDepthNormalsInclude.hlsl"
 
            #pragma vertex Vert
            #pragma fragment Frag
@@ -128,7 +126,6 @@ Shader "Hidden/DepthNormalsSilhouette"
                float3 viewDir = -normalize(float3((uv * 2 - 1)/perspectiveProj, -1));
                
                half isShallow = step(1 - _OutlineShallowThresholdSensitivity, 1 - dot(viewDir, surfaceNormal));
-               //return float4(isShallow.rrr, 1);
                float diffThreshold = 1 - _OutlineThreshold;
                float threshold = _OutlineThreshold + isShallow * (diffThreshold * _OutlineShallowThresholdStrength);
                 
@@ -142,10 +139,11 @@ Shader "Hidden/DepthNormalsSilhouette"
                float normalGradient = step(_OutlineThreshold, gradX + gradY + gradZ);
                #endif
 
+               //Set alpha as outline strenght, to easy blending in composite shader
                #if defined(SOURCE_DEPTH)
-               return float4(max(0, depthGradient).rrr, 1);
+               return float4(max(0, depthGradient).rrrr);
                #elif defined(SOURCE_DEPTH_NORMALS)
-               return float4(max(0, max(depthGradient, normalGradient)).rrr, 1);
+               return float4(max(0, max(depthGradient, normalGradient)).rrrr);
                #endif
            }
 

@@ -8,7 +8,7 @@ using UnityEngine.Rendering.Universal;
 
 public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
 {
-    protected override string PassName => "DepthNormalsSilhouette";
+    public override string PassName => "DepthNormalsSilhouette";
     
     
     public override void Setup(EdgeDetectionPassData passData, Material mat)
@@ -54,6 +54,8 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
         
         if (resourceData.isActiveTargetBackBuffer)
             return;
+
+        var sketchData = frameData.GetOrCreate<SketchRendererContext>();
         
         var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
         dstDesc.name = "OutlineTexture";
@@ -76,6 +78,6 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
             renderGraph.AddBlitPass(verParams, passName: PassName + "_SobelVertical");
         }
 
-        resourceData.cameraColor = dst;
+        sketchData.OutlinesTexture = dst;
     }
 }

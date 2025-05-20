@@ -6,11 +6,12 @@ using UnityEngine.Rendering.Universal;
 
 public class SobelEdgeDetectionRenderPass : EdgeDetectionRenderPass
 {
-    protected override string PassName => "SobelEdgeDetectionPass";
+    public override string PassName => "SobelEdgeDetectionPass";
 
     public override void Setup(EdgeDetectionPassData passData, Material mat)
     {
         base.Setup(passData, mat);
+        requiresIntermediateTexture = true;
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
