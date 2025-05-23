@@ -30,4 +30,9 @@ public class EdgeDetectionPassData : ISketchRenderPassData
         this.OutlineAngleSensitivity = outlineAngleSensitivity;
         this.OutlineAngleConstraint = outlineAngleConstraint;
     }
+
+    public bool IsAllPassDataValid()
+    {
+        return true;
+    }
 }

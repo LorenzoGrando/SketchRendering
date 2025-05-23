@@ -34,6 +34,10 @@ public class QuantizeLuminanceRendererFeature : ScriptableRendererFeature
 
         if (!AreAllMaterialsValid())
             return;
+        
+        if(!LuminanceData.IsAllPassDataValid())
+            return;
+        
 
         luminanceRenderPass.Setup(LuminanceData, luminanceMaterial);
         renderer.EnqueuePass(luminanceRenderPass);

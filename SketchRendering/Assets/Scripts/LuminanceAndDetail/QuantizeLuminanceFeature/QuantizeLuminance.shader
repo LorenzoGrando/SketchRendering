@@ -16,6 +16,8 @@ Shader "Hidden/QuantizeLuminance"
            
            #pragma vertex Vert
            #pragma fragment Frag
+
+           int _NumTones;
            
            float4 Frag(Varyings input) : SV_Target0
            {
@@ -27,9 +29,8 @@ Shader "Hidden/QuantizeLuminance"
                //simple luminance
                //float lum = (col.r * 2 + col.b + + col.g * 3)/6.0;
                //perceived luminance
-               float n = 15.0;
                float lum = col.r * 0.299 + col.g * 0.587 + col.b * 0.114;
-               float quant = floor(lum * n)/n;
+               float quant = floor(lum * _NumTones)/_NumTones;
                
                return float4(quant.rrr,1);
            }

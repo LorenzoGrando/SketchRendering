@@ -31,6 +31,9 @@ public class SketchRendererFeature : ScriptableRendererFeature
 
         if (!AreAllMaterialsValid())
            return;
+        
+        if(!passData.IsAllPassDataValid())
+            return;
 
         sketchRenderPass.Setup(passData, sketchMaterial);
         renderer.EnqueuePass(sketchRenderPass);

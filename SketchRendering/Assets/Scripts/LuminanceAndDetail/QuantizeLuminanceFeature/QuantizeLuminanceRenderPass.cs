@@ -15,6 +15,8 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private Material luminanceMat;
     private LuminancePassData passData;
     
+    protected static readonly int numTonesShaderID = Shader.PropertyToID("_NumTones");
+    
     public void Setup(LuminancePassData passData, Material mat)
     {
         luminanceMat = mat;
@@ -28,7 +30,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
 
     public void ConfigureMaterial()
     {
-        
+        luminanceMat.SetInt(numTonesShaderID, passData.ActiveTonalMap.ExpectedTones);
     }
 
     public void Dispose()

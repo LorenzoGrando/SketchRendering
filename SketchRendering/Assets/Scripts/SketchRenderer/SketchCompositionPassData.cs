@@ -7,4 +7,9 @@ public class SketchCompositionPassData : ISketchRenderPassData
     }
     
     public DebugMode debugMode = DebugMode.NONE;
+
+    public bool IsAllPassDataValid()
+    {
+        return true;
+    }
 }
