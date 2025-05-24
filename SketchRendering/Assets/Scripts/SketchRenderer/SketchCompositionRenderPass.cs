@@ -17,6 +17,9 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     
     public static readonly string DEBUG_OUTLINES = "DEBUG_OUTLINES";
     public static readonly string DEBUG_LUMINANCE = "DEBUG_LUMINANCE";
+
+    private LocalKeyword debugOutlinesKeyword;
+    private LocalKeyword debugLuminanceKeyword;
     
     // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
     // and z and w controls the offset. TAKEN FROM URPSAMPLES
@@ -40,24 +43,28 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         requiresIntermediateTexture = true;
+        
         ConfigureMaterial();
     }
 
     public void ConfigureMaterial()
     {
+        debugOutlinesKeyword = new LocalKeyword(mat.shader, DEBUG_OUTLINES);
+        debugLuminanceKeyword = new LocalKeyword(mat.shader, DEBUG_LUMINANCE);
+        
         switch (passData.debugMode)
         {
             case SketchCompositionPassData.DebugMode.NONE:
-                mat.DisableKeyword(DEBUG_OUTLINES);
-                mat.DisableKeyword(DEBUG_LUMINANCE);
+                mat.DisableKeyword(debugOutlinesKeyword);
+                mat.DisableKeyword(debugLuminanceKeyword);
                 break;
             case SketchCompositionPassData.DebugMode.OUTLINES:
-                mat.EnableKeyword(DEBUG_OUTLINES);
-                mat.DisableKeyword(DEBUG_LUMINANCE);
+                mat.EnableKeyword(debugOutlinesKeyword);
+                mat.DisableKeyword(debugLuminanceKeyword);
                 break;
             case SketchCompositionPassData.DebugMode.LUMINANCE:
-                mat.DisableKeyword(DEBUG_OUTLINES);
-                mat.EnableKeyword(DEBUG_LUMINANCE);
+                mat.DisableKeyword(debugOutlinesKeyword);
+                mat.EnableKeyword(debugLuminanceKeyword);
                 break;
         }
     }

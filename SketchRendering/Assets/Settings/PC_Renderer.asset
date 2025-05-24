@@ -103,7 +103,7 @@ MonoBehaviour:
   EdgeDetectionPassData:
     Method: 1
     Source: 2
-    OutlineThreshold: 0.175
+    OutlineThreshold: 0.246
     OutlineAngleSensitivity: 1
     OutlineAngleConstraint: 1
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}

@@ -10,24 +10,41 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
 {
     public override string PassName => "DepthNormalsSilhouette";
     
+    private LocalKeyword edgeSobel3x3Keyword;
+    private LocalKeyword edgeSobel1x3Keyword;
+    
+    private LocalKeyword sourceDepthKeyword;
+    private LocalKeyword sourceDepthNormalsKeyword;
+    
     
     public override void Setup(EdgeDetectionPassData passData, Material mat)
     {
         base.Setup(passData, mat);
+    }
+
+    public override void ConfigureMaterial()
+    {
+        base.ConfigureMaterial();
+        
+        edgeSobel3x3Keyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
+        edgeSobel1x3Keyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
+        
+        sourceDepthKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.DEPTH_KEYWORD);
+        sourceDepthNormalsKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.DEPTH_NORMALS_KEYWORD);
 
         switch (passData.Method)
         {
             case EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3:
-                mat.EnableKeyword(EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
-                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
+                edgeDetectionMaterial.EnableKeyword(edgeSobel3x3Keyword);
+                edgeDetectionMaterial.DisableKeyword(edgeSobel1x3Keyword);
                 break;
             case EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_1X3:
-                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
-                mat.EnableKeyword(EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
+                edgeDetectionMaterial.DisableKeyword(edgeSobel3x3Keyword);
+                edgeDetectionMaterial.EnableKeyword(edgeSobel1x3Keyword);
                 break;
             case EdgeDetectionGlobalData.EdgeDetectionMethod.ROBERTS_CROSS:
-                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
-                mat.DisableKeyword(EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
+                edgeDetectionMaterial.DisableKeyword(edgeSobel3x3Keyword);
+                edgeDetectionMaterial.DisableKeyword(edgeSobel1x3Keyword);
                 break;
         }
 
@@ -37,13 +54,13 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
                 break;
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
                 ConfigureInput(ScriptableRenderPassInput.Depth);
-                mat.EnableKeyword(EdgeDetectionGlobalData.DEPTH_KEYWORD);
-                mat.DisableKeyword(EdgeDetectionGlobalData.DEPTH_NORMALS_KEYWORD);
+                edgeDetectionMaterial.EnableKeyword(sourceDepthKeyword);
+                edgeDetectionMaterial.DisableKeyword(sourceDepthNormalsKeyword);
                 break;
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal);
-                mat.DisableKeyword(EdgeDetectionGlobalData.DEPTH_KEYWORD);
-                mat.EnableKeyword(EdgeDetectionGlobalData.DEPTH_NORMALS_KEYWORD);
+                edgeDetectionMaterial.DisableKeyword(sourceDepthKeyword);
+                edgeDetectionMaterial.EnableKeyword(sourceDepthNormalsKeyword);
                 break;
         }
     }
