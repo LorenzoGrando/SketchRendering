@@ -1,25 +1,23 @@
 #pragma kernel ApplyStroke
 
-struct StrokeData
-{
-    //Variables here have different formats to account for Unity`s own recomendation
-    //See Using buffers with GPU buffers: https://docs.unity3d.com/6000.1/Documentation/Manual/SL-PlatformDifferences.html
-    float4 coords;
-    float length;
-};
+#pragma multi_compile_local _ BASE_STROKE_SDF
+#pragma multi_compile_local _ FALLOFF_LINEAR FALLOFF_EASE_INOUT_SINE
+
+#include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
 
 StructuredBuffer<StrokeData> _StrokeData;
 RWTexture2D<float4> _StrokeResult;
 uint _Dimension;
 
-float2 GetOriginCoordinate(StrokeData data)
+float SampleSDF(StrokeData data, float2 pointID, float dimension)
 {
-    return float2((data.coords.x % 1) * (float)_Dimension, (data.coords.y % 1) * (float)_Dimension);
-}
+    float isStroke = 0;
+    
+    #if defined(BASE_STROKE_SDF)
+    isStroke = SampleBaseSDF(data, pointID, dimension);
+    #endif
 
-float GetLength(StrokeData data)
-{
-    return data.length * (float)_Dimension/2.0;
+    return isStroke;
 }
 
 [numthreads(8,8,1)]
@@ -27,25 +25,8 @@ void ApplyStroke (uint3 id : SV_DispatchThreadID)
 {
     if (id.x > _Dimension || id.y > _Dimension)
         return;
+    
+    float stroke = SampleSDF(_StrokeData[0], float2(id.x, id.y), _Dimension);
 
-    float2 origin = GetOriginCoordinate(_StrokeData[0]);
-    //Is shortest path in the opposite direction? (wrapped texture)
-    //If diff in coords is greater than half the texture, the shortest dist will be in the opposite direction
-    //if should look in other dir, offset dir so we check as if on other side
-    //Adapted from: https://blog.demofox.org/2017/10/01/calculating-the-distance-between-points-in-wrap-around-toroidal-space/
-    float diffX = abs(origin.x - id.x);
-    float diffY = abs(origin.y - id.y);
-
-    float shouldFlipX = step((float)_Dimension/2, diffX);
-    float shouldFlipY = step((float)_Dimension/2, diffY);
-
-    float wrappedX = shouldFlipX > 0 ? (float)_Dimension - diffX : diffX;
-    float wrappedY = shouldFlipY > 0 ? (float)_Dimension - diffY : diffY;
-
-    float2 dir = float2(wrappedX, wrappedY);
-    float dist = length(dir);
-
-    float col = step(GetLength(_StrokeData[0]), dist);
-
-    _StrokeResult[id.xy] = float4(col.rrr, 1.0);
+    _StrokeResult[id.xy] = float4(stroke.rrr, 1.0);
 }

@@ -729,9 +729,7 @@ MonoBehaviour:
   TAMGeneratorShader: {fileID: 7200000, guid: 5fa007b2afa8c484ea868c8714b8ed75, type: 3}
   TAMShader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   Dimension: 4096
-  StrokeData:
-    OriginPoint: {x: 0.55, y: 0.26, z: 0, w: 0}
-    Length: 1
+  StrokeDataAsset: {fileID: 11400000, guid: 7ea724cf169b88a48b7f806b6fc0247f, type: 2}
 --- !u!4 &1050983142
 Transform:
   m_ObjectHideFlags: 0
@@ -741,7 +739,7 @@ Transform:
   m_GameObject: {fileID: 1050983138}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.46, z: -11.53}
+  m_LocalPosition: {x: 0, y: 2.75, z: -6.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

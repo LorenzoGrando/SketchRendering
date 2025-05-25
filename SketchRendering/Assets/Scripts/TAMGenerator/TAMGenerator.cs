@@ -9,7 +9,7 @@ public class TAMGenerator : MonoBehaviour
     public Shader TAMShader;
     [Range(1, 4096)]
     public int Dimension;
-    public TAMStrokeData StrokeData;
+    public TAMStrokeAsset StrokeDataAsset;
     
     //Editor assets
     private RenderTexture targetRT;
@@ -39,7 +39,7 @@ public class TAMGenerator : MonoBehaviour
     
     public void OnValidate()
     {
-        if(TAMGeneratorShader == null)
+        if(TAMGeneratorShader == null || StrokeDataAsset == null)
             return;
         
         CreateOrUpdateTarget();
@@ -87,10 +87,25 @@ public class TAMGenerator : MonoBehaviour
     
     #region Compute Prep
 
+    private void ManageStrokeDataKeywords()
+    {
+        TAMGeneratorShader.EnableKeyword("BASE_STROKE_SDF");
+        string[] falloffs = Enum.GetNames(typeof(FalloffFunction));
+        string selected = StrokeDataAsset.SelectedFalloffFunction.ToString();
+        for (int i = 0; i < falloffs.Length; i++)
+        {
+            if(falloffs[i] == selected)
+                TAMGeneratorShader.EnableKeyword(falloffs[i]);
+            else
+                TAMGeneratorShader.DisableKeyword(falloffs[i]);
+        }
+    }
+
     private void PrepareComputeData()
     {
         if (TAMGeneratorShader.HasKernel(STROKE_KERNEL))
         {
+            ManageStrokeDataKeywords();
             csStrokeKernelID = TAMGeneratorShader.FindKernel(STROKE_KERNEL);
             TAMGeneratorShader.GetKernelThreadGroupSizes(csStrokeKernelID, out uint groupsX, out uint groupsY, out uint groupsZ);
             csStrokeKernelThreads = new Vector3Int(
@@ -112,9 +127,9 @@ public class TAMGenerator : MonoBehaviour
     {
         ReleaseBuffers();
 
-        strokeDataBuffer = new ComputeBuffer(1, StrokeData.GetStrideLength(), ComputeBufferType.Default,
+        strokeDataBuffer = new ComputeBuffer(1, StrokeDataAsset.StrokeData.GetStrideLength(), ComputeBufferType.Default,
             ComputeBufferMode.Immutable);
-        strokeDataBuffer.SetData(new TAMStrokeData[] {StrokeData});
+        strokeDataBuffer.SetData(new TAMStrokeData[] {StrokeDataAsset.StrokeData});
     }
 
     private void ReleaseBuffers()
