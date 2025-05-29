@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[System.Serializable]
 [CreateAssetMenu(fileName = "TAMStrokeAsset", menuName = "Scriptable Objects/TAMStrokeAsset")]
 public class TAMStrokeAsset : ScriptableObject
 {

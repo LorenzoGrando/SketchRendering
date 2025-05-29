@@ -1,17 +1,24 @@
-#pragma kernel ApplyStroke
+#pragma kernel ApplyStrokeIterated
+#pragma kernel FindAverageTextureFillRate
+#pragma kernel BlitFinalSelectedStroke
 
 #pragma multi_compile_local _ BASE_STROKE_SDF
 #pragma multi_compile_local _ FALLOFF_LINEAR FALLOFF_EASE_INOUT_SINE
+#pragma multi_compile_local _ IS_FIRST_ITERATION
+#pragma multi_compile_local _ IS_LAST_REDUCTION
 
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
 
 StructuredBuffer<StrokeData> _StrokeData;
-RWTexture2D<float4> _StrokeResult;
+RWTexture2D<float4> _OriginalSource;
+RWStructuredBuffer<uint> _ReducedSource;
+uint _Iteration;
 uint _Dimension;
+RWStructuredBuffer<uint> _IterationOutputs;
 
-float SampleSDF(StrokeData data, float2 pointID, float dimension)
+uint SampleSDF(StrokeData data, float2 pointID, float dimension)
 {
-    float isStroke = 0;
+    uint isStroke = 0;
     
     #if defined(BASE_STROKE_SDF)
     isStroke = SampleBaseSDF(data, pointID, dimension);
@@ -20,13 +27,67 @@ float SampleSDF(StrokeData data, float2 pointID, float dimension)
     return isStroke;
 }
 
-[numthreads(8,8,1)]
-void ApplyStroke (uint3 id : SV_DispatchThreadID)
+[numthreads(8, 8, 1)]
+void ApplyStrokeIterated (uint3 id : SV_DispatchThreadID)
 {
     if (id.x > _Dimension || id.y > _Dimension)
         return;
-    
-    float stroke = SampleSDF(_StrokeData[0], float2(id.x, id.y), _Dimension);
 
-    _StrokeResult[id.xy] = float4(stroke.rrr, 1.0);
+    int i = id.y * _Dimension + id.x;
+    
+    //If in first iteration, fetch the original texture and store it in a reduced memory form. Future iterations can reuse the same value.
+    #if defined(IS_FIRST_ITERATION)
+    //Any future source stroke textures will only ever have a value in r UNLESS they are a final tone value result image, which will have a full RGB.
+    //For consistency, only care about r.
+    uint sourceValue = _OriginalSource[id.xy].r * 255;
+    _ReducedSource[i] = sourceValue;
+    #endif
+
+    //TODO: Instead of creating positions in CPU, hash the Iteration into a 0-1 range and interpret it into a lerped 2d position? 
+
+    uint stroke = SampleSDF(_StrokeData[_Iteration], id.xy, _Dimension);
+    
+    //TODO: Add blending operations
+    _IterationOutputs[i] = _ReducedSource[i] * (float)stroke/255;
+}
+
+RWStructuredBuffer<uint> _ToneResults;
+groupshared uint Tone_GroupCache[64];
+[numthreads(64, 1, 1)]
+void FindAverageTextureFillRate(uint id : SV_GroupIndex, uint gid : SV_GroupID)
+{
+    //Heavily based on implementation of paralell reduction found in https://www.nvidia.com/content/pdf/gdc2011/nathan_hoobler.pdf
+    Tone_GroupCache[id] = _IterationOutputs[id];
+    GroupMemoryBarrierWithGroupSync();
+
+    //bit-wise right shift on s always halves t size in half!
+    [unroll(6)]
+    for (uint s = 64/2; s > 0;  s>>1)
+    {
+        if(id < s)
+        {
+            Tone_GroupCache[id] += Tone_GroupCache[id + s];
+        }
+        GroupMemoryBarrier();
+    }
+
+    #if defined(IS_LAST_REDUCTION)
+    if (id < 1)
+        _ToneResults[_Iteration] = Tone_GroupCache[id];
+    #else
+    _IterationOutputs[id] = Tone_GroupCache[id];
+    #endif
+}
+
+StructuredBuffer<uint> _TempDebug;
+
+[numthreads(8, 8, 1)]
+void BlitFinalSelectedStroke(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x > _Dimension || id.y > _Dimension)
+        return;
+
+    int i = id.y * _Dimension + id.x;
+    float value = (float)_TempDebug[i]/255.0;
+    _OriginalSource[id.xy] = float4(value.rrr, 1);
 }

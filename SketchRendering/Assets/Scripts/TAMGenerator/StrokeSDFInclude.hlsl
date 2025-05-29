@@ -13,6 +13,8 @@ struct StrokeData
     float thicknessFalloffConstraint;
     float length;
     float lengthThicknessFalloff;
+    float pressure;
+    float pressureFalloff;
 };
 
 float2 GetOriginCoordinate(float2 coords, float dimension)
@@ -22,7 +24,7 @@ float2 GetOriginCoordinate(float2 coords, float dimension)
 
 float GetInterpolatedFloatValue(float data, float dimension)
 {
-    return data * (float)dimension/4.0;
+    return data * (float)dimension/2.0;
 }
 
 float FalloffFunction(float t)
@@ -36,9 +38,9 @@ float FalloffFunction(float t)
     return t;
 }
 
-float SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
+uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     float2 origin = GetOriginCoordinate(data.coords.xy, dimension);
-    float thickness = GetInterpolatedFloatValue(data.thickness, dimension);
+    float thickness = GetInterpolatedFloatValue(data.thickness, dimension/2);
     float length = GetInterpolatedFloatValue(data.length, dimension);
     
     float2 endPoint = origin + normalize(data.direction).xy * length;
@@ -71,9 +73,12 @@ float SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     //attenuate falloff if length is too short
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * interpolation));
-    float sample = step(fallOff, minDist);
+    float sample = 1 - step(fallOff, minDist);
+
+    //float expectedPressure = data.pressure * 1 - ((minDist/fallOff) * data.pressureFalloff);
     
-    return sample;
+    //float stroke = 1 - (sample * expectedPressure);
+    return (1 - sample) * 255;
 }
 
 #endif
