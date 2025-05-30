@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StrokeData:
     OriginPoint: {x: 0.23675945, y: 0.40201408, z: 0, w: 0}
-    Direction: {x: 1, y: 0, z: 0, w: 0}
-    Thickness: 0.032
-    ThicknessFalloffConstraint: 0.3
-    Length: 0.326
+    Direction: {x: 0, y: 1, z: 0, w: 0}
+    Thickness: 0.018
+    ThicknessFalloffConstraint: 0.083
+    Length: 0.785
     LengthThicknessFalloff: 0.855
     Pressure: 0.417
     PressureFalloff: 1

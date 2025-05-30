@@ -10,6 +10,11 @@ public class TAMGeneratorEditor : Editor
         
         TAMGenerator editor = (TAMGenerator)target;
         
+        if(GUILayout.Button("Clear Texture"))
+        {
+            editor.CreateOrUpdateTarget();
+        }
+        
         if(GUILayout.Button("Update & Show SDF"))
         {
             editor.ConfigureGeneratorData();

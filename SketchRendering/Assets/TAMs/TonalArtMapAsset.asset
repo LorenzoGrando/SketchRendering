@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9e98d801b718864ea198da3f0fd005b, type: 3}
   m_Name: TonalArtMapAsset
   m_EditorClassIdentifier: 
-  ExpectedTones: 10
+  ExpectedTones: 5

@@ -35,6 +35,7 @@ public class TAMGenerator : MonoBehaviour
     private ComputeBuffer[] strokeIterationTextureBuffers;
     private ComputeBuffer strokeTextureTonesBuffer;
     private ComputeBuffer strokeReducedSource;
+    private ComputeBuffer fillRateBuffer;
     
     private readonly int RENDER_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
     private readonly int REDUCED_SOURCE_ID = Shader.PropertyToID("_ReducedSource");
@@ -43,6 +44,8 @@ public class TAMGenerator : MonoBehaviour
     private readonly int TONE_RESULTS_ID = Shader.PropertyToID("_ToneResults");
     private readonly int ITERATIONS_ID = Shader.PropertyToID("_Iteration");
     private readonly int DIMENSION_ID = Shader.PropertyToID("_Dimension");
+    private readonly int FILL_RATE_ID = Shader.PropertyToID("_Tone_GlobalCache");
+    private readonly int FILL_RATE_BUFFER_SIZE_ID = Shader.PropertyToID("_BufferSize");
     
     public void OnEnable()
     {
@@ -66,22 +69,14 @@ public class TAMGenerator : MonoBehaviour
         if(TAMGeneratorShader == null || StrokeDataAsset == null)
             return;
         
-        if(Dimension != targetRT.width)
-        CreateOrUpdateTarget();
+        if(targetRT == null || Dimension != targetRT.width)
+            CreateOrUpdateTarget();
         ConfigureBuffers();
         PrepareComputeData();
-        
-        //TEMP
-        if (targetRT && material)
-        {
-            MeshRenderer mr = GetComponent<MeshRenderer>();
-            material.mainTexture = targetRT;
-            mr.material = material;
-        }
     }
     
     #region Asset Prep
-    private void CreateOrUpdateTarget()
+    public void CreateOrUpdateTarget()
     {
         if (targetRT != null)
         {
@@ -90,6 +85,14 @@ public class TAMGenerator : MonoBehaviour
         }
 
         targetRT = CreateRT(Dimension);
+        
+        //TEMP
+        if (targetRT && material)
+        {
+            MeshRenderer mr = GetComponent<MeshRenderer>();
+            material.mainTexture = targetRT;
+            mr.material = material;
+        }
     }
 
     private void CreateMaterial()
@@ -203,6 +206,7 @@ public class TAMGenerator : MonoBehaviour
 
         strokeTextureTonesBuffer = new ComputeBuffer(IterationsPerStroke, sizeof(uint));
         strokeReducedSource = new ComputeBuffer(Dimension*Dimension, sizeof(uint));
+        fillRateBuffer = new ComputeBuffer(Dimension*Dimension, sizeof(uint));
     }
 
     private void ReleaseBuffers()
@@ -236,6 +240,12 @@ public class TAMGenerator : MonoBehaviour
             strokeReducedSource.Release();
             strokeReducedSource = null;
         }
+
+        if (fillRateBuffer != null)
+        {
+            fillRateBuffer.Release();
+            fillRateBuffer = null;
+        }
     }
     
     public void ApplyStrokeKernel()
@@ -261,15 +271,23 @@ public class TAMGenerator : MonoBehaviour
         for (int j = 0; j < IterationsPerStroke; j++)
         {
             TAMGeneratorShader.SetBuffer(csFillRateKernelID, ITERATION_STEP_TEXTURE_ID, strokeIterationTextureBuffers[j]);
+            TAMGeneratorShader.SetBuffer(csFillRateKernelID, FILL_RATE_ID, fillRateBuffer);
             TAMGeneratorShader.SetInt(ITERATIONS_ID, j);
-            for (int textureSize = Dimension; textureSize > 1; textureSize /= 2)
+            for (int bufferSize = Dimension * Dimension; bufferSize > 1; bufferSize /= 64)
             {
-                int reductionGroupSize = Mathf.CeilToInt((float)(textureSize * 2) / (float)csFillRateKernelThreads.x);
+                if (bufferSize == Dimension * Dimension)
+                    TAMGeneratorShader.EnableKeyword("IS_FIRST_ITERATION");
+                else
+                    TAMGeneratorShader.DisableKeyword("IS_FIRST_ITERATION");
+                
+                int reductionGroupSize = Mathf.CeilToInt((float)(bufferSize) / (float)csFillRateKernelThreads.x);
                 if (reductionGroupSize > 1)
                     TAMGeneratorShader.DisableKeyword("IS_LAST_REDUCTION");
                 else
                     TAMGeneratorShader.EnableKeyword("IS_LAST_REDUCTION");
-                
+                Debug.Log(bufferSize);
+                Debug.Log(reductionGroupSize);
+                TAMGeneratorShader.SetInt(FILL_RATE_BUFFER_SIZE_ID, bufferSize);
                 TAMGeneratorShader.Dispatch(csFillRateKernelID, reductionGroupSize, csFillRateKernelThreads.y, csFillRateKernelThreads.z);
             }
         }
@@ -285,15 +303,15 @@ public class TAMGenerator : MonoBehaviour
         float maxFillRateFound = -1;
         for (int i = 0; i < fillRates.Length; i++)
         {
-            float fillRate = 1 - (float)fillRates[i]/(float)(Dimension*Dimension);
-            Debug.Log("checking fill rate at stroke iteration " + i);
+            float fillRate = 1f - ((float)fillRates[i]/(float)(Dimension*Dimension*255));
             if (fillRate > maxFillRateFound)
             {
-                Debug.Log("Found new max fillrate: " + fillRate);
-                maxFillRateFound = fillRates[i];
+                Debug.Log("Found new max fillrate: " + fillRate + "stroke " + i);
+                maxFillRateFound = fillRate;
                 maxToneIndex = i;
             }
         }
+        
         int index = Shader.PropertyToID("_TempDebug");
         TAMGeneratorShader.SetBuffer(csBlitStrokeKernelID, index, strokeIterationTextureBuffers[maxToneIndex]);
         TAMGeneratorShader.Dispatch(csBlitStrokeKernelID, csBlitStrokeKernelThreads.x, csBlitStrokeKernelThreads.y, csBlitStrokeKernelThreads.z);

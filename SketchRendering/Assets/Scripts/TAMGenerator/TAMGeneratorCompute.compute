@@ -30,7 +30,7 @@ uint SampleSDF(StrokeData data, float2 pointID, float dimension)
 [numthreads(8, 8, 1)]
 void ApplyStrokeIterated (uint3 id : SV_DispatchThreadID)
 {
-    if (id.x > _Dimension || id.y > _Dimension)
+    if (id.x >= _Dimension || id.y >= _Dimension)
         return;
 
     int i = id.y * _Dimension + id.x;
@@ -51,31 +51,46 @@ void ApplyStrokeIterated (uint3 id : SV_DispatchThreadID)
     _IterationOutputs[i] = _ReducedSource[i] * (float)stroke/255;
 }
 
+uint _BufferSize;
+RWStructuredBuffer<uint> _Tone_GlobalCache;
 RWStructuredBuffer<uint> _ToneResults;
 groupshared uint Tone_GroupCache[64];
 [numthreads(64, 1, 1)]
-void FindAverageTextureFillRate(uint id : SV_GroupIndex, uint gid : SV_GroupID)
+void FindAverageTextureFillRate(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint g : SV_GroupID)
 {
     //Heavily based on implementation of paralell reduction found in https://www.nvidia.com/content/pdf/gdc2011/nathan_hoobler.pdf
-    Tone_GroupCache[id] = _IterationOutputs[id];
-    GroupMemoryBarrierWithGroupSync();
+    uint index = 64 * g + gid;
 
+    if (index < _BufferSize)
+    {
+        #if defined(IS_FIRST_ITERATION)
+        Tone_GroupCache[gid] = _IterationOutputs[index];
+        #else
+        Tone_GroupCache[gid] = _Tone_GlobalCache[index];
+        #endif        
+    }
+    else
+    {
+        Tone_GroupCache[gid] = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
     //bit-wise right shift on s always halves t size in half!
     [unroll(6)]
-    for (uint s = 64/2; s > 0;  s>>1)
+    for (uint s = 64/2; s > 0;  s>>=1)
     {
-        if(id < s)
+        if(gid < s)
         {
-            Tone_GroupCache[id] += Tone_GroupCache[id + s];
+            Tone_GroupCache[gid] += Tone_GroupCache[gid + s];
         }
         GroupMemoryBarrier();
     }
 
     #if defined(IS_LAST_REDUCTION)
-    if (id < 1)
-        _ToneResults[_Iteration] = Tone_GroupCache[id];
+    if (gid < 1)
+        _ToneResults[_Iteration] = Tone_GroupCache[gid];
     #else
-    _IterationOutputs[id] = Tone_GroupCache[id];
+    if (gid < 1)
+        _Tone_GlobalCache[g] = Tone_GroupCache[gid];
     #endif
 }
 
@@ -84,7 +99,7 @@ StructuredBuffer<uint> _TempDebug;
 [numthreads(8, 8, 1)]
 void BlitFinalSelectedStroke(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x > _Dimension || id.y > _Dimension)
+    if (id.x >= _Dimension || id.y >= _Dimension)
         return;
 
     int i = id.y * _Dimension + id.x;
