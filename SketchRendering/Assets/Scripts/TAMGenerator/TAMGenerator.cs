@@ -273,7 +273,7 @@ public class TAMGenerator : MonoBehaviour
             TAMGeneratorShader.SetBuffer(csFillRateKernelID, ITERATION_STEP_TEXTURE_ID, strokeIterationTextureBuffers[j]);
             TAMGeneratorShader.SetBuffer(csFillRateKernelID, FILL_RATE_ID, fillRateBuffer);
             TAMGeneratorShader.SetInt(ITERATIONS_ID, j);
-            for (int bufferSize = Dimension * Dimension; bufferSize > 1; bufferSize /= 64)
+            for (int bufferSize = Dimension * Dimension; bufferSize > 1; bufferSize = Mathf.CeilToInt((float)bufferSize/64f))
             {
                 if (bufferSize == Dimension * Dimension)
                     TAMGeneratorShader.EnableKeyword("IS_FIRST_ITERATION");
@@ -285,10 +285,10 @@ public class TAMGenerator : MonoBehaviour
                     TAMGeneratorShader.DisableKeyword("IS_LAST_REDUCTION");
                 else
                     TAMGeneratorShader.EnableKeyword("IS_LAST_REDUCTION");
-                Debug.Log(bufferSize);
-                Debug.Log(reductionGroupSize);
                 TAMGeneratorShader.SetInt(FILL_RATE_BUFFER_SIZE_ID, bufferSize);
                 TAMGeneratorShader.Dispatch(csFillRateKernelID, reductionGroupSize, csFillRateKernelThreads.y, csFillRateKernelThreads.z);
+                if(bufferSize == 1)
+                    break;
             }
         }
         

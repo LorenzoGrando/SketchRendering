@@ -56,10 +56,10 @@ RWStructuredBuffer<uint> _Tone_GlobalCache;
 RWStructuredBuffer<uint> _ToneResults;
 groupshared uint Tone_GroupCache[64];
 [numthreads(64, 1, 1)]
-void FindAverageTextureFillRate(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint g : SV_GroupID)
+void FindAverageTextureFillRate(uint3 id : SV_DispatchThreadID, uint gid : SV_GroupIndex, uint3 g : SV_GroupID)
 {
     //Heavily based on implementation of paralell reduction found in https://www.nvidia.com/content/pdf/gdc2011/nathan_hoobler.pdf
-    uint index = 64 * g + gid;
+    uint index = 64 * g.x + gid;
 
     if (index < _BufferSize)
     {
@@ -90,7 +90,7 @@ void FindAverageTextureFillRate(uint3 id : SV_DispatchThreadID, uint gid : SV_Gr
         _ToneResults[_Iteration] = Tone_GroupCache[gid];
     #else
     if (gid < 1)
-        _Tone_GlobalCache[g] = Tone_GroupCache[gid];
+        _Tone_GlobalCache[g.x] = Tone_GroupCache[gid];
     #endif
 }
 

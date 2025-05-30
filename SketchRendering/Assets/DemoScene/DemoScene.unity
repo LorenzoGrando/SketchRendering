@@ -728,8 +728,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TAMGeneratorShader: {fileID: 7200000, guid: 5fa007b2afa8c484ea868c8714b8ed75, type: 3}
   TAMShader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  Dimension: 4096
-  IterationsPerStroke: 100
+  Dimension: 1024
+  IterationsPerStroke: 1
   StrokeDataAsset: {fileID: 11400000, guid: 7ea724cf169b88a48b7f806b6fc0247f, type: 2}
 --- !u!4 &1050983142
 Transform:
