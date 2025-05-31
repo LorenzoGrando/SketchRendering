@@ -20,5 +20,24 @@ public class TAMGeneratorEditor : Editor
             editor.ConfigureGeneratorData();
             editor.ApplyStrokeKernel();
         }
+
+        if (GUILayout.Button("Apply Strokes Until Fill Rate"))
+        {
+            editor.ConfigureGeneratorData();
+            editor.ApplyStrokesUntilFillRateAchieved();
+        }
+
+        if (GUILayout.Button("Save Current Texture"))
+        {
+            editor.SaveCurrentTargetTexture(false);
+        }
+        
+        if (GUILayout.Button("Generate TAM Textures"))
+        {
+            editor.GenerateTAMToneTextures();
+            EditorUtility.SetDirty(editor.TAMAsset);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
     }
 }

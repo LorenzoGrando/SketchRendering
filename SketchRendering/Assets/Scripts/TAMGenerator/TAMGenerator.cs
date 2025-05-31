@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -15,8 +16,11 @@ public class TAMGenerator : MonoBehaviour
     public int Dimension;
     [Range(1, 100)]
     public int IterationsPerStroke;
+    [Range(0, 1)] 
+    public float TargetFillRate;
     public TAMStrokeAsset StrokeDataAsset;
-    
+    public TonalArtMapAsset TAMAsset;
+    public string OverwriteTexturesOutputPath;
     //Editor assets
     private RenderTexture targetRT;
     private Material material;
@@ -37,6 +41,7 @@ public class TAMGenerator : MonoBehaviour
     private ComputeBuffer strokeReducedSource;
     private ComputeBuffer fillRateBuffer;
     
+    //Shader Properties
     private readonly int RENDER_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
     private readonly int REDUCED_SOURCE_ID = Shader.PropertyToID("_ReducedSource");
     private readonly int STROKE_DATA_ID = Shader.PropertyToID("_StrokeData");
@@ -46,6 +51,19 @@ public class TAMGenerator : MonoBehaviour
     private readonly int DIMENSION_ID = Shader.PropertyToID("_Dimension");
     private readonly int FILL_RATE_ID = Shader.PropertyToID("_Tone_GlobalCache");
     private readonly int FILL_RATE_BUFFER_SIZE_ID = Shader.PropertyToID("_BufferSize");
+    private readonly int FILL_RATE_SPLIT_BUFFER_SIZE_ID = Shader.PropertyToID("_SplitBufferSize");
+    private readonly int FILL_RATE_BUFFER_OFFSET_ID = Shader.PropertyToID("_BufferOffset");
+    
+    //Keywords
+    private readonly string FIRST_ITERATION_KEYWORD = "IS_FIRST_ITERATION";
+    private readonly string LAST_REDUCTION_KEYWORD = "IS_LAST_REDUCTION";
+    private readonly string STROKE_SDF_KEYWORD = "BASE_STROKE_SDF";
+    
+    private LocalKeyword firstIterationLocalKeyword;
+    private LocalKeyword lastReductionLocalKeyword;
+    private LocalKeyword strokeSDFLocalKeyword;
+
+    private const int MAX_THREADS_PER_DISPATCH = 65535;
     
     public void OnEnable()
     {
@@ -66,7 +84,7 @@ public class TAMGenerator : MonoBehaviour
 
     public void ConfigureGeneratorData()
     {
-        if(TAMGeneratorShader == null || StrokeDataAsset == null)
+        if(TAMGeneratorShader == null || StrokeDataAsset == null || TAMAsset == null)
             return;
         
         if(targetRT == null || Dimension != targetRT.width)
@@ -129,11 +147,15 @@ public class TAMGenerator : MonoBehaviour
     
     #endregion
     
-    #region Compute Prep
+    #region Compute
 
     private void ManageStrokeDataKeywords()
     {
-        TAMGeneratorShader.EnableKeyword("BASE_STROKE_SDF");
+        strokeSDFLocalKeyword = new LocalKeyword(TAMGeneratorShader, STROKE_SDF_KEYWORD);
+        firstIterationLocalKeyword = new LocalKeyword(TAMGeneratorShader, FIRST_ITERATION_KEYWORD);
+        lastReductionLocalKeyword = new LocalKeyword(TAMGeneratorShader, LAST_REDUCTION_KEYWORD);
+        
+        TAMGeneratorShader.EnableKeyword(strokeSDFLocalKeyword);
         string[] falloffs = Enum.GetNames(typeof(FalloffFunction));
         string selected = StrokeDataAsset.SelectedFalloffFunction.ToString();
         for (int i = 0; i < falloffs.Length; i++)
@@ -248,45 +270,70 @@ public class TAMGenerator : MonoBehaviour
         }
     }
     
-    public void ApplyStrokeKernel()
+    public float ApplyStrokeKernel()
     {
-        StartCoroutine(ExecuteIteratedStrokeKernel());
+        ConfigureGeneratorData();
+        return ExecuteIteratedStrokeKernel();
     }
-
-    private IEnumerator ExecuteIteratedStrokeKernel()
+    private float ExecuteIteratedStrokeKernel()
     {
         for (int i = 0; i < IterationsPerStroke; i++)
         {
             if(i == 0)
-                TAMGeneratorShader.EnableKeyword("IS_FIRST_ITERATION");
+                TAMGeneratorShader.EnableKeyword(firstIterationLocalKeyword);
             else
-                TAMGeneratorShader.DisableKeyword("IS_FIRST_ITERATION");
+                TAMGeneratorShader.DisableKeyword(firstIterationLocalKeyword);
             //DISPATCH INDIVIDUAL STROKE APPLICATION ITERATIONS
             TAMGeneratorShader.SetInt(ITERATIONS_ID, i);
             TAMGeneratorShader.SetBuffer(csApplyStrokeKernelID, ITERATION_STEP_TEXTURE_ID, strokeIterationTextureBuffers[i]);
             TAMGeneratorShader.Dispatch(csApplyStrokeKernelID, csApplyStrokeKernelThreads.x, csApplyStrokeKernelThreads.y, csApplyStrokeKernelThreads.z);
         }
         
-        
         for (int j = 0; j < IterationsPerStroke; j++)
         {
             TAMGeneratorShader.SetBuffer(csFillRateKernelID, ITERATION_STEP_TEXTURE_ID, strokeIterationTextureBuffers[j]);
             TAMGeneratorShader.SetBuffer(csFillRateKernelID, FILL_RATE_ID, fillRateBuffer);
             TAMGeneratorShader.SetInt(ITERATIONS_ID, j);
-            for (int bufferSize = Dimension * Dimension; bufferSize > 1; bufferSize = Mathf.CeilToInt((float)bufferSize/64f))
+            int expectedBufferSize = Dimension * Dimension;
+            
+            for (int bufferSize = expectedBufferSize; bufferSize > 1; bufferSize = Mathf.CeilToInt((float)bufferSize/(float)csFillRateKernelThreads.x))
             {
                 if (bufferSize == Dimension * Dimension)
-                    TAMGeneratorShader.EnableKeyword("IS_FIRST_ITERATION");
+                    TAMGeneratorShader.EnableKeyword(firstIterationLocalKeyword);
                 else
-                    TAMGeneratorShader.DisableKeyword("IS_FIRST_ITERATION");
+                    TAMGeneratorShader.DisableKeyword(firstIterationLocalKeyword);
                 
                 int reductionGroupSize = Mathf.CeilToInt((float)(bufferSize) / (float)csFillRateKernelThreads.x);
+                
                 if (reductionGroupSize > 1)
-                    TAMGeneratorShader.DisableKeyword("IS_LAST_REDUCTION");
+                    TAMGeneratorShader.DisableKeyword(lastReductionLocalKeyword);
                 else
-                    TAMGeneratorShader.EnableKeyword("IS_LAST_REDUCTION");
-                TAMGeneratorShader.SetInt(FILL_RATE_BUFFER_SIZE_ID, bufferSize);
-                TAMGeneratorShader.Dispatch(csFillRateKernelID, reductionGroupSize, csFillRateKernelThreads.y, csFillRateKernelThreads.z);
+                    TAMGeneratorShader.EnableKeyword(lastReductionLocalKeyword);
+                int amountToSplitBuffer = 1;
+                if (reductionGroupSize > MAX_THREADS_PER_DISPATCH)
+                {
+                    amountToSplitBuffer = Mathf.CeilToInt((float)reductionGroupSize / (float)MAX_THREADS_PER_DISPATCH);
+                }
+                
+                TAMGeneratorShader.SetInt(FILL_RATE_BUFFER_SIZE_ID,bufferSize);
+
+                int amountDispatched = 0;
+                int groupsDispatched = 0;
+                for (int s = 0; s < amountToSplitBuffer; s++)
+                {
+                    bool isUnderflow = amountDispatched + MAX_THREADS_PER_DISPATCH > bufferSize;
+                    int splitBufferSize = isUnderflow ? bufferSize - amountDispatched : MAX_THREADS_PER_DISPATCH * csFillRateKernelThreads.x;
+                    
+                    TAMGeneratorShader.SetInt(FILL_RATE_SPLIT_BUFFER_SIZE_ID,amountDispatched);
+                    TAMGeneratorShader.SetInt(FILL_RATE_BUFFER_OFFSET_ID, groupsDispatched);
+                    
+                    int reductionGroups = Mathf.CeilToInt((float)splitBufferSize / (float)csFillRateKernelThreads.x);
+                    TAMGeneratorShader.Dispatch(csFillRateKernelID, reductionGroups, csFillRateKernelThreads.y,
+                        csFillRateKernelThreads.z);
+                    
+                    amountDispatched += splitBufferSize;
+                    groupsDispatched += reductionGroups;
+                }
                 if(bufferSize == 1)
                     break;
             }
@@ -306,17 +353,109 @@ public class TAMGenerator : MonoBehaviour
             float fillRate = 1f - ((float)fillRates[i]/(float)(Dimension*Dimension*255));
             if (fillRate > maxFillRateFound)
             {
-                Debug.Log("Found new max fillrate: " + fillRate + "stroke " + i);
                 maxFillRateFound = fillRate;
                 maxToneIndex = i;
             }
         }
-        
+        Debug.Log("fillrate: " + maxFillRateFound);
         int index = Shader.PropertyToID("_TempDebug");
         TAMGeneratorShader.SetBuffer(csBlitStrokeKernelID, index, strokeIterationTextureBuffers[maxToneIndex]);
         TAMGeneratorShader.Dispatch(csBlitStrokeKernelID, csBlitStrokeKernelThreads.x, csBlitStrokeKernelThreads.y, csBlitStrokeKernelThreads.z);
-        yield return null;
+        return maxFillRateFound;
+    }
+
+    public void ApplyStrokesUntilFillRateAchieved()
+    {
+        StartCoroutine(ApplyStrokesUntilFillRateRoutine(TargetFillRate));
+    }
+
+    private IEnumerator ApplyStrokesUntilFillRateRoutine(float targetFillRate)
+    {
+        float achievedFillRate = 0;
+        int maxStrokesPerFrame = 10;
+        while (achievedFillRate < targetFillRate)
+        {
+            if (Application.isPlaying)
+            {
+                int strokesApplied = 0;
+                while (strokesApplied < maxStrokesPerFrame)
+                {
+                    achievedFillRate = ApplyStrokeKernel();
+                    Debug.Log("achievedFillRate: " + achievedFillRate);
+                    if (achievedFillRate > targetFillRate)
+                        break;
+                    strokesApplied++;
+                }
+                yield return null;
+            }
+            else
+                achievedFillRate = ApplyStrokeKernel();
+        }
     }
     
+    #endregion
+    
+    #region TAM Asset
+    public void GenerateTAMToneTextures()
+    {
+        if(TAMAsset == null)
+            return;
+        
+        CreateOrUpdateTarget();
+        ClearAndReleaseTAMTones();
+        StartCoroutine(GenerateTAMTonesRoutine());
+    }
+
+    private void ClearAndReleaseTAMTones()
+    {
+        for (int i = 0; i < TAMAsset.Tones.Length; i++)
+        {
+            if(TAMAsset.Tones[i] != null)
+                TextureAssetManager.ClearTexture(TAMAsset.Tones[i]);
+        }
+    }
+
+    private IEnumerator GenerateTAMTonesRoutine()
+    {
+        float currentFillRate = 0;
+        float expectedFillRateThreshold = TAMAsset.GetHomogenousFillRateThreshold();
+
+        for (int i = 0; i < TAMAsset.ExpectedTones; i++)
+        {
+            yield return ApplyStrokesUntilFillRateRoutine(currentFillRate);
+            Texture2D output = SaveCurrentTargetTexture(true, $"Tone_{i}");
+            if (output == null)
+            {
+                Debug.LogException(new Exception("Failed to generate Tam texture"));
+                yield break;
+            }
+            TAMAsset.Tones[i] = output;
+            currentFillRate += expectedFillRateThreshold;
+            if(Application.isPlaying)
+                yield return null;
+        }
+    }
+    
+    #endregion
+    
+    #region Editor Asset Management
+    public Texture2D SaveCurrentTargetTexture(bool overwrite, string fileName = null)
+    {
+        if (targetRT == null)
+            return null;
+
+        string path = GetTextureOutputPath();
+        
+        if(fileName == null)
+            fileName = "StrokeTexture";
+        
+        return TextureAssetManager.OutputToAssetTexture(targetRT, path, fileName, overwrite);
+    }
+    private string GetTextureOutputPath()
+    {
+        if (!string.IsNullOrEmpty(OverwriteTexturesOutputPath))
+            return OverwriteTexturesOutputPath;
+        else return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset), "ToneTextures");
+    }
     #endregion
 }
