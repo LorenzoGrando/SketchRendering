@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,6 +6,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
+using UnityEditor;
 
 [ExecuteAlways]
 public class TAMGenerator : MonoBehaviour
@@ -20,6 +22,7 @@ public class TAMGenerator : MonoBehaviour
     public float TargetFillRate;
     public TAMStrokeAsset StrokeDataAsset;
     public TonalArtMapAsset TAMAsset;
+    public bool PackTAMTextures;
     public string OverwriteTexturesOutputPath;
     //Editor assets
     private RenderTexture targetRT;
@@ -29,12 +32,15 @@ public class TAMGenerator : MonoBehaviour
     private readonly string APPLY_STROKE_KERNEL = "ApplyStrokeIterated";
     private readonly string TONE_FILL_RATE_KERNEL = "FindAverageTextureFillRate";
     private readonly string BLIT_STROKE_KERNEL = "BlitFinalSelectedStroke";
+    private readonly string PACK_STROKES_KERNEL = "PackStrokeTextures";
     private int csApplyStrokeKernelID;
     private int csFillRateKernelID;
     private int csBlitStrokeKernelID;
+    private int csPackStrokesKernelID;
     private Vector3Int csApplyStrokeKernelThreads;
     private Vector3Int csFillRateKernelThreads;
     private Vector3Int csBlitStrokeKernelThreads;
+    private Vector3Int csPackStrokesKernelThreads;
     private ComputeBuffer strokeDataBuffers;
     private ComputeBuffer[] strokeIterationTextureBuffers;
     private ComputeBuffer strokeTextureTonesBuffer;
@@ -54,15 +60,23 @@ public class TAMGenerator : MonoBehaviour
     private readonly int FILL_RATE_SPLIT_BUFFER_SIZE_ID = Shader.PropertyToID("_SplitBufferSize");
     private readonly int FILL_RATE_BUFFER_OFFSET_ID = Shader.PropertyToID("_BufferOffset");
     private readonly int BLIT_RESULT_ID = Shader.PropertyToID("_BlitResult");
+    private readonly int PACK_R_TEXTURE = Shader.PropertyToID("_PackTextR");
+    private readonly int PACK_G_TEXTURE = Shader.PropertyToID("_PackTextG");
+    private readonly int PACK_B_TEXTURE = Shader.PropertyToID("_PackTextB");
     
     //Keywords
     private readonly string FIRST_ITERATION_KEYWORD = "IS_FIRST_ITERATION";
     private readonly string LAST_REDUCTION_KEYWORD = "IS_LAST_REDUCTION";
     private readonly string STROKE_SDF_KEYWORD = "BASE_STROKE_SDF";
+    private readonly string PACK_TEXTURES_2_KEYWORD = "PACK_TEXTURES_2";
+    private readonly string PACK_TEXTURES_3_KEYWORD = "PACK_TEXTURES_3";
     
     private LocalKeyword firstIterationLocalKeyword;
     private LocalKeyword lastReductionLocalKeyword;
     private LocalKeyword strokeSDFLocalKeyword;
+    private LocalKeyword[] falloffLocalKeywords;
+    private LocalKeyword packTextures2LocalKeyword;
+    private LocalKeyword packTextures3LocalKeyword;
 
     private const int MAX_THREADS_PER_DISPATCH = 65535;
     
@@ -146,6 +160,17 @@ public class TAMGenerator : MonoBehaviour
         return rt;
     }
     
+    private RenderTexture CopyToRT(Texture2D copy)
+    {
+        RenderTexture rt = new RenderTexture(copy.width, copy.height, 32);
+        rt.enableRandomWrite = true;
+        rt.hideFlags = HideFlags.HideAndDontSave;
+        RenderTexture.active = rt;
+        Graphics.Blit(copy, rt);
+        RenderTexture.active = null;
+        return rt;
+    }
+    
     #endregion
     
     #region Compute
@@ -157,15 +182,21 @@ public class TAMGenerator : MonoBehaviour
         lastReductionLocalKeyword = new LocalKeyword(TAMGeneratorShader, LAST_REDUCTION_KEYWORD);
         
         TAMGeneratorShader.EnableKeyword(strokeSDFLocalKeyword);
+        
         string[] falloffs = Enum.GetNames(typeof(FalloffFunction));
+        falloffLocalKeywords = new LocalKeyword[falloffs.Length];
         string selected = StrokeDataAsset.SelectedFalloffFunction.ToString();
         for (int i = 0; i < falloffs.Length; i++)
         {
+            falloffLocalKeywords[i] = new LocalKeyword(TAMGeneratorShader, falloffs[i]);
             if(falloffs[i] == selected)
-                TAMGeneratorShader.EnableKeyword(falloffs[i]);
+                TAMGeneratorShader.EnableKeyword(falloffLocalKeywords[i]);
             else
-                TAMGeneratorShader.DisableKeyword(falloffs[i]);
+                TAMGeneratorShader.DisableKeyword(falloffLocalKeywords[i]);
         }
+
+        packTextures2LocalKeyword = new LocalKeyword(TAMGeneratorShader, PACK_TEXTURES_2_KEYWORD);
+        packTextures3LocalKeyword = new LocalKeyword(TAMGeneratorShader, PACK_TEXTURES_3_KEYWORD);
     }
 
     private void PrepareComputeData()
@@ -207,6 +238,18 @@ public class TAMGenerator : MonoBehaviour
                 1);
             
             TAMGeneratorShader.SetTexture(csBlitStrokeKernelID, RENDER_TEXTURE_ID, targetRT);
+        }
+
+        if (TAMGeneratorShader.HasKernel(PACK_STROKES_KERNEL))
+        {
+            csPackStrokesKernelID = TAMGeneratorShader.FindKernel(PACK_STROKES_KERNEL);
+            TAMGeneratorShader.GetKernelThreadGroupSizes(csPackStrokesKernelID, out uint groupsX, out uint groupsY, out uint groupsZ);
+            csPackStrokesKernelThreads = new Vector3Int(
+                Mathf.CeilToInt((float)Dimension / groupsX),
+                Mathf.CeilToInt((float)Dimension / groupsY),
+                1);
+            
+            TAMGeneratorShader.SetTexture(csPackStrokesKernelID, RENDER_TEXTURE_ID, targetRT);
         }
     }
 
@@ -373,6 +416,53 @@ public class TAMGenerator : MonoBehaviour
         return maxFillRateFound;
     }
 
+    public void CombineStrokeTextures(Texture2D texture1, Texture2D texture2, Texture2D texture3 = null)
+    {
+        bool reducedPacking = texture3 == null;
+        TAMGeneratorShader.SetKeyword(packTextures2LocalKeyword, reducedPacking); 
+        TAMGeneratorShader.SetKeyword(packTextures3LocalKeyword, !reducedPacking);
+        
+        RenderTexture tmp1 = CopyToRT(texture1);
+        TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_R_TEXTURE, tmp1);
+        RenderTexture tmp2 = CopyToRT(texture2);
+        TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_G_TEXTURE, tmp2);
+        RenderTexture tmp3 = null;
+        if (!reducedPacking)
+        {
+            tmp3 = CopyToRT(texture3);
+            TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_B_TEXTURE, tmp3);
+        }
+
+        TAMGeneratorShader.Dispatch(csPackStrokesKernelID, csPackStrokesKernelThreads.x, csPackStrokesKernelThreads.y, csPackStrokesKernelThreads.z);
+        tmp1.Release();
+        tmp2.Release();
+        if(tmp3 != null)
+            tmp3.Release();
+    }
+    
+    #endregion
+    
+    #region TAM Asset
+    public void GenerateTAMToneTextures()
+    {
+        if(TAMAsset == null)
+            return;
+        
+        CreateOrUpdateTarget();
+        ClearAndReleaseTAMTones();
+        StartCoroutine(GenerateTAMTonesRoutine());
+    }
+
+    private void ClearAndReleaseTAMTones()
+    {
+        for (int i = 0; i < TAMAsset.Tones.Length; i++)
+        {
+            if(TAMAsset.Tones[i] != null)
+                TextureAssetManager.ClearTexture(TAMAsset.Tones[i]);
+        }
+        TAMAsset.ResetTones();
+    }
+    
     public void ApplyStrokesUntilFillRateAchieved()
     {
         StartCoroutine(ApplyStrokesUntilFillRateRoutine(TargetFillRate));
@@ -401,29 +491,6 @@ public class TAMGenerator : MonoBehaviour
                 achievedFillRate = ApplyStrokeKernel();
         }
     }
-    
-    #endregion
-    
-    #region TAM Asset
-    public void GenerateTAMToneTextures()
-    {
-        if(TAMAsset == null)
-            return;
-        
-        CreateOrUpdateTarget();
-        ClearAndReleaseTAMTones();
-        StartCoroutine(GenerateTAMTonesRoutine());
-    }
-
-    private void ClearAndReleaseTAMTones()
-    {
-        for (int i = 0; i < TAMAsset.Tones.Length; i++)
-        {
-            if(TAMAsset.Tones[i] != null)
-                TextureAssetManager.ClearTexture(TAMAsset.Tones[i]);
-        }
-        TAMAsset.ResetTones();
-    }
 
     private IEnumerator GenerateTAMTonesRoutine()
     {
@@ -444,6 +511,33 @@ public class TAMGenerator : MonoBehaviour
             if(Application.isPlaying)
                 yield return null;
         }
+        if(PackTAMTextures)
+            PackAllTAMTextures();
+        
+        EditorUtility.SetDirty(TAMAsset);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private void PackAllTAMTextures()
+    {
+        if(TAMAsset == null || TAMAsset.Tones.Length == 0)
+            return;
+        
+        Dimension = TAMAsset.Tones[0].width;
+        List<Texture2D> packedTAMs = new List<Texture2D>();
+        for (int i = 0; i < TAMAsset.Tones.Length; i += 3)
+        {
+            bool isReduced = i + 2 >= TAMAsset.Tones.Length;
+            if (!isReduced)
+                CombineStrokeTextures(TAMAsset.Tones[i], TAMAsset.Tones[i + 1], TAMAsset.Tones[i + 2]);
+            else
+                CombineStrokeTextures(TAMAsset.Tones[i], TAMAsset.Tones[i + 1]);
+            Texture2D packedTAM = SaveCurrentTargetTexture(true, $"PackedTAM_{i}_{(isReduced ? i + 1 : i + 2)}");
+            packedTAMs.Add(packedTAM);
+        }
+        ClearAndReleaseTAMTones();
+        TAMAsset.SetPackedTams(packedTAMs.ToArray());
     }
     
     #endregion
@@ -469,3 +563,4 @@ public class TAMGenerator : MonoBehaviour
     }
     #endregion
 }
+#endif

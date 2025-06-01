@@ -1,11 +1,13 @@
 #pragma kernel ApplyStrokeIterated
 #pragma kernel FindAverageTextureFillRate
 #pragma kernel BlitFinalSelectedStroke
+#pragma kernel PackStrokeTextures
 
 #pragma multi_compile_local _ BASE_STROKE_SDF
-#pragma multi_compile_local _ FALLOFF_LINEAR FALLOFF_EASE_INOUT_SINE
+#pragma multi_compile_local _ FALLOFF_LINEAR FALLOFF_EASE_INOUT_SINE FALLOFF_EASE_OUT_ELASTIC
 #pragma multi_compile_local _ IS_FIRST_ITERATION
 #pragma multi_compile_local _ IS_LAST_REDUCTION
+#pragma multi_compile_local _ PACK_TEXTURES_2 PACK_TEXTURES_3
 
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
 
@@ -109,4 +111,23 @@ void BlitFinalSelectedStroke(uint3 id : SV_DispatchThreadID)
     int i = id.y * _Dimension + id.x;
     float value = (float)_BlitResult[i]/255.0;
     _OriginalSource[id.xy] = float4(value.rrr, 1);
+}
+
+RWTexture2D<float4> _PackTextR;
+RWTexture2D<float4> _PackTextG;
+RWTexture2D<float4> _PackTextB;
+
+[numthreads(8, 8, 1)]
+void PackStrokeTextures(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _Dimension || id.y >= _Dimension)
+        return;
+
+    float rSource = 1 -_PackTextR[id.xy].r;
+    float gSource = 1 - _PackTextG[id.xy].r;
+    float bSource = 0;
+    #if defined(PACK_TEXTURES_3)
+    bSource = 1 - _PackTextB[id.xy].r;
+    #endif
+    _OriginalSource[id.xy] = float4(rSource, gSource, bSource, 1);
 }

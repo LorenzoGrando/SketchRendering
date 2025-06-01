@@ -27,16 +27,6 @@ float GetInterpolatedFloatValue(float data, float dimension)
     return data * (float)dimension/2.0;
 }
 
-float FalloffFunction(float t)
-{
-    #if defined(FALLOFF_LINEAR)
-    t = LinearFalloff(t);
-    #elif defined(FALLOFF_EASE_INOUT_SINE)
-    t = EaseInOutSineFalloff(t);
-    #endif
-    
-    return t;
-}
 
 uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     float2 origin = GetOriginCoordinate(data.coords.xy, dimension);

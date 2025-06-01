@@ -7,9 +7,9 @@ public class TonalArtMapAsset : ScriptableObject
 {
     [Range(1, 12)]
     public int ExpectedTones;
-
-    //TextureReferences
     public Texture2D[] Tones;
+    private bool isPrePacked = false;
+    public bool IsPacked {get {return isPrePacked;}}
 
     private void OnEnable()
     {
@@ -25,5 +25,12 @@ public class TonalArtMapAsset : ScriptableObject
     public void ResetTones()
     {
         Tones = new Texture2D[ExpectedTones];
+        isPrePacked = false;
+    }
+
+    public void SetPackedTams(Texture2D[] packedTams)
+    {
+        Tones = packedTams;
+        isPrePacked = true;
     }
 }

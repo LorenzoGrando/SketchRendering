@@ -728,11 +728,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TAMGeneratorShader: {fileID: 7200000, guid: 5fa007b2afa8c484ea868c8714b8ed75, type: 3}
   TAMShader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  Dimension: 520
+  Dimension: 512
   IterationsPerStroke: 100
-  TargetFillRate: 0
+  TargetFillRate: 0.604
   StrokeDataAsset: {fileID: 11400000, guid: 7ea724cf169b88a48b7f806b6fc0247f, type: 2}
   TAMAsset: {fileID: 11400000, guid: 695f8d89e1afd73439167208abb0fa33, type: 2}
+  PackTAMTextures: 1
   OverwriteTexturesOutputPath: Assets/TAMs/Textures
 --- !u!4 &1050983142
 Transform:

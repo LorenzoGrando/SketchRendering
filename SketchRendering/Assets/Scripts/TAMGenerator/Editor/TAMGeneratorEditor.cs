@@ -34,9 +34,6 @@ public class TAMGeneratorEditor : Editor
         if (GUILayout.Button("Generate TAM Textures"))
         {
             editor.GenerateTAMToneTextures();
-            EditorUtility.SetDirty(editor.TAMAsset);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
         }
     }
 }

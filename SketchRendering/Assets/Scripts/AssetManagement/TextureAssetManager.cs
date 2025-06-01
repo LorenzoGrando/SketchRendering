@@ -65,7 +65,7 @@ public static class TextureAssetManager
         RenderTexture.active = tex;
         Texture2D outputTexture = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, false);
         outputTexture.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0, false);
-        outputTexture.Apply();
+        outputTexture.Apply(false, false);
         outputTexture.hideFlags = HideFlags.HideAndDontSave;
         
         string targetPath = Path.Combine(folderPath, fileName);
