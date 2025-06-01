@@ -17,8 +17,7 @@ public class TAMGeneratorEditor : Editor
         
         if(GUILayout.Button("Update & Show SDF"))
         {
-            editor.ConfigureGeneratorData();
-            editor.ApplyStrokeKernel();
+            editor.DisplaySDF();
         }
 
         if (GUILayout.Button("Apply Strokes Until Fill Rate"))

@@ -17,7 +17,7 @@ public struct TAMStrokeData
     public float Pressure;
     [Range(0, 1)] 
     public float PressureFalloff;
-    
+
     public int GetStrideLength()
     {
         //Vector4 + float + float
@@ -39,6 +39,23 @@ public struct TAMStrokeData
         };
         
         output.OriginPoint = new Vector4(Random.value, Random.value, 0, 0);
+        return output;
+    }
+
+    public TAMStrokeData PreviewDisplay()
+    {
+        TAMStrokeData output = new TAMStrokeData()
+        {
+            OriginPoint = new Vector4(0.25f, 0.5f, 0f, 0f),
+            Direction = new Vector4(1, 0, 0f, 0f),
+            Thickness = Thickness,
+            ThicknessFalloffConstraint = ThicknessFalloffConstraint,
+            Length = Length,
+            LengthThicknessFalloff = LengthThicknessFalloff,
+            Pressure = Pressure,
+            PressureFalloff = PressureFalloff
+        };
+        
         return output;
     }
 }

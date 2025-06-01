@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "TonalArtMapAsset", menuName = "Scriptable Objects/TonalArtMapAsset")]
 public class TonalArtMapAsset : ScriptableObject
 {
-    [Range(1, 10)]
+    [Range(1, 12)]
     public int ExpectedTones;
 
     //TextureReferences
@@ -20,5 +20,10 @@ public class TonalArtMapAsset : ScriptableObject
     public float GetHomogenousFillRateThreshold()
     {
         return 1f/(float)ExpectedTones;
+    }
+
+    public void ResetTones()
+    {
+        Tones = new Texture2D[ExpectedTones];
     }
 }

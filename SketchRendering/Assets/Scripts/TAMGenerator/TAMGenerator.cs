@@ -53,6 +53,7 @@ public class TAMGenerator : MonoBehaviour
     private readonly int FILL_RATE_BUFFER_SIZE_ID = Shader.PropertyToID("_BufferSize");
     private readonly int FILL_RATE_SPLIT_BUFFER_SIZE_ID = Shader.PropertyToID("_SplitBufferSize");
     private readonly int FILL_RATE_BUFFER_OFFSET_ID = Shader.PropertyToID("_BufferOffset");
+    private readonly int BLIT_RESULT_ID = Shader.PropertyToID("_BlitResult");
     
     //Keywords
     private readonly string FIRST_ITERATION_KEYWORD = "IS_FIRST_ITERATION";
@@ -275,6 +276,15 @@ public class TAMGenerator : MonoBehaviour
         ConfigureGeneratorData();
         return ExecuteIteratedStrokeKernel();
     }
+
+    public void DisplaySDF()
+    {
+        CreateOrUpdateTarget();
+        IterationsPerStroke = 1;
+        ConfigureGeneratorData();
+        strokeDataBuffers.SetData(new [] {StrokeDataAsset.StrokeData.PreviewDisplay()});
+        ExecuteIteratedStrokeKernel();
+    }
     private float ExecuteIteratedStrokeKernel()
     {
         for (int i = 0; i < IterationsPerStroke; i++)
@@ -346,7 +356,7 @@ public class TAMGenerator : MonoBehaviour
         strokeTextureTonesBuffer.GetData(fillRates);
 
         //maxFillrate will be equal to 1 - the found tone
-        int maxToneIndex = -1;
+        int maxToneIndex = 0;
         float maxFillRateFound = -1;
         for (int i = 0; i < fillRates.Length; i++)
         {
@@ -357,9 +367,8 @@ public class TAMGenerator : MonoBehaviour
                 maxToneIndex = i;
             }
         }
-        Debug.Log("fillrate: " + maxFillRateFound);
-        int index = Shader.PropertyToID("_TempDebug");
-        TAMGeneratorShader.SetBuffer(csBlitStrokeKernelID, index, strokeIterationTextureBuffers[maxToneIndex]);
+        
+        TAMGeneratorShader.SetBuffer(csBlitStrokeKernelID, BLIT_RESULT_ID, strokeIterationTextureBuffers[maxToneIndex]);
         TAMGeneratorShader.Dispatch(csBlitStrokeKernelID, csBlitStrokeKernelThreads.x, csBlitStrokeKernelThreads.y, csBlitStrokeKernelThreads.z);
         return maxFillRateFound;
     }
@@ -413,6 +422,7 @@ public class TAMGenerator : MonoBehaviour
             if(TAMAsset.Tones[i] != null)
                 TextureAssetManager.ClearTexture(TAMAsset.Tones[i]);
         }
+        TAMAsset.ResetTones();
     }
 
     private IEnumerator GenerateTAMTonesRoutine()

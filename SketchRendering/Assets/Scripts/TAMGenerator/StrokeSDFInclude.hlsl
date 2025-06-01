@@ -73,11 +73,10 @@ uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     //attenuate falloff if length is too short
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * interpolation));
-    float sample = 1 - step(fallOff, minDist);
-
-    //float expectedPressure = data.pressure * 1 - ((minDist/fallOff) * data.pressureFalloff);
+    float sample = step(fallOff, minDist);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * interpolation);
+    sample = (1 - sample) * expectedPressure;
     
-    //float stroke = 1 - (sample * expectedPressure);
     return (1 - sample) * 255;
 }
 
