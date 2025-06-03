@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "TonalArtMapAsset", menuName = "Scriptable Objects/TonalArtMapAsset")]
 public class TonalArtMapAsset : ScriptableObject
 {
-    [Range(1, 12)]
+    [Range(1, 9)]
     public int ExpectedTones;
     public Texture2D[] Tones;
     private bool isPrePacked = false;

@@ -416,26 +416,30 @@ public class TAMGenerator : MonoBehaviour
         return maxFillRateFound;
     }
 
-    public void CombineStrokeTextures(Texture2D texture1, Texture2D texture2, Texture2D texture3 = null)
+    public void CombineStrokeTextures(Texture2D texture1, Texture2D texture2 = null, Texture2D texture3 = null)
     {
-        bool reducedPacking = texture3 == null;
-        TAMGeneratorShader.SetKeyword(packTextures2LocalKeyword, reducedPacking); 
-        TAMGeneratorShader.SetKeyword(packTextures3LocalKeyword, !reducedPacking);
+        TAMGeneratorShader.SetKeyword(packTextures2LocalKeyword, texture2 != null && texture3 == null);
+        TAMGeneratorShader.SetKeyword(packTextures3LocalKeyword, texture2 != null && texture3 != null);
         
         RenderTexture tmp1 = CopyToRT(texture1);
         TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_R_TEXTURE, tmp1);
-        RenderTexture tmp2 = CopyToRT(texture2);
+        RenderTexture tmp2;
+        if (texture2 != null)
+            tmp2 = CopyToRT(texture2);
+        else
+            tmp2 = CopyToRT(Texture2D.whiteTexture);
         TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_G_TEXTURE, tmp2);
         RenderTexture tmp3 = null;
-        if (!reducedPacking)
-        {
+        if (texture3 != null)
             tmp3 = CopyToRT(texture3);
-            TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_B_TEXTURE, tmp3);
-        }
+        else
+            tmp3 = CopyToRT(Texture2D.whiteTexture);
+        TAMGeneratorShader.SetTexture(csPackStrokesKernelID, PACK_B_TEXTURE, tmp3);
 
         TAMGeneratorShader.Dispatch(csPackStrokesKernelID, csPackStrokesKernelThreads.x, csPackStrokesKernelThreads.y, csPackStrokesKernelThreads.z);
         tmp1.Release();
-        tmp2.Release();
+        if(tmp2 != null)
+            tmp2.Release();
         if(tmp3 != null)
             tmp3.Release();
     }
@@ -528,12 +532,20 @@ public class TAMGenerator : MonoBehaviour
         List<Texture2D> packedTAMs = new List<Texture2D>();
         for (int i = 0; i < TAMAsset.Tones.Length; i += 3)
         {
-            bool isReduced = i + 2 >= TAMAsset.Tones.Length;
-            if (!isReduced)
+            bool isReduced = i + 1 >= TAMAsset.Tones.Length;
+            bool isFullReduced = i + 2 >= TAMAsset.Tones.Length;
+            if (!isReduced && !isFullReduced)
                 CombineStrokeTextures(TAMAsset.Tones[i], TAMAsset.Tones[i + 1], TAMAsset.Tones[i + 2]);
-            else
+            else if (!isReduced && isFullReduced)
+            {
                 CombineStrokeTextures(TAMAsset.Tones[i], TAMAsset.Tones[i + 1]);
-            Texture2D packedTAM = SaveCurrentTargetTexture(true, $"PackedTAM_{i}_{(isReduced ? i + 1 : i + 2)}");
+            }
+            else
+            {
+                CombineStrokeTextures(TAMAsset.Tones[i]);
+            }
+            
+            Texture2D packedTAM = SaveCurrentTargetTexture(true, $"PackedTAM_{i}_{(isFullReduced ? i + 1 : i + 2)}");
             packedTAMs.Add(packedTAM);
         }
         ClearAndReleaseTAMTones();

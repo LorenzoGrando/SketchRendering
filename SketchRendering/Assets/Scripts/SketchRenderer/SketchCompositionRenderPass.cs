@@ -100,10 +100,17 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         using (var builder = renderGraph.AddRasterRenderPass<PassData>(PassName, out var passData))
         {
             passData.material = mat;
-            builder.UseTexture(sketchData.OutlinesTexture);
-            passData.outlineTexture = sketchData.OutlinesTexture;
-            builder.UseTexture(sketchData.LuminanceTexture);
-            passData.luminanceTexture = sketchData.LuminanceTexture;
+            if (sketchData.OutlinesTexture.IsValid())
+            {
+                builder.UseTexture(sketchData.OutlinesTexture);
+                passData.outlineTexture = sketchData.OutlinesTexture;
+            }
+            if (sketchData.LuminanceTexture.IsValid())
+            {
+                builder.UseTexture(sketchData.LuminanceTexture);
+                passData.luminanceTexture = sketchData.LuminanceTexture;
+            }
+
             builder.SetRenderAttachment(dst, 0, AccessFlags.Write);
             passData.src = dst;
             

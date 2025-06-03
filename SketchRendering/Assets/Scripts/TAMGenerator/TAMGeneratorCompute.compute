@@ -124,8 +124,11 @@ void PackStrokeTextures(uint3 id : SV_DispatchThreadID)
         return;
 
     float rSource = 1 -_PackTextR[id.xy].r;
-    float gSource = 1 - _PackTextG[id.xy].r;
+    float gSource = 0;
     float bSource = 0;
+    #if defined(PACK_TEXTURES_2) || defined(PACK_TEXTURES_3)
+    gSource = 1 - _PackTextG[id.xy].r;
+    #endif
     #if defined(PACK_TEXTURES_3)
     bSource = 1 - _PackTextB[id.xy].r;
     #endif

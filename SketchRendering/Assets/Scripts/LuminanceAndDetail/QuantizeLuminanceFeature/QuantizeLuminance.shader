@@ -11,11 +11,13 @@ Shader "Hidden/QuantizeLuminance"
            HLSLPROGRAM
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
-           #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-           #include "Assets/Scripts/EdgeDetection/DepthNormals/SobelDepthNormalsInclude.hlsl"
+           #include "Assets/Scripts/LuminanceAndDetail/QuantizeLuminanceFeature/TamSampleInclude.hlsl"
            
            #pragma vertex Vert
            #pragma fragment Frag
+
+           #pragma multi_compile_local_fragment TAM_SINGLE TAM_DOUBLE TAM_TRIPLE
+           #pragma multi_compile_local_fragment _ QUANTIZE
 
            int _NumTones;
            
@@ -28,11 +30,15 @@ Shader "Hidden/QuantizeLuminance"
                float4 col = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_LinearClamp, uv, _BlitMipLevel);
                //simple luminance
                //float lum = (col.r * 2 + col.b + + col.g * 3)/6.0;
-               //perceived luminance
-               float lum = col.r * 0.299 + col.g * 0.587 + col.b * 0.114;
-               float quant = floor(lum * _NumTones)/_NumTones;
+               //perceived luminance, updated to use dot
+               float lum = dot(col, float3(0.299, 0.586, 0.114));
+               #if defined(QUANTIZE)
+               lum = floor(lum * _NumTones)/_NumTones;
+               #endif
                
-               return float4(quant.rrr,1);
+               float stroke = SampleTAM(lum, _NumTones, uv);
+               
+               return float4(stroke.rrr, 1);
            }
 
            ENDHLSL
