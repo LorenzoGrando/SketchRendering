@@ -20,6 +20,7 @@ Shader "Hidden/QuantizeLuminance"
            #pragma multi_compile_local_fragment _ QUANTIZE
 
            int _NumTones;
+           float _LuminanceOffset;
            
            float4 Frag(Varyings input) : SV_Target0
            {
@@ -31,7 +32,7 @@ Shader "Hidden/QuantizeLuminance"
                //simple luminance
                //float lum = (col.r * 2 + col.b + + col.g * 3)/6.0;
                //perceived luminance, updated to use dot
-               float lum = dot(col, float3(0.299, 0.586, 0.114));
+               float lum = pow(dot(col, float3(0.299, 0.586, 0.114)), _LuminanceOffset);
                #if defined(QUANTIZE)
                lum = floor(lum * _NumTones)/_NumTones;
                #endif

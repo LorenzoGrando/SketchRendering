@@ -45,7 +45,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                #if defined(SOBEL_KERNEL_3X3)
                float3 normalEdge = SobelNormalHorizontal3x3(ModifiedSobel3X3HorizontalKernel,nUL, nCL, nDL, nUR, nCR, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
-               float3 normalEdge = SobelNormal1X3(Sobel1X3Kernel, dCL, uv, dCR);
+               float3 normalEdge = SobelNormal1X3(Sobel1X3Kernel, nCL, uv, nCR);
                #endif
                
                #endif

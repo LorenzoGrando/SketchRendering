@@ -23,39 +23,4 @@ public struct TAMStrokeData
         //Vector4 + float + float
         return (sizeof(float) * 4) * 2 + sizeof(float) * 6;
     }
-
-    public TAMStrokeData Randomize()
-    {
-        TAMStrokeData output = new TAMStrokeData()
-        {
-            OriginPoint = OriginPoint,
-            Direction = Direction,
-            Thickness = Thickness,
-            ThicknessFalloffConstraint = ThicknessFalloffConstraint,
-            Length = Length,
-            LengthThicknessFalloff = LengthThicknessFalloff,
-            Pressure = Pressure,
-            PressureFalloff = PressureFalloff
-        };
-        
-        output.OriginPoint = new Vector4(Random.value, Random.value, 0, 0);
-        return output;
-    }
-
-    public TAMStrokeData PreviewDisplay()
-    {
-        TAMStrokeData output = new TAMStrokeData()
-        {
-            OriginPoint = new Vector4(0.25f, 0.5f, 0f, 0f),
-            Direction = new Vector4(1, 0, 0f, 0f),
-            Thickness = Thickness,
-            ThicknessFalloffConstraint = ThicknessFalloffConstraint,
-            Length = Length,
-            LengthThicknessFalloff = LengthThicknessFalloff,
-            Pressure = Pressure,
-            PressureFalloff = PressureFalloff
-        };
-        
-        return output;
-    }
 }

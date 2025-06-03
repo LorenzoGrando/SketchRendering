@@ -262,7 +262,7 @@ public class TAMGenerator : MonoBehaviour
         
         for (int i = 0; i < IterationsPerStroke; i++)
         {
-            TAMStrokeData iterationData = StrokeDataAsset.StrokeData.Randomize();
+            TAMStrokeData iterationData = StrokeDataAsset.Randomize();
             strokeDatas[i] = iterationData;
 
             strokeIterationTextureBuffers[i] = new ComputeBuffer(Dimension * Dimension, sizeof(uint));
@@ -325,7 +325,7 @@ public class TAMGenerator : MonoBehaviour
         CreateOrUpdateTarget();
         IterationsPerStroke = 1;
         ConfigureGeneratorData();
-        strokeDataBuffers.SetData(new [] {StrokeDataAsset.StrokeData.PreviewDisplay()});
+        strokeDataBuffers.SetData(new [] {StrokeDataAsset.PreviewDisplay()});
         ExecuteIteratedStrokeKernel();
     }
     private float ExecuteIteratedStrokeKernel()

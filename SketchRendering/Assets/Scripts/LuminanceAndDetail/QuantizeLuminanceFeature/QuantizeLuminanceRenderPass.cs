@@ -20,6 +20,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     protected readonly int tamSecondShaderID = Shader.PropertyToID("_Tam3_5");
     protected readonly int tamThirdShaderID = Shader.PropertyToID("_Tam6_8");
     protected readonly int tamScalesShaderID = Shader.PropertyToID("_TamScales");
+    protected readonly int luminanceOffsetShaderID = Shader.PropertyToID("_LuminanceOffset");
 
     protected readonly string SINGLE_TAM_KEYWORD = "TAM_SINGLE";
     protected readonly string DOUBLE_TAM_KEYWORD = "TAM_DOUBLE";
@@ -45,6 +46,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     public void ConfigureMaterial()
     {
         luminanceMat.SetInt(numTonesShaderID, passData.ActiveTonalMap.ExpectedTones);
+        luminanceMat.SetFloat(luminanceOffsetShaderID, passData.LuminanceOffset);
         luminanceMat.SetVector(tamScalesShaderID, new Vector4(passData.ToneScales.x, passData.ToneScales.y, 0, 0));
         
         SingleKeyword = new LocalKeyword(luminanceMat.shader, SINGLE_TAM_KEYWORD);

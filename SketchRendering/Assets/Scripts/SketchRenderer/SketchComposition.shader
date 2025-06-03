@@ -40,7 +40,7 @@ Shader "Hidden/SketchComposition"
                float outlineAlpha = outline.a;
                outline = 1 - outline;
 
-               luminance *= (float4(outline.rgb, outlineAlpha));
+               luminance *= float4(outline.rgb * outlineAlpha, 1);
                
                return float4(luminance.rgb, 1);
            }
