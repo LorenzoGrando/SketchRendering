@@ -86,9 +86,9 @@ MonoBehaviour:
   m_Active: 1
   LuminanceData:
     ActiveTonalMap: {fileID: 11400000, guid: 695f8d89e1afd73439167208abb0fa33, type: 2}
-    SmoothTransitions: 1
-    ToneScales: {x: 4, y: 4}
-    luminanceOffset: 0
+    SmoothTransitions: 0
+    ToneScales: {x: 6, y: 6}
+    luminanceOffset: 0.11
   quantizeLuminanceShader: {fileID: 4800000, guid: 99d2e5a16c2b435f9a2a99cafb68a4d2, type: 3}
 --- !u!114 &5934963878110555133
 MonoBehaviour:

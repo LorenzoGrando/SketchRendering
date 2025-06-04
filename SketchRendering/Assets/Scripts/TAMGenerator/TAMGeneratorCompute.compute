@@ -3,7 +3,7 @@
 #pragma kernel BlitFinalSelectedStroke
 #pragma kernel PackStrokeTextures
 
-#pragma multi_compile_local _ BASE_STROKE_SDF
+#pragma multi_compile_local _ SIMPLE HATCHING
 #pragma multi_compile_local _ FALLOFF_LINEAR FALLOFF_EASE_INOUT_SINE FALLOFF_EASE_OUT_ELASTIC
 #pragma multi_compile_local _ IS_FIRST_ITERATION
 #pragma multi_compile_local _ IS_LAST_REDUCTION
@@ -22,7 +22,7 @@ uint SampleSDF(StrokeData data, float2 pointID, float dimension)
 {
     uint isStroke = 0;
     
-    #if defined(BASE_STROKE_SDF)
+    #if defined(SIMPLE) || defined(HATCHING)
     isStroke = SampleBaseSDF(data, pointID, dimension);
     #endif
 

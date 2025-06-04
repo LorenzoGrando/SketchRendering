@@ -1,11 +1,14 @@
 using UnityEngine;
 
 [System.Serializable]
-[CreateAssetMenu(fileName = "TAMStrokeAsset", menuName = "Scriptable Objects/TAMStrokeAsset")]
+[CreateAssetMenu(fileName = "SimpleStrokeAsset", menuName = "Scriptable Objects/TAMStrokeAssets/SimpleStrokeAsset")]
 public class TAMStrokeAsset : ScriptableObject
 {
     public TAMStrokeData StrokeData;
     public FalloffFunction SelectedFalloffFunction;
+    
+    [Space(5)]
+    [Header("Per Iteration Variability")]
     [Range(0f, 1f)]
     public float DirectionVariationRange = 0;
     [Range(0f, 1f)]
@@ -15,7 +18,9 @@ public class TAMStrokeAsset : ScriptableObject
     [Range(0f, 1f)]
     public float PressureVariationRange = 0;
     
-    public TAMStrokeData Randomize()
+    public virtual StrokeSDFType PatternType => StrokeSDFType.SIMPLE;
+
+    public virtual TAMStrokeData Randomize(float fillRate)
     {
         TAMStrokeData output = new TAMStrokeData()
         {
@@ -50,7 +55,7 @@ public class TAMStrokeAsset : ScriptableObject
         return output;
     }
 
-    private float GetRangeConstrainedRandom(float original, float range, float min = 0, float max = 1)
+    protected float GetRangeConstrainedRandom(float original, float range, float min = 0, float max = 1)
     {
         float minStep = Mathf.Max(min, original - range);
         float maxStep = Mathf.Min(max, original + range);

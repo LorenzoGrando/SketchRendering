@@ -21,6 +21,6 @@ public class LuminancePassData : ISketchRenderPassData
 
     public bool IsAllPassDataValid()
     {
-        return ActiveTonalMap != null;
+        return ActiveTonalMap != null && ActiveTonalMap.IsPacked;
     }
 }

@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ExpectedTones: 9
   Tones:
-  - {fileID: 2800000, guid: 089d884b5d1bb3c4fbced1266b0b222d, type: 3}
-  - {fileID: 2800000, guid: 9ab6a5b8dabb7594295249421fde062a, type: 3}
-  - {fileID: 2800000, guid: 9ac902925cb7ac14383f0934a53e9d26, type: 3}
+  - {fileID: 2800000, guid: 87e8b28356fd1594988d40fd34a0e9ce, type: 3}
+  - {fileID: 2800000, guid: 083e067ea9a990d4bb209e9adb5ddab0, type: 3}
+  - {fileID: 2800000, guid: 8ce44f6a8abc21b4095b09504e218890, type: 3}

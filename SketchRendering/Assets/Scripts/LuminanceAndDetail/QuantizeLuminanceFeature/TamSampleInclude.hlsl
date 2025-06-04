@@ -38,7 +38,7 @@ float DoubleTAMSample(float luminance, int tones, float2 uv)
     float3 toneWeights1 = GetWeightsFromQuantizedLuminance(luminance, tones, 0);
     float3 toneWeights2 = GetWeightsFromQuantizedLuminance(luminance, tones, 3);
     toneWeights1.xy -= toneWeights1.yz;
-    toneWeights2.z -= toneWeights2.x;
+    toneWeights1.z -= toneWeights2.x;
     toneWeights2.xy -= toneWeights2.yz;
     float3 col1 = tam0_2.rgb * toneWeights1;
     float3 col2 = tam3_5.rgb * toneWeights2;

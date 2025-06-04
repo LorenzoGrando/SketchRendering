@@ -73,8 +73,8 @@ public class TAMGenerator : MonoBehaviour
     
     private LocalKeyword firstIterationLocalKeyword;
     private LocalKeyword lastReductionLocalKeyword;
-    private LocalKeyword strokeSDFLocalKeyword;
     private LocalKeyword[] falloffLocalKeywords;
+    private LocalKeyword[] strokeTypeLocalKeywords;
     private LocalKeyword packTextures2LocalKeyword;
     private LocalKeyword packTextures3LocalKeyword;
 
@@ -177,22 +177,34 @@ public class TAMGenerator : MonoBehaviour
 
     private void ManageStrokeDataKeywords()
     {
-        strokeSDFLocalKeyword = new LocalKeyword(TAMGeneratorShader, STROKE_SDF_KEYWORD);
         firstIterationLocalKeyword = new LocalKeyword(TAMGeneratorShader, FIRST_ITERATION_KEYWORD);
         lastReductionLocalKeyword = new LocalKeyword(TAMGeneratorShader, LAST_REDUCTION_KEYWORD);
-        
-        TAMGeneratorShader.EnableKeyword(strokeSDFLocalKeyword);
-        
+
         string[] falloffs = Enum.GetNames(typeof(FalloffFunction));
         falloffLocalKeywords = new LocalKeyword[falloffs.Length];
         string selected = StrokeDataAsset.SelectedFalloffFunction.ToString();
         for (int i = 0; i < falloffs.Length; i++)
         {
             falloffLocalKeywords[i] = new LocalKeyword(TAMGeneratorShader, falloffs[i]);
-            if(falloffs[i] == selected)
+            if (falloffs[i] == selected)
                 TAMGeneratorShader.EnableKeyword(falloffLocalKeywords[i]);
             else
                 TAMGeneratorShader.DisableKeyword(falloffLocalKeywords[i]);
+        }
+        
+        
+        string[] sdfTypes = Enum.GetNames(typeof(StrokeSDFType));
+        strokeTypeLocalKeywords = new LocalKeyword[sdfTypes.Length];
+        string selectedType = StrokeDataAsset.PatternType.ToString();
+        for (int t = 0; t < sdfTypes.Length; t++)
+        {
+            strokeTypeLocalKeywords[t] = new LocalKeyword(TAMGeneratorShader, sdfTypes[t]);
+            if (sdfTypes[t] == selectedType)
+            {
+                TAMGeneratorShader.EnableKeyword(strokeTypeLocalKeywords[t]);
+            }
+            else
+                TAMGeneratorShader.DisableKeyword(strokeTypeLocalKeywords[t]);
         }
 
         packTextures2LocalKeyword = new LocalKeyword(TAMGeneratorShader, PACK_TEXTURES_2_KEYWORD);
@@ -257,22 +269,31 @@ public class TAMGenerator : MonoBehaviour
     {
         ReleaseBuffers();
         
-        strokeIterationTextureBuffers = new ComputeBuffer[IterationsPerStroke];
-        TAMStrokeData[] strokeDatas = new TAMStrokeData[IterationsPerStroke];    
+        ConfigureStrokesBuffer(0f);
         
+        strokeIterationTextureBuffers = new ComputeBuffer[IterationsPerStroke];
         for (int i = 0; i < IterationsPerStroke; i++)
         {
-            TAMStrokeData iterationData = StrokeDataAsset.Randomize();
-            strokeDatas[i] = iterationData;
-
             strokeIterationTextureBuffers[i] = new ComputeBuffer(Dimension * Dimension, sizeof(uint));
         }
-        strokeDataBuffers = new ComputeBuffer(IterationsPerStroke, StrokeDataAsset.StrokeData.GetStrideLength());
-        strokeDataBuffers.SetData(strokeDatas);
-
+        
         strokeTextureTonesBuffer = new ComputeBuffer(IterationsPerStroke, sizeof(uint));
         strokeReducedSource = new ComputeBuffer(Dimension*Dimension, sizeof(uint));
         fillRateBuffer = new ComputeBuffer(Dimension*Dimension, sizeof(uint));
+    }
+    
+    private void ConfigureStrokesBuffer(float fillRate)
+    {
+        TAMStrokeData[] strokeDatas = new TAMStrokeData[IterationsPerStroke];
+        for (int i = 0; i < IterationsPerStroke; i++)
+        {
+            TAMStrokeData iterationData = StrokeDataAsset.Randomize(fillRate);
+            strokeDatas[i] = iterationData;
+        }
+        if(strokeDataBuffers == null)
+            strokeDataBuffers = new ComputeBuffer(IterationsPerStroke, StrokeDataAsset.StrokeData.GetStrideLength());
+
+        strokeDataBuffers.SetData(strokeDatas);
     }
 
     private void ReleaseBuffers()
@@ -316,7 +337,6 @@ public class TAMGenerator : MonoBehaviour
     
     public float ApplyStrokeKernel()
     {
-        ConfigureGeneratorData();
         return ExecuteIteratedStrokeKernel();
     }
 
@@ -452,7 +472,10 @@ public class TAMGenerator : MonoBehaviour
         if(TAMAsset == null)
             return;
         
+        
+        //Force Clear
         CreateOrUpdateTarget();
+        ConfigureGeneratorData();
         ClearAndReleaseTAMTones();
         StartCoroutine(GenerateTAMTonesRoutine());
     }
@@ -472,12 +495,12 @@ public class TAMGenerator : MonoBehaviour
         StartCoroutine(ApplyStrokesUntilFillRateRoutine(TargetFillRate));
     }
 
-    private IEnumerator ApplyStrokesUntilFillRateRoutine(float targetFillRate)
+    private IEnumerator ApplyStrokesUntilFillRateRoutine(float targetFillRate, float achievedFillRate = 0)
     {
-        float achievedFillRate = 0;
         int maxStrokesPerFrame = 10;
         while (achievedFillRate < targetFillRate)
         {
+            ConfigureStrokesBuffer(achievedFillRate);
             if (Application.isPlaying)
             {
                 int strokesApplied = 0;
@@ -500,7 +523,6 @@ public class TAMGenerator : MonoBehaviour
     {
         float currentFillRate = 0;
         float expectedFillRateThreshold = TAMAsset.GetHomogenousFillRateThreshold();
-
         for (int i = 0; i < TAMAsset.ExpectedTones; i++)
         {
             yield return ApplyStrokesUntilFillRateRoutine(currentFillRate);
