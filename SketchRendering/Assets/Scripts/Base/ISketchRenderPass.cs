@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface ISketchRenderPass<T> where T : ISketchRenderPassData
+public interface ISketchRenderPass<T> where T : ISketchRenderPassData<T>
 {
     public string PassName { get; }
     

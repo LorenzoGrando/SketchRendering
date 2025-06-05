@@ -67,7 +67,6 @@ public class TAMGenerator : MonoBehaviour
     //Keywords
     private readonly string FIRST_ITERATION_KEYWORD = "IS_FIRST_ITERATION";
     private readonly string LAST_REDUCTION_KEYWORD = "IS_LAST_REDUCTION";
-    private readonly string STROKE_SDF_KEYWORD = "BASE_STROKE_SDF";
     private readonly string PACK_TEXTURES_2_KEYWORD = "PACK_TEXTURES_2";
     private readonly string PACK_TEXTURES_3_KEYWORD = "PACK_TEXTURES_3";
     
@@ -593,7 +592,7 @@ public class TAMGenerator : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(OverwriteTexturesOutputPath))
             return OverwriteTexturesOutputPath;
-        else return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset), "ToneTextures");
+        else return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset).Split('.')[0], "ToneTextures");
     }
     #endregion
 }

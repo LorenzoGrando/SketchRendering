@@ -8,6 +8,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     [Header("Parameters")]
     [Space(5)]
     public EdgeDetectionPassData EdgeDetectionPassData = new EdgeDetectionPassData();
+    private EdgeDetectionPassData CurrentPassData { get { return EdgeDetectionPassData.GetPassDataByVolume(); } }
 
     [SerializeField]
     private Shader sobelEdgeDetectionShader;
@@ -20,8 +21,8 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     
     public override void Create()
     {
-        edgeDetectionMaterial = CreateEdgeDetectionMaterial(EdgeDetectionPassData.Source);
-        edgeDetectionPass = CreateEdgeDetectionPass(EdgeDetectionPassData.Source);
+        edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentPassData.Source);
+        edgeDetectionPass = CreateEdgeDetectionPass(CurrentPassData.Source);
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -35,10 +36,10 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         if(!AreAllMaterialsValid())
             return;
         
-        if(!EdgeDetectionPassData.IsAllPassDataValid())
+        if(!CurrentPassData.IsAllPassDataValid())
             return;
         
-        edgeDetectionPass.Setup(EdgeDetectionPassData, edgeDetectionMaterial);
+        edgeDetectionPass.Setup(CurrentPassData, edgeDetectionMaterial);
         renderer.EnqueuePass(edgeDetectionPass);
     }
 

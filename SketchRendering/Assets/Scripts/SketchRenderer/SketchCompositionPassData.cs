@@ -1,5 +1,5 @@
 [System.Serializable]
-public class SketchCompositionPassData : ISketchRenderPassData
+public class SketchCompositionPassData : ISketchRenderPassData<SketchCompositionPassData>
 {
     public enum DebugMode
     {
@@ -11,5 +11,10 @@ public class SketchCompositionPassData : ISketchRenderPassData
     public bool IsAllPassDataValid()
     {
         return true;
+    }
+
+    public SketchCompositionPassData GetPassDataByVolume()
+    {
+        return this;
     }
 }

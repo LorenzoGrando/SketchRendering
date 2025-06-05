@@ -75,6 +75,28 @@ MonoBehaviour:
   rounded:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &-2386304827005023468
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c7552010a9aa294ea31e37f7075a7f1, type: 3}
+  m_Name: QuantizeLuminanceVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  SmoothTransitions:
+    m_OverrideState: 1
+    m_Value: 1
+  ToneScales:
+    m_OverrideState: 1
+    m_Value: {x: 3.85, y: 3.52}
+  LuminanceOffset:
+    m_OverrideState: 1
+    m_Value: 0.183
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,6 +114,8 @@ MonoBehaviour:
   - {fileID: -7893295128165547882}
   - {fileID: 7391319092446245454}
   - {fileID: -3357603926938260329}
+  - {fileID: -2386304827005023468}
+  - {fileID: 9002950201578859607}
 --- !u!114 &849379129802519247
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -157,3 +181,31 @@ MonoBehaviour:
   clamp:
     m_OverrideState: 0
     m_Value: 0.05
+--- !u!114 &9002950201578859607
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a84c80c46746a197a431d994f71049, type: 3}
+  m_Name: SmoothOutlineVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  Method:
+    m_OverrideState: 1
+    m_Value: 1
+  Source:
+    m_OverrideState: 1
+    m_Value: 2
+  Threshold:
+    m_OverrideState: 1
+    m_Value: 0.113
+  AngleSensitivity:
+    m_OverrideState: 1
+    m_Value: 1
+  AngleConstraint:
+    m_OverrideState: 1
+    m_Value: 1

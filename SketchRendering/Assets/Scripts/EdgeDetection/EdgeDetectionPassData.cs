@@ -1,8 +1,9 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [Serializable]
-public class EdgeDetectionPassData : ISketchRenderPassData
+public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData>
 {
     public EdgeDetectionGlobalData.EdgeDetectionMethod Method;
     public EdgeDetectionGlobalData.EdgeDetectionSource Source;
@@ -34,5 +35,23 @@ public class EdgeDetectionPassData : ISketchRenderPassData
     public bool IsAllPassDataValid()
     {
         return true;
+    }
+
+    public EdgeDetectionPassData GetPassDataByVolume()
+    {
+        SmoothOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SmoothOutlineVolumeComponent>();
+        if (volumeComponent == null)
+            return this;
+        EdgeDetectionPassData overrideData = new EdgeDetectionPassData();
+        
+        
+        overrideData.Method = volumeComponent.Method.overrideState
+            ? volumeComponent.Method.value : Method;
+        overrideData.Source = volumeComponent.Source.overrideState ? volumeComponent.Source.value : Source;
+        overrideData.OutlineThreshold = volumeComponent.Threshold.overrideState ? volumeComponent.Threshold.value : OutlineThreshold;
+        overrideData.OutlineAngleSensitivity = volumeComponent.AngleSensitivity.overrideState ? volumeComponent.AngleSensitivity.value : OutlineAngleSensitivity;
+        overrideData.OutlineAngleConstraint = volumeComponent.AngleConstraint.overrideState ? volumeComponent.AngleConstraint.value : OutlineAngleConstraint;
+        
+        return overrideData;
     }
 }

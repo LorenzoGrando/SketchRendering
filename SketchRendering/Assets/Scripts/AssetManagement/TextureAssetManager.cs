@@ -31,7 +31,7 @@ public static class TextureAssetManager
         if (AssetDatabase.IsValidFolder(path))
             return true;
         
-        string[] directories = path.Split(new[] { Path.PathSeparator, Path.AltDirectorySeparatorChar },
+        string[] directories = path.Split(new[] { Path.PathSeparator, Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar },
             StringSplitOptions.RemoveEmptyEntries);
         if(directories.Length == 0 || string.IsNullOrEmpty(directories[0]))
             throw new ArgumentNullException(nameof(path));
@@ -50,6 +50,8 @@ public static class TextureAssetManager
             currentDirectoryPath = nextDirectoryPath;
         }
         
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
         //final validation
         return AssetDatabase.IsValidFolder(path);
     }

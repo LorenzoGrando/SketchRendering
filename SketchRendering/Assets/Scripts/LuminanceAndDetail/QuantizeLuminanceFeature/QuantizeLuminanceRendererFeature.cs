@@ -39,7 +39,7 @@ public class QuantizeLuminanceRendererFeature : ScriptableRendererFeature
             return;
         
 
-        luminanceRenderPass.Setup(LuminanceData, luminanceMaterial);
+        luminanceRenderPass.Setup(LuminanceData.GetPassDataByVolume(), luminanceMaterial);
         renderer.EnqueuePass(luminanceRenderPass);
     }
 
