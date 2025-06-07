@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.IO;
 using UnityEditor;
@@ -8,14 +7,31 @@ using Object = UnityEngine.Object;
 public static class TextureAssetManager
 {
     private const string IMAGE_FORMAT_IDENTIFIER = ".png";
+
+    public static int GetTextureResolution(TextureResolution resolution)
+    {
+        switch (resolution)
+        {
+            case TextureResolution.SIZE_256:
+                return 256;
+            case TextureResolution.SIZE_512:
+                return 512;
+            case TextureResolution.SIZE_1024:
+                return 1024;
+            default:
+                return 520;
+        }
+    }
     
     public static string GetAssetPath(Object asset)
     {
+#if UNITY_EDITOR
         if(AssetDatabase.Contains(asset))
         {
             return AssetDatabase.GetAssetPath(asset);
         }
-        else return null;
+#endif
+        return null;
     }
 
     private static string GetCompleteTextureAssetPath(string fileNamePath)
@@ -25,6 +41,7 @@ public static class TextureAssetManager
     
     private static bool TryValidateOrCreateAssetPath(string path)
     {
+#if UNITY_EDITOR
         if(string.IsNullOrEmpty(path))
             throw new ArgumentNullException(nameof(path));
         
@@ -54,22 +71,30 @@ public static class TextureAssetManager
         AssetDatabase.Refresh();
         //final validation
         return AssetDatabase.IsValidFolder(path);
+#elif !UNITY_EDITOR
+        return false;
+#endif
     }
 
     public static Texture2D OutputToAssetTexture(RenderTexture tex, string folderPath, string fileName, bool overwrite)
     {
         if (tex == null)
             throw new ArgumentNullException(nameof(tex));
-
+        
+#if UNITY_EDITOR
         if (!TryValidateOrCreateAssetPath(folderPath))
             throw new UnityException("Failed to create texture at specified folder");
+#endif
         
         RenderTexture.active = tex;
         Texture2D outputTexture = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, false);
         outputTexture.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0, false);
         outputTexture.Apply(false, false);
         outputTexture.hideFlags = HideFlags.HideAndDontSave;
-        
+
+#if !UNITY_EDITOR
+        return outputTexture;
+#elif UNITY_EDITOR
         string targetPath = Path.Combine(folderPath, fileName);
         string assetPath = GetCompleteTextureAssetPath(targetPath);
         if (AssetDatabase.AssetPathExists(assetPath))
@@ -98,20 +123,20 @@ public static class TextureAssetManager
         Object.DestroyImmediate(outputTexture);
         //Return a reference to the created asset
         return AssetDatabase.LoadAssetAtPath<Texture2D>(targetPath);
+#endif
     }
 
     public static void ClearTexture(Texture2D texture)
     {
         if(texture == null)
             throw new ArgumentNullException(nameof(texture));
-                
+#if UNITY_EDITOR
         if (AssetDatabase.Contains(texture))
         {
             AssetDatabase.DeleteAsset(GetAssetPath(texture));
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
+#endif
     }
 }
-
-#endif

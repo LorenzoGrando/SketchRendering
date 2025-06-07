@@ -16,13 +16,13 @@ MonoBehaviour:
     OriginPoint: {x: 0.23675945, y: 0.40201408, z: 0, w: 0}
     Direction: {x: 1, y: 0, z: 0, w: 0}
     Thickness: 0.019
-    ThicknessFalloffConstraint: 0.2
+    ThicknessFalloffConstraint: 0.106
     Length: 0.687
-    LengthThicknessFalloff: 0.936
+    LengthThicknessFalloff: 1
     Pressure: 1
-    PressureFalloff: 0.885
+    PressureFalloff: 0.231
   SelectedFalloffFunction: 1
   DirectionVariationRange: 0.159
   ThicknessVariationRange: 0.012
   LengthVariationRange: 0.541
-  PressureVariationRange: 0.771
+  PressureVariationRange: 1

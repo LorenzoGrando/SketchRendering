@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,8 +13,7 @@ public class TAMGenerator : MonoBehaviour
     //TODO: Hide later
     public ComputeShader TAMGeneratorShader;
     public Shader TAMShader;
-    [Range(1, 4096)]
-    public int Dimension;
+    public TextureResolution Resolution;
     [Range(1, 100)]
     public int IterationsPerStroke;
     [Range(0, 1)] 
@@ -24,9 +22,13 @@ public class TAMGenerator : MonoBehaviour
     public TonalArtMapAsset TAMAsset;
     public bool PackTAMTextures;
     public string OverwriteTexturesOutputPath;
+    
     //Editor assets
     private RenderTexture targetRT;
     private Material material;
+    public Material GetRTMaterial { get { return material; } }
+    
+    private int Dimension;
     
     //Compute Data
     private readonly string APPLY_STROKE_KERNEL = "ApplyStrokeIterated";
@@ -79,6 +81,9 @@ public class TAMGenerator : MonoBehaviour
 
     private const int MAX_THREADS_PER_DISPATCH = 65535;
     
+    private bool generating = false;
+    public bool CanRequest { get { return !generating; } }
+    
     public void OnEnable()
     {
         if(TAMShader == null)
@@ -100,6 +105,8 @@ public class TAMGenerator : MonoBehaviour
     {
         if(TAMGeneratorShader == null || StrokeDataAsset == null || TAMAsset == null)
             return;
+        
+        Dimension = TextureAssetManager.GetTextureResolution(Resolution);
         
         if(targetRT == null || Dimension != targetRT.width)
             CreateOrUpdateTarget();
@@ -129,6 +136,9 @@ public class TAMGenerator : MonoBehaviour
 
     private void CreateMaterial()
     {
+        if(material != null)
+            return;
+        
         material = new Material(TAMShader);
         material.hideFlags = HideFlags.HideAndDontSave;
     }
@@ -470,6 +480,8 @@ public class TAMGenerator : MonoBehaviour
     {
         if(TAMAsset == null)
             return;
+        if(generating)
+            return;
         
         
         //Force Clear
@@ -477,6 +489,7 @@ public class TAMGenerator : MonoBehaviour
         ConfigureGeneratorData();
         ClearAndReleaseTAMTones();
         StartCoroutine(GenerateTAMTonesRoutine());
+        generating = true;
     }
 
     private void ClearAndReleaseTAMTones()
@@ -506,7 +519,6 @@ public class TAMGenerator : MonoBehaviour
                 while (strokesApplied < maxStrokesPerFrame)
                 {
                     achievedFillRate = ApplyStrokeKernel();
-                    Debug.Log("achievedFillRate: " + achievedFillRate);
                     if (achievedFillRate > targetFillRate)
                         break;
                     strokesApplied++;
@@ -539,9 +551,12 @@ public class TAMGenerator : MonoBehaviour
         if(PackTAMTextures)
             PackAllTAMTextures();
         
+#if UNITY_EDITOR
         EditorUtility.SetDirty(TAMAsset);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+#endif
+        generating = false;
     }
 
     private void PackAllTAMTextures()
@@ -590,10 +605,13 @@ public class TAMGenerator : MonoBehaviour
     }
     private string GetTextureOutputPath()
     {
+#if UNITY_EDITOR
         if (!string.IsNullOrEmpty(OverwriteTexturesOutputPath))
             return OverwriteTexturesOutputPath;
         else return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset).Split('.')[0], "ToneTextures");
+#elif !UNITY_EDITOR
+        return string.Empty;
+#endif
     }
     #endregion
 }
-#endif

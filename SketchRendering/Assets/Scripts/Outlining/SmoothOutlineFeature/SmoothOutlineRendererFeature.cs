@@ -33,6 +33,9 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         if(!renderingData.postProcessingEnabled)
             return;
         
+        if(!renderingData.cameraData.postProcessEnabled)
+            return;
+        
         if(!AreAllMaterialsValid())
             return;
         

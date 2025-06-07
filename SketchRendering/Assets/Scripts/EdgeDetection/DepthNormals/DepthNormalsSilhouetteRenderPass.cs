@@ -42,10 +42,6 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
                 edgeDetectionMaterial.DisableKeyword(edgeSobel3x3Keyword);
                 edgeDetectionMaterial.EnableKeyword(edgeSobel1x3Keyword);
                 break;
-            case EdgeDetectionGlobalData.EdgeDetectionMethod.ROBERTS_CROSS:
-                edgeDetectionMaterial.DisableKeyword(edgeSobel3x3Keyword);
-                edgeDetectionMaterial.DisableKeyword(edgeSobel1x3Keyword);
-                break;
         }
 
         switch (passData.Source)

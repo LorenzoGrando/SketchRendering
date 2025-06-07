@@ -28,7 +28,7 @@ float FalloffFunction(float t)
     #elif defined(FALLOFF_EASE_INOUT_SINE)
     t = EaseInOutSineFalloff(t);
     #elif defined(FALLOFF_EASE_OUT_ELASTIC)
-    t = EaseOutElasticFalloff(t);
+    t = EaseOutElasticFalloff(t) * 0.5;
     #endif
     
     return t;

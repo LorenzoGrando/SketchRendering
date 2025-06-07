@@ -28,6 +28,9 @@ public class SketchRendererFeature : ScriptableRendererFeature
 
         if (!renderingData.postProcessingEnabled)
             return;
+        
+        if(!renderingData.cameraData.postProcessEnabled)
+            return;
 
         if (!AreAllMaterialsValid())
            return;

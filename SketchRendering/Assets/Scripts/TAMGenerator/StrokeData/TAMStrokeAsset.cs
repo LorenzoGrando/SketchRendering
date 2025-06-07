@@ -43,7 +43,7 @@ public class TAMStrokeAsset : ScriptableObject
         TAMStrokeData output = new TAMStrokeData()
         {
             OriginPoint = new Vector4(0.25f, 0.5f, 0f, 0f),
-            Direction = new Vector4(1, 0, 0f, 0f),
+            Direction = StrokeData.Direction,
             Thickness = StrokeData.Thickness,
             ThicknessFalloffConstraint = StrokeData.ThicknessFalloffConstraint,
             Length = StrokeData.Length,

@@ -22,16 +22,16 @@ float2 GetOriginCoordinate(float2 coords, float dimension)
     return float2((coords.x % 1) * (float)dimension, (coords.y % 1) * (float)dimension);
 }
 
-float GetInterpolatedFloatValue(float data, float dimension)
+float GetInterpolatedFloatValue(float data, float dimension, float rate)
 {
-    return data * (float)dimension/2.0;
+    return data * (float)dimension/rate;
 }
 
 
 uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     float2 origin = GetOriginCoordinate(data.coords.xy, dimension);
-    float thickness = GetInterpolatedFloatValue(data.thickness, dimension/2);
-    float length = GetInterpolatedFloatValue(data.length, dimension);
+    float thickness = GetInterpolatedFloatValue(data.thickness, dimension, 8.0);
+    float length = GetInterpolatedFloatValue(data.length, dimension, 2.0);
     
     float2 endPoint = origin + normalize(data.direction).xy * length;
     
