@@ -18,10 +18,10 @@ MonoBehaviour:
     m_Value: 1
   ToneScales:
     m_OverrideState: 1
-    m_Value: {x: 3.85, y: 3.52}
+    m_Value: {x: 18, y: 18}
   LuminanceOffset:
     m_OverrideState: 1
-    m_Value: 0.183
+    m_Value: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55,10 +55,10 @@ MonoBehaviour:
     m_Value: 1
   Source:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.268
+    m_Value: 1.87
   AngleSensitivity:
     m_OverrideState: 1
     m_Value: 1

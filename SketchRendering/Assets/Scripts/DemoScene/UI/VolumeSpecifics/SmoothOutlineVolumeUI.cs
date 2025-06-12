@@ -7,11 +7,13 @@ using UnityEngine.UI;
 
 public class SmoothOutlineVolumeUI : RendererVolumeUIController
 {
+    
     [Header("Smooth Outline")] 
     [SerializeField] private TMP_Dropdown SourceDropdown;
     [SerializeField] private TMP_Dropdown MethodDropdown;
     [SerializeField] private Slider ThresholdSlider;
     [SerializeField] private TextMeshProUGUI ThresholdText;
+    [SerializeField] private GameObject NormalsRequired;
     [SerializeField] private Slider SensitivitySlider;
     [SerializeField] private TextMeshProUGUI SensitivityText;
     [SerializeField] private Slider ConstraintSlider;
@@ -36,6 +38,7 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
             sourceData.Add(new TMP_Dropdown.OptionData(sources[i]));
         }
         SourceDropdown.AddOptions(sourceData);
+        SourceDropdown.SetValueWithoutNotify(1);
         
         string[] methods = Enum.GetNames(typeof(EdgeDetectionGlobalData.EdgeDetectionMethod));
         MethodDropdown.ClearOptions();
@@ -52,12 +55,16 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
         SensitivityText.text = GetFormattedSliderValue(volume.AngleSensitivity);
         ConstraintSlider.SetValueWithoutNotify(GetLerpedValue(volume.AngleConstraint));
         ConstraintText.text = GetFormattedSliderValue(volume.AngleConstraint);
+        
+        DisplayNormalsRequired();
     }
 
     public void SourceDropdownChanged(int index)
     {
         EdgeDetectionGlobalData.EdgeDetectionSource source = (EdgeDetectionGlobalData.EdgeDetectionSource)index;
         volume.Source.Override(source);
+        
+        DisplayNormalsRequired();
     }
     
     public void MethodDropdownChanged(int index)
@@ -70,7 +77,7 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
     {
         float interpolatedValue = Mathf.Lerp(volume.Threshold.min, volume.Threshold.max, value);
         volume.Threshold.Override(interpolatedValue);
-        ThresholdText.text = GetFormattedSliderValue(volume.Threshold);
+        ThresholdText.text = GetFormattedSliderValue(value);
     }
 
     public void SensitivitySliderChanged(float value)
@@ -85,5 +92,10 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
         float interpolatedValue = Mathf.Lerp(volume.AngleConstraint.min, volume.AngleConstraint.max, value);
         volume.AngleConstraint.Override(interpolatedValue);
         ConstraintText.text = GetFormattedSliderValue(volume.AngleConstraint);
+    }
+
+    private void DisplayNormalsRequired()
+    {
+        NormalsRequired.SetActive(volume.Source == EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS);
     }
 }

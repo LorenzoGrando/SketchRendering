@@ -32,11 +32,10 @@ Shader "Hidden/QuantizeLuminance"
                //simple luminance
                //float lum = (col.r * 2 + col.b + + col.g * 3)/6.0;
                //perceived luminance, updated to use dot
-               float lum = pow(dot(col.rgb, float3(0.299, 0.586, 0.114)), _LuminanceOffset);
+               float lum = pow(dot(col.rgb, float3(0.299, 0.587, 0.114)), _LuminanceOffset);
                #if defined(QUANTIZE)
                lum = floor(lum * _NumTones)/_NumTones;
                #endif
-               
                float stroke = SampleTAM(lum, _NumTones, uv);
                
                return float4(stroke.rrr, 1);

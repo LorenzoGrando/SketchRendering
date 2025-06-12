@@ -7,7 +7,6 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
 {
     public EdgeDetectionGlobalData.EdgeDetectionMethod Method;
     public EdgeDetectionGlobalData.EdgeDetectionSource Source;
-    [Range(0,1)]
     public float OutlineThreshold;
     [Range(0,1)]
     public float OutlineAngleSensitivity;

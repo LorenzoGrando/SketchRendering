@@ -126,9 +126,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                float3 viewDir = -normalize(float3((uv * 2 - 1)/perspectiveProj, -1));
                
                half isShallow = step(1 - _OutlineShallowThresholdSensitivity, 1 - dot(viewDir, surfaceNormal));
-               float diffThreshold = 1 - _OutlineThreshold;
-               float threshold = _OutlineThreshold + isShallow * (diffThreshold * _OutlineShallowThresholdStrength);
-                
+               float threshold = _OutlineThreshold + isShallow * (_OutlineThreshold * _OutlineShallowThresholdStrength);
                float depthGradient = step(threshold, length(float2(horizontalValue.r, depthEdge)));
                #endif
                

@@ -27,8 +27,7 @@ public class CharacterMovementController : MonoBehaviour
     {
         if (inputAllowed)
         {
-            Vector2 movement = InputManager.Instance.Movement.normalized * Speed;   
-            Debug.Log("Movement" + movement);
+            Vector2 movement = InputManager.Instance.Movement.normalized * Speed * Time.deltaTime;   
             transform.position += Vector3.Scale((transform.forward * movement.y + transform.right * movement.x), movementMask);
         }
     }

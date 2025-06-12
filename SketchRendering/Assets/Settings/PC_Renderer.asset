@@ -85,10 +85,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   LuminanceData:
-    ActiveTonalMap: {fileID: 11400000, guid: 695f8d89e1afd73439167208abb0fa33, type: 2}
+    ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
     SmoothTransitions: 1
     ToneScales: {x: 6, y: 6}
-    luminanceOffset: 0
+    luminanceOffset: -0.59
   quantizeLuminanceShader: {fileID: 4800000, guid: 99d2e5a16c2b435f9a2a99cafb68a4d2, type: 3}
 --- !u!114 &5934963878110555133
 MonoBehaviour:
@@ -105,8 +105,8 @@ MonoBehaviour:
   m_Active: 1
   EdgeDetectionPassData:
     Method: 1
-    Source: 2
-    OutlineThreshold: 0.01
+    Source: 1
+    OutlineThreshold: 3
     OutlineAngleSensitivity: 1
     OutlineAngleConstraint: 1
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}

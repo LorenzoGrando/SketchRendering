@@ -2,7 +2,7 @@ public static class EdgeDetectionGlobalData
 {
     public enum EdgeDetectionSource
     {
-        COLOR, DEPTH, DEPTH_NORMALS
+        /*COLOR,*/ DEPTH, DEPTH_NORMALS
     }
     
     public static readonly string COLOR_KEYWORD = "SOURCE_COLOR";

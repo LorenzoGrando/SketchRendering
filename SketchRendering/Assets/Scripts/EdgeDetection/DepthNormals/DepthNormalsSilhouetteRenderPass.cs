@@ -46,8 +46,8 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
 
         switch (passData.Source)
         {
-            case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
-                break;
+            //case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
+                //break;
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
                 ConfigureInput(ScriptableRenderPassInput.Depth);
                 edgeDetectionMaterial.EnableKeyword(sourceDepthKeyword);

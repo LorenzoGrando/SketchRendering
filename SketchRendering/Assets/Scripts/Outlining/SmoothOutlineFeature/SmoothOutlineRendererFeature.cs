@@ -68,10 +68,12 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         Material mat = null;
         switch (edgeDetectionMethod)
         {
+            /*
             case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
                 if(sobelEdgeDetectionShader != null)
                     mat = new Material(sobelEdgeDetectionShader);
                 break;
+                */
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 if(depthNormalsEdgeDetectionShader != null)
@@ -87,7 +89,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     {
         switch (source)
         {
-            case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
+            //case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
                 //return new SobelEdgeDetectionRenderPass();
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:

@@ -10,7 +10,7 @@ public class SmoothOutlineVolumeComponent : VolumeComponent
         new EnumParameter<EdgeDetectionGlobalData.EdgeDetectionMethod>(EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3);
     public EnumParameter<EdgeDetectionGlobalData.EdgeDetectionSource> Source =
         new EnumParameter<EdgeDetectionGlobalData.EdgeDetectionSource>(EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH);
-    public ClampedFloatParameter Threshold = new ClampedFloatParameter(0, 0, 1);
+    public ClampedFloatParameter Threshold = new ClampedFloatParameter(0, 0, 5);
     public ClampedFloatParameter AngleSensitivity = new ClampedFloatParameter(0, 0, 1);
     public ClampedFloatParameter AngleConstraint = new ClampedFloatParameter(0, 0, 1);
 }

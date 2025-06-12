@@ -15,16 +15,16 @@ MonoBehaviour:
   StrokeData:
     OriginPoint: {x: 0, y: 0, z: 0, w: 0}
     Direction: {x: 1, y: 0, z: 0, w: 0}
-    Thickness: 0.537
+    Thickness: 0.079
     ThicknessFalloffConstraint: 0.138
     Length: 1
     LengthThicknessFalloff: 0.835
     Pressure: 1
     PressureFalloff: 0.819
   SelectedFalloffFunction: 1
-  DirectionVariationRange: 0.172
-  ThicknessVariationRange: 0.033
-  LengthVariationRange: 0.837
-  PressureVariationRange: 0.126
-  MinCrossHatchingThreshold: 0.553
-  MaxCrossHatchingThreshold: 1
+  DirectionVariationRange: 0.1
+  ThicknessVariationRange: 0.005
+  LengthVariationRange: 0.45
+  PressureVariationRange: 0.35
+  MinCrossHatchingThreshold: 0.5
+  MaxCrossHatchingThreshold: 0.8
