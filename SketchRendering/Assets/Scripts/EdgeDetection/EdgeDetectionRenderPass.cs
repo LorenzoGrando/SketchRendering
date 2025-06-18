@@ -11,7 +11,9 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
     protected Material edgeDetectionMaterial;
     protected EdgeDetectionPassData passData;
     
+    protected static readonly int outlineOffsetShaderID = Shader.PropertyToID("_OutlineOffset");
     protected static readonly int outlineThresholdShaderID = Shader.PropertyToID("_OutlineThreshold");
+    protected static readonly int outlineThicknessShaderID = Shader.PropertyToID("_OutlineThickness");
     protected static readonly int outlineAngleSensitivityShaderID = Shader.PropertyToID("_OutlineShallowThresholdSensitivity");
     protected static readonly int outlineAngleConstraintShaderID = Shader.PropertyToID("_OutlineShallowThresholdStrength");
 
@@ -28,6 +30,7 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
 
     public virtual void ConfigureMaterial()
     {
+        edgeDetectionMaterial.SetFloat(outlineOffsetShaderID, passData.OutlineOffset);
         edgeDetectionMaterial.SetFloat(outlineThresholdShaderID, passData.OutlineThreshold);
         edgeDetectionMaterial.SetFloat(outlineAngleSensitivityShaderID, passData.OutlineAngleSensitivity);
         edgeDetectionMaterial.SetFloat(outlineAngleConstraintShaderID, passData.OutlineAngleConstraint);

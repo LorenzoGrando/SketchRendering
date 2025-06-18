@@ -52,13 +52,16 @@ MonoBehaviour:
   active: 1
   Method:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   Source:
     m_OverrideState: 1
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 1.87
+    m_Value: 3.16
+  Offset:
+    m_OverrideState: 1
+    m_Value: 0
   AngleSensitivity:
     m_OverrideState: 1
     m_Value: 1

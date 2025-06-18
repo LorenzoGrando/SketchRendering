@@ -8,6 +8,8 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
     public EdgeDetectionGlobalData.EdgeDetectionMethod Method;
     public EdgeDetectionGlobalData.EdgeDetectionSource Source;
     public float OutlineThreshold;
+    [Range(0f, 1f)]
+    public float OutlineOffset;
     [Range(0,1)]
     public float OutlineAngleSensitivity;
     [Range(0,1)]
@@ -17,15 +19,17 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
     {
         this.Method = EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3;
         this.Source = EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH;
+        this.OutlineOffset = 1;
         this.OutlineThreshold = 0.5f;
         this.OutlineAngleSensitivity = 1;
         this.OutlineAngleConstraint = 1;
     }
 
-    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, float outlineThreshold, float outlineAngleSensitivity, float outlineAngleConstraint)
+    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, float outlineThreshold, float outlineOffset, float outlineAngleSensitivity, float outlineAngleConstraint)
     {
         this.Method = method;
         this.Source = source;
+        this.OutlineOffset = outlineOffset;
         this.OutlineThreshold = outlineThreshold;
         this.OutlineAngleSensitivity = outlineAngleSensitivity;
         this.OutlineAngleConstraint = outlineAngleConstraint;
@@ -48,6 +52,7 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
             ? volumeComponent.Method.value : Method;
         overrideData.Source = volumeComponent.Source.overrideState ? volumeComponent.Source.value : Source;
         overrideData.OutlineThreshold = volumeComponent.Threshold.overrideState ? volumeComponent.Threshold.value : OutlineThreshold;
+        overrideData.OutlineOffset = volumeComponent.Offset.overrideState ? volumeComponent.Offset.value : OutlineOffset;
         overrideData.OutlineAngleSensitivity = volumeComponent.AngleSensitivity.overrideState ? volumeComponent.AngleSensitivity.value : OutlineAngleSensitivity;
         overrideData.OutlineAngleConstraint = volumeComponent.AngleConstraint.overrideState ? volumeComponent.AngleConstraint.value : OutlineAngleConstraint;
         

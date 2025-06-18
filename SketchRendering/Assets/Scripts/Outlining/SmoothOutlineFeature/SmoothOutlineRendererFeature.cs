@@ -41,7 +41,6 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         
         if(!CurrentPassData.IsAllPassDataValid())
             return;
-        
         edgeDetectionPass.Setup(CurrentPassData, edgeDetectionMaterial);
         renderer.EnqueuePass(edgeDetectionPass);
     }
