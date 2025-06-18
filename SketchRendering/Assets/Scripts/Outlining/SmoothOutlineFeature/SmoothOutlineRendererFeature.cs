@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 public class SmoothOutlineRendererFeature : ScriptableRendererFeature
 {
-    [Header("Parameters")]
+    [Header("Base Parameters")]
     [Space(5)]
     public EdgeDetectionPassData EdgeDetectionPassData = new EdgeDetectionPassData();
     private EdgeDetectionPassData CurrentEdgeDetectionPassData { get { return EdgeDetectionPassData.GetPassDataByVolume(); } }
@@ -13,18 +13,25 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     public ThicknessDilationPassData ThicknessPassData = new ThicknessDilationPassData();
     private ThicknessDilationPassData CurrentThicknessPassData { get { return ThicknessPassData.GetPassDataByVolume(); } }
 
-    [SerializeField]
-    private Shader sobelEdgeDetectionShader;
-    [SerializeField]
-    private Shader depthNormalsEdgeDetectionShader;
+    [Header("Accented Effects")] 
+    [Space(5)]
+    public bool UseAccentedOutlines;
+    public AccentedOutlinePassData AccentedOutlinePassData = new AccentedOutlinePassData();
+    private AccentedOutlinePassData CurrentAccentOutlinePassData { get { return AccentedOutlinePassData.GetPassDataByVolume(); } }
+
+    [SerializeField] private Shader sobelEdgeDetectionShader;
+    [SerializeField] private Shader depthNormalsEdgeDetectionShader;
 
     [SerializeField] private Shader thicknessDilationDetectionShader;
+    [SerializeField] private Shader accentedOutlinesShader;
     
     private Material edgeDetectionMaterial;
     private Material thicknessDilationMaterial;
+    private Material accentedOutlinesMaterial;
     
     private EdgeDetectionRenderPass edgeDetectionPass;
     private ThicknessDilationRenderPass thicknessDilationPass;
+    private AccentedOutlineRenderPass accentedOutlinePass;
     
     public override void Create()
     {
@@ -33,6 +40,9 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         
         thicknessDilationMaterial = new Material(thicknessDilationDetectionShader);
         thicknessDilationPass = new ThicknessDilationRenderPass();
+        
+        accentedOutlinesMaterial = new Material(accentedOutlinesShader);
+        accentedOutlinePass = new AccentedOutlineRenderPass();
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -60,6 +70,12 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
             thicknessDilationPass.Setup(CurrentThicknessPassData, thicknessDilationMaterial);
             renderer.EnqueuePass(thicknessDilationPass);
         }
+
+        if (UseAccentedOutlines && CurrentAccentOutlinePassData.IsAllPassDataValid())
+        {
+            accentedOutlinePass.Setup(CurrentAccentOutlinePassData, accentedOutlinesMaterial);
+            renderer.EnqueuePass(accentedOutlinePass);
+        }
     }
 
     protected override void Dispose(bool disposing)
@@ -69,6 +85,9 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         
         thicknessDilationPass?.Dispose();
         thicknessDilationPass = null;
+        
+        accentedOutlinePass?.Dispose();
+        accentedOutlinePass = null;
 
         if (Application.isPlaying)
         {
@@ -76,12 +95,14 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
                 Destroy(edgeDetectionMaterial);
             if(thicknessDilationMaterial)
                 Destroy(thicknessDilationMaterial);
+            if(accentedOutlinesMaterial)
+                Destroy(accentedOutlinesMaterial);
         }
     }
 
     private bool AreAllMaterialsValid()
     {
-        return edgeDetectionMaterial != null && thicknessDilationMaterial != null;
+        return edgeDetectionMaterial != null && thicknessDilationMaterial != null && accentedOutlinesMaterial != null;
     }
 
     private Material CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource edgeDetectionMethod)

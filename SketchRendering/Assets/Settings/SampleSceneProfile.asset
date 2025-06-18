@@ -74,3 +74,9 @@ MonoBehaviour:
   ThicknessStrength:
     m_OverrideState: 1
     m_Value: 0
+  DistortionRate:
+    m_OverrideState: 1
+    m_Value: 20
+  DistortionStrength:
+    m_OverrideState: 1
+    m_Value: 0.325

@@ -110,9 +110,11 @@ MonoBehaviour:
     OutlineOffset: 1
     OutlineAngleSensitivity: 1
     OutlineAngleConstraint: 1
+  UseAccentedOutlines: 1
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
   thicknessDilationDetectionShader: {fileID: 4800000, guid: f1af4bd89fe34c09a8c4b658727b17da, type: 3}
+  accentedOutlinesShader: {fileID: 4800000, guid: 7a4f32e09b6d4d4e8e4132f8136510cc, type: 3}
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0
