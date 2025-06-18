@@ -41,18 +41,15 @@ void ApplyStrokeIterated (uint3 id : SV_DispatchThreadID)
     #if defined(IS_FIRST_ITERATION)
     //Any future source stroke textures will only ever have a value in r UNLESS they are a final tone value result image, which will have a full RGB.
     //For consistency, only care about r.
-    uint sourceValue = _OriginalSource[id.xy].r * 255;
+    uint sourceValue = _OriginalSource[id.xy].r * 255.0;
     _ReducedSource[i] = sourceValue;
     #endif
 
-    //TODO: Instead of creating positions in CPU, hash the Iteration into a 0-1 range and interpret it into a lerped 2d position? 
-
-    uint stroke = SampleSDF(_StrokeData[_Iteration], id.xy, _Dimension);
-    uint base = 255.0 - _ReducedSource[i];
-    //SrcAlpha OneMinusSrcAlpha blending
-    uint blend = base + (255.0 - stroke) * (float)(1 - (float)base/255.0);
+    float stroke = saturate(SampleSDF(_StrokeData[_Iteration], id.xy, _Dimension)/255.0);
+    float base = saturate(_ReducedSource[i]/255.0);
+    float blend = stroke * base;
     
-    _IterationOutputs[i] = (255.0 - blend);
+    _IterationOutputs[i] = blend * 255.0;
 }
 
 uint _BufferSize;

@@ -43,9 +43,9 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _CameraNormalsTexture_TexelSize.xy, nUL, nUC, nUR, nCL, nCR, nDL, nDC, nDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float3 normalEdge = SobelNormalHorizontal3x3(ModifiedSobel3X3HorizontalKernel,nUL, nCL, nDL, nUR, nCR, nDR);
+               float3 normalEdge = SobelNormalHorizontal3x3(ModifiedSobel3X3HorizontalKernel, uv, nUL, nCL, nDL, nUR, nCR, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
-               float3 normalEdge = SobelNormal1X3(Sobel1X3Kernel, nCL, uv, nCR);
+               float normalEdge = SobelNormal1X3(Sobel1X3Kernel, nCL, uv, nCR);
                #endif
                
                #endif
@@ -54,7 +54,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                #if defined(SOURCE_DEPTH)
                return float4(depthEdge, 0, 0, 1);
                #elif defined(SOURCE_DEPTH_NORMALS)
-               return float4(depthEdge, normalEdge.rgb);
+               return float4(depthEdge, normalEdge.r, 0.0, 1.0);
                #endif
            }
 
@@ -104,9 +104,9 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _CameraNormalsTexture_TexelSize.xy, nUL, nUC, nUR, nCL, nCR, nDL, nDC, nDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float3 normalEdge = SobelNormalVertical3x3(ModifiedSobel3X3VerticalKernel, nUL, nUC, nUR, nDL, nDC, nDR);
+               float3 normalEdge = SobelNormalVertical3x3(ModifiedSobel3X3VerticalKernel, uv, nUL, nUC, nUR, nDL, nDC, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
-               float3 normalEdge = SobelNormal1X3(Sobel1X3Kernel, dUC, uv, dDC);
+               float normalEdge = SobelNormal1X3(Sobel1X3Kernel, dUC, uv, dDC);
                #endif
                
                #endif
@@ -131,10 +131,8 @@ Shader "Hidden/DepthNormalsSilhouette"
                #endif
                
                #if defined(SOURCE_DEPTH_NORMALS)
-               float gradX = length(float2(horizontalValue.g, normalEdge.r));
-               float gradY = length(float2(horizontalValue.b, normalEdge.g));
-               float gradZ = length(float2(horizontalValue.a, normalEdge.b));
-               float normalGradient = step(_OutlineThreshold, gradX + gradY + gradZ);
+               float gradN = length(float2(horizontalValue.g, normalEdge.r));
+               float normalGradient = step(_OutlineThreshold, gradN);
                #endif
 
                //Set alpha as outline strenght, to easy blending in composite shader

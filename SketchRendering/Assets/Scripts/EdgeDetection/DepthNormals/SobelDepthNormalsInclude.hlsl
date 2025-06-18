@@ -71,7 +71,7 @@
         return (normal * 2) - 1;
     }
 
-    float3 SobelNormalHorizontal3x3(float3x3 kernel, float2 uL, float2 cL, float2 dL, float2 uR, float2 cR, float2 dR)
+    float SobelNormalHorizontal3x3(float3x3 kernel, float2 c, float2 uL, float2 cL, float2 dL, float2 uR, float2 cR, float2 dR)
     {
         float3 vUL = FullRangeNormal(SampleSceneNormals(uL)) * kernel._11;
         float3 vCL = FullRangeNormal(SampleSceneNormals(cL)) * kernel._21;
@@ -79,15 +79,21 @@
         float3 vUR = FullRangeNormal(SampleSceneNormals(uR)) * kernel._13;
         float3 vCR = FullRangeNormal(SampleSceneNormals(cR)) * kernel._23;
         float3 vDR = FullRangeNormal(SampleSceneNormals(dR)) * kernel._33;
+        float3 vC = FullRangeNormal(SampleSceneNormals(c));
 
-        float sX = (vUL.x + vCL.x + vDL.x + vUR.x + vCR.x + vDR.x);
-        float sY = (vUL.y + vCL.y + vDL.y + vUR.y + vCR.y + vDR.y);
-        float sZ = (vUL.z + vCL.z + vDL.z + vUR.z + vCR.z + vDR.z);
+        float dUL = dot(vUL, vC);
+        float dCL = dot(vCL, vC);
+        float dDL = dot(vDL, vC);
+        float dUR = dot(vUR, vC);
+        float dCR = dot(vCR, vC);
+        float dDR = dot(vDR, vC);
+
+        float d = (dUL + dCL + dDL + dUR + dCR + dDR);
         
-        return float3(sX, sY, sZ);
+        return d;
     }
 
-    float3 SobelNormalVertical3x3(float3x3 kernel, float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
+    float SobelNormalVertical3x3(float3x3 kernel, float2 c, float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
     {
         float3 vUL = FullRangeNormal(SampleSceneNormals(uL)) * kernel._11;
         float3 vUC = FullRangeNormal(SampleSceneNormals(uC)) * kernel._12;
@@ -95,25 +101,30 @@
         float3 vDL = FullRangeNormal(SampleSceneNormals(dL)) * kernel._31;
         float3 vDC = FullRangeNormal(SampleSceneNormals(dC)) * kernel._32;
         float3 vDR = FullRangeNormal(SampleSceneNormals(dR)) * kernel._33;
+        float3 vC = FullRangeNormal(SampleSceneNormals(c));
 
-        float sX = (vUL.x + vUC.x + vUR.x + vDL.x + vDC.x + vDR.x);
-        float sY = (vUL.y + vUC.y + vUR.y + vDL.y + vDC.y + vDR.y);
-        float sZ = (vUL.z + vUC.z + vUR.z + vDL.z + vDC.z + vDR.z);
+        float dUL = dot(vUL, vC);
+        float dUC = dot(vUC, vC);
+        float dUR = dot(vUR, vC);
+        float dDL = dot(vDL, vC);
+        float dDC = dot(vDC, vC);
+        float dDR = dot(vDR, vC);
+
+        float d = dUL + dUC + dUR + dDL + dDC + dDR;
         
-        return float3(sX, sY, sZ);
+        return d;
     }
 
     float3 SobelNormal1X3(float3 kernel, float2 uv0, float2 uv1, float2 uv2)
     {
         float3 v0 = FullRangeNormal(SampleSceneNormals(uv0)) * kernel.r;
-        float3 v1 = FullRangeNormal(SampleSceneNormals(uv1)) * kernel.g;
+        float3 v1 = FullRangeNormal(SampleSceneNormals(uv1));
         float3 v2 = FullRangeNormal(SampleSceneNormals(uv2)) * kernel.b;
 
-        float sX = (v0.x + v1.x + v2.x);
-        float sY = (v0.y + v1.y + v2.y);
-        float sZ = (v0.z + v1.z + v2.z);
+        float d0 = dot(v0, v1);
+        float d1 = dot(v2, v1);
 
-        return float3(sX, sY, sZ);
+        return d0 + d1;
     }
 
 #endif

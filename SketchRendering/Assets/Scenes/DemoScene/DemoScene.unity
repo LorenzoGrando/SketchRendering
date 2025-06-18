@@ -1670,7 +1670,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050983138}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -1723,8 +1723,8 @@ MonoBehaviour:
   TAMGeneratorShader: {fileID: 7200000, guid: 5fa007b2afa8c484ea868c8714b8ed75, type: 3}
   TAMShader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
   Resolution: 2
-  IterationsPerStroke: 100
-  TargetFillRate: 0.75
+  IterationsPerStroke: 1
+  TargetFillRate: 1
   StrokeDataAsset: {fileID: 11400000, guid: 48baf885bc869674daecb64136ef3b29, type: 2}
   TAMAsset: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
   PackTAMTextures: 1
@@ -2908,11 +2908,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1963856602195702184, guid: 1681bdbc141c7374e8f8b44bb2933631, type: 3}
       propertyPath: m_text
-      value: "Est\xE1 interface permite a customiza\xE7\xE3o do efeito de p\xF3s-processamento.\\n
-        \nUtilize das setas para navegar para diferentes configura\xE7\xF5es de passes
-        do sistema.\\n\nAperte ESPA\xC7O para esconder ou mostrar esta interface,
-        para permitir a visualiza\xE7\xE3o da cena completa e a movimenta\xE7\xE3o
-        pelo cen\xE1rio."
+      value: "Esta interface permite a customiza\xE7\xE3o do efeito de p\xF3s-processamento.\\n
+        \nUtilize das setas abaixo para navegar pelas diferentes configura\xE7\xF5es
+        de passes do sistema.\\n\nAperte ESPA\xC7O para esconder ou mostrar esta
+        interface, para permitir a visualiza\xE7\xE3o da cena completa e a movimenta\xE7\xE3o
+        pelo cen\xE1rio com WASD."
       objectReference: {fileID: 0}
     - target: {fileID: 1963856602195702184, guid: 1681bdbc141c7374e8f8b44bb2933631, type: 3}
       propertyPath: m_fontSize
