@@ -8,8 +8,8 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
     public EdgeDetectionGlobalData.EdgeDetectionMethod Method;
     public EdgeDetectionGlobalData.EdgeDetectionSource Source;
     public float OutlineThreshold;
-    [Range(0f, 1f)]
-    public float OutlineOffset;
+    [Range(0, 3)]
+    public int OutlineOffset;
     [Range(0,1)]
     public float OutlineAngleSensitivity;
     [Range(0,1)]
@@ -25,7 +25,7 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
         this.OutlineAngleConstraint = 1;
     }
 
-    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, float outlineThreshold, float outlineOffset, float outlineAngleSensitivity, float outlineAngleConstraint)
+    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, float outlineThreshold, int outlineOffset, float outlineAngleSensitivity, float outlineAngleConstraint)
     {
         this.Method = method;
         this.Source = source;

@@ -821,10 +821,19 @@ MonoBehaviour:
   Threshold:
     m_OverrideState: 1
     m_Value: 0
+  Offset:
+    m_OverrideState: 1
+    m_Value: 0
   AngleSensitivity:
     m_OverrideState: 1
     m_Value: 0
   AngleConstraint:
+    m_OverrideState: 1
+    m_Value: 0
+  ThicknessRange:
+    m_OverrideState: 1
+    m_Value: 0
+  ThicknessStrength:
     m_OverrideState: 1
     m_Value: 0
 --- !u!114 &3959858460715838825

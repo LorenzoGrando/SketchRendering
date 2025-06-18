@@ -26,9 +26,6 @@ Shader "Hidden/DepthNormalsSilhouette"
            {
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 uv = input.texcoord;
-
-               //scale offset through compile time max ranges
-               _OutlineOffset = lerp(1.0, 3.0, _OutlineOffset);
                
                //DepthSamples
                //UV positions for samples
@@ -36,7 +33,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraDepthTexture_TexelSize.xy, dUL, dUC, dUR, dCL, dCR, dDL, dDC, dDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float depthEdge = SobelDepthHorizontal3X3(ModifiedSobel3X3HorizontalKernel,dUL, dCL, dDL, dUR, dCR, dDR);
+               float depthEdge = SobelDepthHorizontal3X3(BaseSobel3X3VerticalKernel,dUL, dCL, dDL, dUR, dCR, dDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float depthEdge = SobelDepth1X3(Sobel1X3Kernel, dCL, uv, dCR);
                #endif
@@ -48,7 +45,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraNormalsTexture_TexelSize.xy, nUL, nUC, nUR, nCL, nCR, nDL, nDC, nDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float normalEdge = SobelNormalHorizontal3x3(ModifiedSobel3X3HorizontalKernel, uv, nUL, nCL, nDL, nUR, nCR, nDR);
+               float normalEdge = SobelNormalHorizontal3x3(BaseSobel3X3VerticalKernel, uv, nUL, nCL, nDL, nUR, nCR, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float normalEdge = SobelNormal1X3(Sobel1X3Kernel, nCL, uv, nCR);
                #endif
@@ -57,9 +54,9 @@ Shader "Hidden/DepthNormalsSilhouette"
 
                //Store for use in vertical pass
                #if defined(SOURCE_DEPTH)
-               return float4(depthEdge, 0, 0, 1);
+               return float4(abs(depthEdge), 0, 0, 1);
                #elif defined(SOURCE_DEPTH_NORMALS)
-               return float4(depthEdge, normalEdge, 0.0, 1.0);
+               return float4(abs(depthEdge), normalEdge, 0.0, 1.0);
                #endif
            }
 
@@ -82,7 +79,7 @@ Shader "Hidden/DepthNormalsSilhouette"
            #pragma multi_compile_local SOURCE_DEPTH SOURCE_DEPTH_NORMALS
            #pragma multi_compile_local SOBEL_KERNEL_3X3 SOBEL_KERNEL_1X3
 
-           float _OutlineOffset;
+           int _OutlineOffset;
            float _OutlineThreshold;
            float _OutlineShallowThresholdSensitivity;
            float _OutlineShallowThresholdStrength;
@@ -92,16 +89,13 @@ Shader "Hidden/DepthNormalsSilhouette"
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 uv = input.texcoord;
 
-               //scale offset through compile time max ranges
-               _OutlineOffset = lerp(1.0, 3.0, _OutlineOffset);
-
                //DepthSamples
                //UV positions for samples
                float2 dUL, dUC, dUR, dCL, dCR, dDL, dDC, dDR;
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraDepthTexture_TexelSize.xy, dUL, dUC, dUR, dCL, dCR, dDL, dDC, dDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float depthEdge = SobelDepthVertical3X3(ModifiedSobel3X3VerticalKernel,dUL, dUC, dUR, dDL, dDC, dDR);
+               float depthEdge = SobelDepthVertical3X3(BaseSobel3X3VerticalKernel,dUL, dUC, dUR, dDL, dDC, dDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float depthEdge = SobelDepth1X3(Sobel1X3Kernel, dUC, uv, dDC);
                #endif
@@ -113,7 +107,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraNormalsTexture_TexelSize.xy, nUL, nUC, nUR, nCL, nCR, nDL, nDC, nDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float3 normalEdge = SobelNormalVertical3x3(ModifiedSobel3X3VerticalKernel, uv, nUL, nUC, nUR, nDL, nDC, nDR);
+               float3 normalEdge = SobelNormalVertical3x3(BaseSobel3X3VerticalKernel, uv, nUL, nUC, nUR, nDL, nDC, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float normalEdge = SobelNormal1X3(Sobel1X3Kernel, dUC, uv, dDC);
                #endif
@@ -122,7 +116,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                
                
                //Sample horizontal pass (passed as blit texture) and get filter results in RG (depth, normal)
-               float4 horizontalValue = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_LinearClamp, uv, _BlitMipLevel);
+               float4 horizontalValue = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel);
                //Get gradient of each image, and threshold for silhouette)
                //If normals texture is available, modify threshold depending on viewing angle to avoid thick edges in very shallow angles
                //Specifically, if view vector is almost perpendicular to surface normal, make the threshold higher.
@@ -135,12 +129,12 @@ Shader "Hidden/DepthNormalsSilhouette"
                float3 viewDir = -normalize(float3((uv * 2 - 1)/perspectiveProj, -1));
                
                half isShallow = step(1 - _OutlineShallowThresholdSensitivity, 1 - dot(viewDir, surfaceNormal));
-               float threshold = _OutlineThreshold + isShallow * (_OutlineThreshold * _OutlineShallowThresholdStrength);
+               float threshold = _OutlineThreshold + isShallow * (_OutlineThreshold * 10.0 * _OutlineShallowThresholdStrength);
                float depthGradient = step(threshold, length(float2(horizontalValue.r, depthEdge)));
                #endif
                
                #if defined(SOURCE_DEPTH_NORMALS)
-               float gradN = length(float2(horizontalValue.g, normalEdge.r));
+               float gradN = length(float2(horizontalValue.g, normalEdge.r)/2.0);
                float normalGradient = step(_OutlineThreshold, gradN);
                #endif
 

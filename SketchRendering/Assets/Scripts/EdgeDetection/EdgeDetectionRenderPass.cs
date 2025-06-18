@@ -30,7 +30,7 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
 
     public virtual void ConfigureMaterial()
     {
-        edgeDetectionMaterial.SetFloat(outlineOffsetShaderID, passData.OutlineOffset);
+        edgeDetectionMaterial.SetInteger(outlineOffsetShaderID, passData.OutlineOffset);
         edgeDetectionMaterial.SetFloat(outlineThresholdShaderID, passData.OutlineThreshold);
         edgeDetectionMaterial.SetFloat(outlineAngleSensitivityShaderID, passData.OutlineAngleSensitivity);
         edgeDetectionMaterial.SetFloat(outlineAngleConstraintShaderID, passData.OutlineAngleConstraint);

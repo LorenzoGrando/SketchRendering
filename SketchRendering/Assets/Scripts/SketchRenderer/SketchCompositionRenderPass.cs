@@ -88,7 +88,9 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         if (resourceData.isActiveTargetBackBuffer)
             return;
         
-        var sketchData = frameData.GetOrCreate<SketchRendererContext>();
+        var sketchData = frameData.Get<SketchRendererContext>();
+        if(sketchData == null)
+            return;
         
         var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
         dstDesc.name = "FinalSketchColor";

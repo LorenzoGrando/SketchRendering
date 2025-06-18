@@ -42,7 +42,7 @@
         float vCR = LinearEyeDepth(SampleSceneDepth(cR), _ZBufferParams) * kernel._23;
         float vDR = LinearEyeDepth(SampleSceneDepth(dR), _ZBufferParams) * kernel._33;
 
-        return (vUL + vCL + vDL + vUR + vCR + vDR);
+        return (vUL + vCL + vDL + vUR + vCR + vDR)/6.0;
     }
 
     float SobelDepthVertical3X3(float3x3 kernel, float2 uL, float2 uC, float2 uR, float2 dL, float2 dC, float2 dR)
@@ -54,16 +54,16 @@
         float vDC = LinearEyeDepth(SampleSceneDepth(dC), _ZBufferParams) * kernel._32;
         float vDR = LinearEyeDepth(SampleSceneDepth(dR), _ZBufferParams) * kernel._33;
                    
-        return (vUL + vUC + vUR + vDL + vDC + vDR);
+        return (vUL + vUC + vUR + vDL + vDC + vDR)/6.0;
     }
 
     float SobelDepth1X3(float3 kernel, float2 uv0, float2 uv1, float2 uv2)
     {
         float v0 = LinearEyeDepth(SampleSceneDepth(uv0), _ZBufferParams) * kernel.r;
         float v1 = LinearEyeDepth(SampleSceneDepth(uv1), _ZBufferParams) * kernel.g;
-        float v2 = LinearEyeDepth(SampleSceneDepth(uv1), _ZBufferParams) * kernel.b;
+        float v2 = LinearEyeDepth(SampleSceneDepth(uv2), _ZBufferParams) * kernel.b;
 
-        return (v0 + v1 + v2);
+        return (v0 + v1 + v2)/3.0;
     }
 
     float3 FullRangeNormal(float3 normal)
@@ -88,7 +88,7 @@
         float dCR = dot(vCR, vC);
         float dDR = dot(vDR, vC);
 
-        float d = (dUL + dCL + dDL + dUR + dCR + dDR);
+        float d = (dUL + dCL + dDL + dUR + dCR + dDR)/6.0;
         
         return d;
     }
@@ -110,7 +110,7 @@
         float dDC = dot(vDC, vC);
         float dDR = dot(vDR, vC);
 
-        float d = dUL + dUC + dUR + dDL + dDC + dDR;
+        float d = (dUL + dUC + dUR + dDL + dDC + dDR)/6.0;
         
         return d;
     }
@@ -124,7 +124,7 @@
         float d0 = dot(v0, v1);
         float d1 = dot(v2, v1);
 
-        return d0 + d1;
+        return (d0 + d1)/2.0;
     }
 
 #endif

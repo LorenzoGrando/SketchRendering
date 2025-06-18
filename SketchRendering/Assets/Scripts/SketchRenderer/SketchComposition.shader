@@ -37,10 +37,8 @@ Shader "Hidden/SketchComposition"
                #endif
 
                //TODO: Add proper simulation handling of composition, instead of just stacking
-               float outlineAlpha = outline.a;
                outline = 1 - outline;
-
-               luminance *= float4(outline.rgb * outlineAlpha, 1);
+               luminance *= float4(outline.rrr, 1);
                
                return float4(luminance.rgb, 1);
            }

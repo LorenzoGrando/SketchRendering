@@ -8,21 +8,31 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     [Header("Parameters")]
     [Space(5)]
     public EdgeDetectionPassData EdgeDetectionPassData = new EdgeDetectionPassData();
-    private EdgeDetectionPassData CurrentPassData { get { return EdgeDetectionPassData.GetPassDataByVolume(); } }
+    private EdgeDetectionPassData CurrentEdgeDetectionPassData { get { return EdgeDetectionPassData.GetPassDataByVolume(); } }
+    
+    public ThicknessDilationPassData ThicknessPassData = new ThicknessDilationPassData();
+    private ThicknessDilationPassData CurrentThicknessPassData { get { return ThicknessPassData.GetPassDataByVolume(); } }
 
     [SerializeField]
     private Shader sobelEdgeDetectionShader;
     [SerializeField]
     private Shader depthNormalsEdgeDetectionShader;
+
+    [SerializeField] private Shader thicknessDilationDetectionShader;
     
     private Material edgeDetectionMaterial;
+    private Material thicknessDilationMaterial;
     
     private EdgeDetectionRenderPass edgeDetectionPass;
+    private ThicknessDilationRenderPass thicknessDilationPass;
     
     public override void Create()
     {
-        edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentPassData.Source);
-        edgeDetectionPass = CreateEdgeDetectionPass(CurrentPassData.Source);
+        edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
+        edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);
+        
+        thicknessDilationMaterial = new Material(thicknessDilationDetectionShader);
+        thicknessDilationPass = new ThicknessDilationRenderPass();
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -38,28 +48,40 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         
         if(!AreAllMaterialsValid())
             return;
-        
-        if(!CurrentPassData.IsAllPassDataValid())
-            return;
-        edgeDetectionPass.Setup(CurrentPassData, edgeDetectionMaterial);
-        renderer.EnqueuePass(edgeDetectionPass);
+
+        if (CurrentEdgeDetectionPassData.IsAllPassDataValid())
+        {
+            edgeDetectionPass.Setup(CurrentEdgeDetectionPassData, edgeDetectionMaterial);
+            renderer.EnqueuePass(edgeDetectionPass);
+        }
+
+        if (CurrentThicknessPassData.IsAllPassDataValid())
+        {
+            thicknessDilationPass.Setup(CurrentThicknessPassData, thicknessDilationMaterial);
+            renderer.EnqueuePass(thicknessDilationPass);
+        }
     }
 
     protected override void Dispose(bool disposing)
     {
         edgeDetectionPass?.Dispose();
         edgeDetectionPass = null;
+        
+        thicknessDilationPass?.Dispose();
+        thicknessDilationPass = null;
 
         if (Application.isPlaying)
         {
             if (edgeDetectionMaterial)
                 Destroy(edgeDetectionMaterial);
+            if(thicknessDilationMaterial)
+                Destroy(thicknessDilationMaterial);
         }
     }
 
     private bool AreAllMaterialsValid()
     {
-        return edgeDetectionMaterial != null; //&& outlineMaterial != null;
+        return edgeDetectionMaterial != null && thicknessDilationMaterial != null;
     }
 
     private Material CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource edgeDetectionMethod)

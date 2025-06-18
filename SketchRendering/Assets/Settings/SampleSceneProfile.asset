@@ -52,13 +52,13 @@ MonoBehaviour:
   active: 1
   Method:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   Source:
     m_OverrideState: 1
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 3.16
+    m_Value: 0.27
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -67,4 +67,10 @@ MonoBehaviour:
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.179
+  ThicknessRange:
+    m_OverrideState: 1
+    m_Value: 0
+  ThicknessStrength:
+    m_OverrideState: 1
+    m_Value: 0

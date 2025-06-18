@@ -72,13 +72,11 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
         
         var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
         dstDesc.name = "OutlineTexture";
+        dstDesc.format = GraphicsFormat.R8G8B8A8_UNorm;
         dstDesc.clearBuffer = true;
         dstDesc.msaaSamples = MSAASamples.None;
 
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
-        
-        //Ensure A has same precision for ping in sobel
-        dstDesc.format = GraphicsFormat.R8G8B8A8_SRGB;
         TextureHandle ping = renderGraph.CreateTexture(dstDesc);
 
         if (passData.Method == EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_1X3 || passData.Method == EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3)
