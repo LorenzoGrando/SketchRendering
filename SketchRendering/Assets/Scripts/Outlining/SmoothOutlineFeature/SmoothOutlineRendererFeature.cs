@@ -17,7 +17,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     [Space(5)]
     public bool UseAccentedOutlines;
     public AccentedOutlinePassData AccentedOutlinePassData = new AccentedOutlinePassData();
-    private AccentedOutlinePassData CurrentAccentOutlinePassData { get { return AccentedOutlinePassData.GetPassDataByVolume(); } }
+    public AccentedOutlinePassData CurrentAccentOutlinePassData { get { return AccentedOutlinePassData.GetPassDataByVolume(); } }
 
     [SerializeField] private Shader sobelEdgeDetectionShader;
     [SerializeField] private Shader depthNormalsEdgeDetectionShader;

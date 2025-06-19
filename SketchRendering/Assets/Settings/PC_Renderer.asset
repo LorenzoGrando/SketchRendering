@@ -88,7 +88,7 @@ MonoBehaviour:
     ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
     SmoothTransitions: 1
     ToneScales: {x: 6, y: 6}
-    luminanceOffset: -0.59
+    luminanceOffset: 0
   quantizeLuminanceShader: {fileID: 4800000, guid: 99d2e5a16c2b435f9a2a99cafb68a4d2, type: 3}
 --- !u!114 &5934963878110555133
 MonoBehaviour:
@@ -111,6 +111,11 @@ MonoBehaviour:
     OutlineAngleSensitivity: 1
     OutlineAngleConstraint: 1
   UseAccentedOutlines: 1
+  AccentedOutlinePassData:
+    Rate: 20
+    Strength: 1
+    PencilOutlineMask: {fileID: 2800000, guid: 63e54b7cbd38262449edcab1a5c59743, type: 3}
+    MaskScale: {x: 5, y: 5}
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
   thicknessDilationDetectionShader: {fileID: 4800000, guid: f1af4bd89fe34c09a8c4b658727b17da, type: 3}

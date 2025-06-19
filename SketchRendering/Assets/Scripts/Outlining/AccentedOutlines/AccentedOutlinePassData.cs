@@ -2,11 +2,17 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+[System.Serializable]
 public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePassData>
 {
+    [Header("Distortion Settings")]
     public float Rate;
     [Range(0f, 1f)]
     public float Strength;
+
+    [Header("Outline Masking")] 
+    public Texture2D PencilOutlineMask;
+    public Vector2 MaskScale;
     
     public AccentedOutlinePassData()
     {
@@ -16,7 +22,7 @@ public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePass
     
     public bool IsAllPassDataValid()
     {
-        return Strength > 0;
+        return Strength > 0 || PencilOutlineMask != null;
     }
 
     public AccentedOutlinePassData GetPassDataByVolume()
@@ -28,6 +34,8 @@ public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePass
 
         overrideData.Rate = volumeComponent.DistortionRate.overrideState ? volumeComponent.DistortionRate.value : Rate;
         overrideData.Strength = volumeComponent.DistortionStrength.overrideState ? volumeComponent.DistortionStrength.value : Strength;
+        overrideData.PencilOutlineMask = PencilOutlineMask;
+        overrideData.MaskScale = MaskScale;
         
         return overrideData;
     }
