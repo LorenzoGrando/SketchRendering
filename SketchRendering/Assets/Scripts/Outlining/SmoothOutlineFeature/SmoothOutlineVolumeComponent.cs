@@ -16,6 +16,7 @@ public class SmoothOutlineVolumeComponent : VolumeComponent
     public ClampedFloatParameter AngleConstraint = new ClampedFloatParameter(0, 0, 1);
     public ClampedIntParameter ThicknessRange = new ClampedIntParameter(0, 0, 5);
     public ClampedFloatParameter ThicknessStrength = new ClampedFloatParameter(0, 0, 1);
+    public BoolParameter BakeDistortion = new BoolParameter(false);
     public FloatParameter DistortionRate = new FloatParameter(20f);
     public ClampedFloatParameter DistortionStrength = new ClampedFloatParameter(0, 0, 1);
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
@@ -10,15 +11,20 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
     
     private Material accentedMaterial;
     private AccentedOutlinePassData passData;
-
-    protected readonly int distortionRateShaderID = Shader.PropertyToID("_DistortionRate");
-    protected readonly int distortionStrengthShaderID = Shader.PropertyToID("_DistortionStrength");
-    protected readonly int outlineMaskShaderID = Shader.PropertyToID("_OutlineMaskTex");
     
-    protected readonly string DISTORT_OUTLINE_KEYWORD = "DISTORT_OUTLINES";
-    protected readonly string MASK_OUTLINE_KEYWORD = "MASK_OUTLINES";
+    private RTHandle bakedDistortionTexture;
+
+    protected static readonly int bakedDistortionTexShaderID = Shader.PropertyToID("_BakedUVDistortionTex");
+    protected static readonly int distortionRateShaderID = Shader.PropertyToID("_DistortionRate");
+    protected static readonly int distortionStrengthShaderID = Shader.PropertyToID("_DistortionStrength");
+    protected static readonly int outlineMaskShaderID = Shader.PropertyToID("_OutlineMaskTex");
+    
+    protected static readonly string DISTORT_OUTLINE_KEYWORD = "DISTORT_OUTLINES";
+    protected static readonly string BAKE_DISTORT_OUTLINE_KEYWORD = "BAKED_DISTORT_OUTLINES";
+    protected static readonly string MASK_OUTLINE_KEYWORD = "MASK_OUTLINES";
     
     private LocalKeyword DistortionKeyword;
+    private LocalKeyword BakeDistortionKeyword;
     private LocalKeyword MaskKeyword;
 
     public void Setup(AccentedOutlinePassData passData, Material mat)
@@ -28,6 +34,16 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
         
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         requiresIntermediateTexture = false;
+
+        if (this.passData.BakeDistortionDuringRuntime && bakedDistortionTexture == null)
+        {
+            bakedDistortionTexture = RTHandles.Alloc(Vector2.one, GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite: true, name: "_BakedUVDistortionTex");
+        }
+        else if (!this.passData.BakeDistortionDuringRuntime && bakedDistortionTexture != null)
+        {
+            bakedDistortionTexture.Release();
+            bakedDistortionTexture = null;
+        }
         
         ConfigureMaterial();
     }
@@ -35,6 +51,7 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
     public void ConfigureMaterial()
     {
         DistortionKeyword = new LocalKeyword(accentedMaterial.shader, DISTORT_OUTLINE_KEYWORD);
+        BakeDistortionKeyword = new LocalKeyword(accentedMaterial.shader, BAKE_DISTORT_OUTLINE_KEYWORD);
         MaskKeyword = new LocalKeyword(accentedMaterial.shader, MASK_OUTLINE_KEYWORD);
         
         
@@ -44,12 +61,24 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
         accentedMaterial.SetTexture(outlineMaskShaderID, passData.PencilOutlineMask);
         accentedMaterial.SetTextureScale(outlineMaskShaderID, passData.MaskScale);
         
-        accentedMaterial.SetKeyword(DistortionKeyword, passData.Strength > 0);
+        accentedMaterial.SetKeyword(BakeDistortionKeyword, passData.BakeDistortionDuringRuntime);
+        accentedMaterial.SetKeyword(DistortionKeyword, passData.Strength > 0 && !passData.BakeDistortionDuringRuntime);
+        
+        if(bakedDistortionTexture != null)
+            accentedMaterial.SetTexture(bakedDistortionTexShaderID, bakedDistortionTexture);
+
         accentedMaterial.SetKeyword(MaskKeyword, passData.PencilOutlineMask != null);
     }
 
-    public void Dispose() {}
-
+    public void Dispose()
+    {
+        if (bakedDistortionTexture != null)
+        {
+            bakedDistortionTexture.Release();
+            bakedDistortionTexture = null;
+        }
+    }
+    
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
         var resourceData = frameData.Get<UniversalResourceData>();
@@ -61,14 +90,27 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
         if(sketchData == null)
             return;
         
-        var dstDesc = renderGraph.GetTextureDesc(sketchData.OutlinesTexture);
+        TextureDesc dstDesc = renderGraph.GetTextureDesc(sketchData.OutlinesTexture);
         dstDesc.name = "AccentedOutlines";
         dstDesc.clearBuffer = true;
         dstDesc.msaaSamples = MSAASamples.None;
-            
+        
+        if (passData.BakeDistortionDuringRuntime && !sketchData.PrebakedDistortedUVs)
+        {
+            TextureHandle distortedDst = renderGraph.ImportTexture(bakedDistortionTexture);
+            RenderGraphUtils.BlitMaterialParameters distortParams = new RenderGraphUtils.BlitMaterialParameters(sketchData.OutlinesTexture, distortedDst, accentedMaterial, 1);
+            renderGraph.AddBlitPass(distortParams, PassName + "_BakeUVDistortion");
+            sketchData.PrebakedDistortedUVs = true;
+        }
+        else if (!passData.BakeDistortionDuringRuntime && sketchData.PrebakedDistortedUVs)
+        {
+            sketchData.PrebakedDistortedUVs = false;
+        }
+
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
         //This shader has a single pass that handles all behaviours (distortion, outline brightness and texture masking) by compile keywords
-        RenderGraphUtils.BlitMaterialParameters thickenParams = new RenderGraphUtils.BlitMaterialParameters(sketchData.OutlinesTexture, dst, accentedMaterial, 0);
+        RenderGraphUtils.BlitMaterialParameters thickenParams =
+            new RenderGraphUtils.BlitMaterialParameters(sketchData.OutlinesTexture, dst, accentedMaterial, 0);
         renderGraph.AddBlitPass(thickenParams, PassName);
         sketchData.OutlinesTexture = dst;
     }
