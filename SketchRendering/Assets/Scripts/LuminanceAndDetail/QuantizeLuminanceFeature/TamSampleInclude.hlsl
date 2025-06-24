@@ -24,7 +24,7 @@ float3 GetWeightsFromQuantizedLuminance(float luminance, int tones, int offset)
 
 float SingleTAMSample(float luminance, int tones, float2 uv)
 {
-    float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_LinearRepeat, uv, _BlitMipLevel);
+    float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_PointRepeat, uv, _BlitMipLevel);
     float3 toneWeights = GetWeightsFromQuantizedLuminance(luminance, tones, 0);
     toneWeights.xy -= toneWeights.yz;
     float3 col = tam0_2.rgb * toneWeights;
@@ -33,8 +33,8 @@ float SingleTAMSample(float luminance, int tones, float2 uv)
 
 float DoubleTAMSample(float luminance, int tones, float2 uv)
 {
-    float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_LinearRepeat, uv, _BlitMipLevel);
-    float4 tam3_5 = SAMPLE_TEXTURE2D_X_LOD(_Tam3_5, sampler_LinearRepeat, uv, _BlitMipLevel);
+    float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_PointRepeat, uv, _BlitMipLevel);
+    float4 tam3_5 = SAMPLE_TEXTURE2D_X_LOD(_Tam3_5, sampler_PointRepeat, uv, _BlitMipLevel);
     float3 toneWeights1 = GetWeightsFromQuantizedLuminance(luminance, tones, 0);
     float3 toneWeights2 = GetWeightsFromQuantizedLuminance(luminance, tones, 3);
     toneWeights1.xy -= toneWeights1.yz;
@@ -47,9 +47,9 @@ float DoubleTAMSample(float luminance, int tones, float2 uv)
 
 float TripleTAMSample(float luminance, int tones, float2 uv)
 {
-    float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_LinearRepeat, uv, _BlitMipLevel);
-    float4 tam3_5 = SAMPLE_TEXTURE2D_X_LOD(_Tam3_5, sampler_LinearRepeat, uv, _BlitMipLevel);
-    float4 tam6_8 = SAMPLE_TEXTURE2D_X_LOD(_Tam6_8, sampler_LinearRepeat, uv, _BlitMipLevel);
+    float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_PointRepeat, uv, _BlitMipLevel);
+    float4 tam3_5 = SAMPLE_TEXTURE2D_X_LOD(_Tam3_5, sampler_PointRepeat, uv, _BlitMipLevel);
+    float4 tam6_8 = SAMPLE_TEXTURE2D_X_LOD(_Tam6_8, sampler_PointRepeat, uv, _BlitMipLevel);
     float3 toneWeights1 = GetWeightsFromQuantizedLuminance(luminance, tones, 0);
     float3 toneWeights2 = GetWeightsFromQuantizedLuminance(luminance, tones, 3);
     float3 toneWeights3 = GetWeightsFromQuantizedLuminance(luminance, tones, 6);

@@ -115,7 +115,7 @@
         return d;
     }
 
-    float3 SobelNormal1X3(float3 kernel, float2 uv0, float2 uv1, float2 uv2)
+    float SobelNormal1X3(float3 kernel, float2 uv0, float2 uv1, float2 uv2)
     {
         float3 v0 = FullRangeNormal(SampleSceneNormals(uv0)) * kernel.r;
         float3 v1 = FullRangeNormal(SampleSceneNormals(uv1));

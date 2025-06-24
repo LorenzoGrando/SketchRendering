@@ -21,14 +21,17 @@ Shader "Hidden/QuantizeLuminance"
 
            int _NumTones;
            float _LuminanceOffset;
+
+           TEXTURE2D(_CameraUVsTexture);
            
            float4 Frag(Varyings input) : SV_Target0
            {
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-               float2 uv = input.texcoord;
+               float2 screenSpaceUV = input.texcoord;
+               float2 objectUVs = SAMPLE_TEXTURE2D_X_LOD(_CameraUVsTexture, sampler_PointClamp, screenSpaceUV, _BlitMipLevel).xy;
 
                //get pixel luminance: https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
-               float4 col = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_LinearClamp, uv, _BlitMipLevel);
+               float4 col = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, screenSpaceUV, _BlitMipLevel);
                //simple luminance
                //float lum = (col.r * 2 + col.b + + col.g * 3)/6.0;
                //perceived luminance, updated to use dot
@@ -36,7 +39,7 @@ Shader "Hidden/QuantizeLuminance"
                #if defined(QUANTIZE)
                lum = floor(lum * _NumTones)/_NumTones;
                #endif
-               float stroke = SampleTAM(lum, _NumTones, uv);
+               float stroke = SampleTAM(lum, _NumTones, objectUVs);
                
                return float4(stroke.rrr, 1);
            }

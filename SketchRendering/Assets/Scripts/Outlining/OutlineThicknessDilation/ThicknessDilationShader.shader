@@ -24,7 +24,7 @@ Shader "Hidden/ThicknessDilation"
                float2 uv = input.texcoord;
                float4 col = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel);
                float maxOutline = col.r;
-               float expectedStrength = lerp(0.0, _OutlineSize * _BlitTexture_TexelSize, _OutlineStrength);
+               float expectedStrength = lerp(0.0, _OutlineSize * _BlitTexture_TexelSize.x, _OutlineStrength);
                for (int x = -_OutlineSize; x <= _OutlineSize; x++)
                {
                    for (int y = -_OutlineSize; y <= _OutlineSize; y++)

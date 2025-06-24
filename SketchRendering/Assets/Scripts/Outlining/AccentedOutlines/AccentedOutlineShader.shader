@@ -39,7 +39,7 @@ Shader "Hidden/AccentedOutline"
 
                #if defined MASK_OUTLINES
                float2 maskUvs = TRANSFORM_TEX(uv, _OutlineMaskTex);
-               float mask = SAMPLE_TEXTURE2D_X_LOD(_OutlineMaskTex, sampler_OutlineMaskTex, maskUvs, _BlitMipLevel);
+               float mask = SAMPLE_TEXTURE2D_X_LOD(_OutlineMaskTex, sampler_OutlineMaskTex, maskUvs, _BlitMipLevel).r;
                #endif
 
                #if defined DISTORT_OUTLINES

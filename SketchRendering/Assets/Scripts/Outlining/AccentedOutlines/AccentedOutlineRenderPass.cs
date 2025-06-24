@@ -37,7 +37,11 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
 
         if (this.passData.BakeDistortionDuringRuntime && bakedDistortionTexture == null)
         {
-            bakedDistortionTexture = RTHandles.Alloc(Vector2.one, GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite: true, name: "_BakedUVDistortionTex");
+            //Declare with fixed size, since what we really want is to only ever have a single reference image
+            //If a new calculation is declared, disabling the bake property and reenabling it will recreate the texture
+            //TODO: Add native request to have the texture be rebaked
+            Vector2Int dimensions = new Vector2Int(RTHandles.maxWidth, RTHandles.maxHeight);
+            bakedDistortionTexture = RTHandles.Alloc(dimensions.x, dimensions.y, GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite: true, name: "_BakedUVDistortionTex");
         }
         else if (!this.passData.BakeDistortionDuringRuntime && bakedDistortionTexture != null)
         {

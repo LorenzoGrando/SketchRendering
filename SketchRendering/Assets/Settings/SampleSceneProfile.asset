@@ -76,10 +76,10 @@ MonoBehaviour:
     m_Value: 0.589
   BakeDistortion:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   DistortionRate:
     m_OverrideState: 1
-    m_Value: 23
+    m_Value: 30
   DistortionStrength:
     m_OverrideState: 1
-    m_Value: 0.281
+    m_Value: 0.169

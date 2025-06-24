@@ -32,6 +32,10 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     protected LocalKeyword TripleKeyword;
     protected LocalKeyword QuantizeKeyword;
     
+    // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
+    // and z and w controls the offset.
+    static Vector4 scaleBias = new Vector4(1f, 1f, 0f, 0f);
+    
     public void Setup(LuminancePassData passData, Material mat)
     {
         luminanceMat = mat;
@@ -39,6 +43,8 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
         
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         requiresIntermediateTexture = true;
+        
+        ConfigureInput(ScriptableRenderPassInput.Color);
         
         ConfigureMaterial();
     }
@@ -87,24 +93,46 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
         
     }
 
+    private class PassData
+    {
+        public TextureHandle src;
+        public TextureHandle dst;
+        public Material mat;
+    }
+
+    private static void ExecuteLuminance(PassData data, RasterGraphContext context)
+    {
+        Blitter.BlitTexture(context.cmd, data.src, scaleBias, data.mat, 0);
+    }
+
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
-        var resourceData = frameData.Get<UniversalResourceData>();
-        
-        if(resourceData.isActiveTargetBackBuffer)
-            return;
+        using (var builder = renderGraph.AddRasterRenderPass<PassData>(PassName, out var passData))
+        {
+            var resourceData = frameData.Get<UniversalResourceData>();
+            if(resourceData.isActiveTargetBackBuffer)
+                return;
+            
+            builder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
+            
+            var sketchData = frameData.GetOrCreate<SketchRendererContext>();
 
-        var sketchData = frameData.GetOrCreate<SketchRendererContext>();
-        
-        var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-        dstDesc.name = "LuminanceTexture";
-        dstDesc.clearBuffer = true;
-        dstDesc.msaaSamples = MSAASamples.None;
+            var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
+            dstDesc.name = "LuminanceTexture";
+            dstDesc.clearBuffer = true;
+            dstDesc.msaaSamples = MSAASamples.None;
 
-        TextureHandle dst = renderGraph.CreateTexture(dstDesc);
-        
-        RenderGraphUtils.BlitMaterialParameters luminanceParams = new RenderGraphUtils.BlitMaterialParameters(resourceData.activeColorTexture, dst, luminanceMat, 0);
-        renderGraph.AddBlitPass(luminanceParams, PassName);
-        sketchData.LuminanceTexture = dst;
+            TextureHandle dst = renderGraph.CreateTexture(dstDesc);
+            
+            builder.UseTexture(resourceData.activeColorTexture, AccessFlags.ReadWrite);
+            passData.src = resourceData.activeColorTexture;
+            builder.SetRenderAttachment(dst, 0, AccessFlags.ReadWrite);
+            passData.dst = dst;
+
+            passData.mat = luminanceMat;
+
+            builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecuteLuminance(data, context));
+            sketchData.LuminanceTexture = dst;
+        }
     }
 }
