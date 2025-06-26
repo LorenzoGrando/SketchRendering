@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: QuantizeLuminanceVolumeComponent
   m_EditorClassIdentifier: 
   active: 1
+  ProjectionMethod:
+    m_OverrideState: 1
+    m_Value: 1
   SmoothTransitions:
     m_OverrideState: 1
     m_Value: 1
   ToneScales:
     m_OverrideState: 1
-    m_Value: {x: 18, y: 18}
+    m_Value: {x: 80, y: 80}
   LuminanceOffset:
     m_OverrideState: 1
     m_Value: 0
@@ -58,19 +61,19 @@ MonoBehaviour:
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.27
+    m_Value: 0.39
   Offset:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   AngleSensitivity:
     m_OverrideState: 1
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 0.179
+    m_Value: 0.503
   ThicknessRange:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   ThicknessStrength:
     m_OverrideState: 1
     m_Value: 0.589

@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 public class LuminancePassData : ISketchRenderPassData<LuminancePassData>
 {
     public TonalArtMapAsset ActiveTonalMap;
+    public StrokeProjectionMethod ProjectionMethod;
     public bool SmoothTransitions;
     public Vector2 ToneScales = Vector2.one;
     [Range(-1f, 1f)]
@@ -33,7 +34,7 @@ public class LuminancePassData : ISketchRenderPassData<LuminancePassData>
             return this;
         LuminancePassData overrideData = new LuminancePassData();
         
-        
+        overrideData.ProjectionMethod = volumeComponent.ProjectionMethod.overrideState ? volumeComponent.ProjectionMethod.value : ProjectionMethod;
         overrideData.SmoothTransitions = volumeComponent.SmoothTransitions.overrideState
             ? volumeComponent.SmoothTransitions.value : SmoothTransitions;
         overrideData.ToneScales = volumeComponent.ToneScales.overrideState ? volumeComponent.ToneScales.value : ToneScales;

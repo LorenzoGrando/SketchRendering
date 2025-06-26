@@ -87,6 +87,7 @@ MonoBehaviour:
   m_Active: 1
   LuminanceData:
     ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
+    ProjectionMethod: 0
     SmoothTransitions: 1
     ToneScales: {x: 6, y: 6}
     luminanceOffset: 0
@@ -116,8 +117,8 @@ MonoBehaviour:
     BakeDistortionDuringRuntime: 0
     Rate: 20
     Strength: 1
-    PencilOutlineMask: {fileID: 2800000, guid: 63e54b7cbd38262449edcab1a5c59743, type: 3}
-    MaskScale: {x: 10, y: 10}
+    PencilOutlineMask: {fileID: 0}
+    MaskScale: {x: 20, y: 20}
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
   thicknessDilationDetectionShader: {fileID: 4800000, guid: f1af4bd89fe34c09a8c4b658727b17da, type: 3}

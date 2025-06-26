@@ -21,7 +21,6 @@ float3 GetWeightsFromQuantizedLuminance(float luminance, int tones, int offset)
     return saturate(luminance3 - weights);
 }
 
-
 float SingleTAMSample(float luminance, int tones, float2 uv)
 {
     float4 tam0_2 = SAMPLE_TEXTURE2D_X_LOD(_Tam0_2, sampler_PointRepeat, uv, _BlitMipLevel);
@@ -75,6 +74,5 @@ float SampleTAM(float luminance, int tones, float2 uv)
 
     return SingleTAMSample(luminance, tones, uv);
 }
-
 
 #endif

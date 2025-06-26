@@ -12,12 +12,15 @@ Shader "Hidden/QuantizeLuminance"
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
            #include "Assets/Scripts/LuminanceAndDetail/QuantizeLuminanceFeature/TamSampleInclude.hlsl"
+        
            
            #pragma vertex Vert
            #pragma fragment Frag
 
            #pragma multi_compile_local_fragment TAM_SINGLE TAM_DOUBLE TAM_TRIPLE
            #pragma multi_compile_local_fragment _ QUANTIZE
+           #pragma multi_compile_local_fragment UVS_SCREEN_SPACE UVS_OBJECT_SPACE
+           #pragma multi_compile_local_fragment _ CONSTANT_SCREEN_SIZE
 
            int _NumTones;
            float _LuminanceOffset;
@@ -28,7 +31,9 @@ Shader "Hidden/QuantizeLuminance"
            {
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 screenSpaceUV = input.texcoord;
+               #if defined UVS_OBJECT_SPACE
                float2 objectUVs = SAMPLE_TEXTURE2D_X_LOD(_CameraUVsTexture, sampler_PointClamp, screenSpaceUV, _BlitMipLevel).xy;
+               #endif
 
                //get pixel luminance: https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
                float4 col = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, screenSpaceUV, _BlitMipLevel);
@@ -39,7 +44,12 @@ Shader "Hidden/QuantizeLuminance"
                #if defined(QUANTIZE)
                lum = floor(lum * _NumTones)/_NumTones;
                #endif
+
+               #if defined UVS_OBJECT_SPACE
                float stroke = SampleTAM(lum, _NumTones, objectUVs);
+               #else
+               float stroke = SampleTAM(lum, _NumTones, screenSpaceUV);
+               #endif
                
                return float4(stroke.rrr, 1);
            }

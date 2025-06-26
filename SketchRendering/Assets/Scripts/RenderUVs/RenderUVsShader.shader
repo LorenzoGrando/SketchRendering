@@ -50,19 +50,25 @@ Shader "Hidden/RenderUVsShader"
         
         Pass
         {
-            Name "Render Screen UVs"
+            Name "Render Skybox UVs"
             HLSLPROGRAM
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
             #pragma vertex Vert
             #pragma fragment Frag
-
+            
             float4 Frag(Varyings input) : SV_Target0
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 float2 uv = input.texcoord;
-                return float4(uv.rg, 0.0, 1.0);
+                float2 perspectiveProj = float2(unity_CameraProjection._11, unity_CameraProjection._22);
+                float3 viewDir = -normalize(float3((uv * 2 - 1)/perspectiveProj, -1));
+                float3 worldDir = normalize(mul((float3x3)UNITY_MATRIX_I_V, viewDir));
+                //sphere uvs for skybox: https://gamedev.stackexchange.com/questions/114412/how-to-get-uv-coordinates-for-sphere-cylindrical-projection
+                float sU = (atan2(worldDir.z, worldDir.x)/(2*PI)) + 0.5;
+                float sV = 0.5 - asin(worldDir.y)/PI;
+                return float4(sU, sV, 0.0, 1.0);
             }
             ENDHLSL
         }

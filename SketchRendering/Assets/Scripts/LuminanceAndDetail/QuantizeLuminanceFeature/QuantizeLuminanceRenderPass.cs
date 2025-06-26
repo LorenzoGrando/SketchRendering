@@ -15,22 +15,27 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private Material luminanceMat;
     private LuminancePassData passData;
     
-    protected readonly int numTonesShaderID = Shader.PropertyToID("_NumTones");
-    protected readonly int tamFirstShaderID = Shader.PropertyToID("_Tam0_2");
-    protected readonly int tamSecondShaderID = Shader.PropertyToID("_Tam3_5");
-    protected readonly int tamThirdShaderID = Shader.PropertyToID("_Tam6_8");
-    protected readonly int tamScalesShaderID = Shader.PropertyToID("_TamScales");
-    protected readonly int luminanceOffsetShaderID = Shader.PropertyToID("_LuminanceOffset");
+    private readonly int numTonesShaderID = Shader.PropertyToID("_NumTones");
+    private readonly int tamFirstShaderID = Shader.PropertyToID("_Tam0_2");
+    private readonly int tamSecondShaderID = Shader.PropertyToID("_Tam3_5");
+    private readonly int tamThirdShaderID = Shader.PropertyToID("_Tam6_8");
+    private readonly int tamScalesShaderID = Shader.PropertyToID("_TamScales");
+    private readonly int luminanceOffsetShaderID = Shader.PropertyToID("_LuminanceOffset");
 
-    protected readonly string SINGLE_TAM_KEYWORD = "TAM_SINGLE";
-    protected readonly string DOUBLE_TAM_KEYWORD = "TAM_DOUBLE";
-    protected readonly string TRIPLE_TAM_KEYWORD = "TAM_TRIPLE";
-    protected readonly string QUANTIZE_KEYWORD = "QUANTIZE";
+    private readonly string SINGLE_TAM_KEYWORD = "TAM_SINGLE";
+    private readonly string DOUBLE_TAM_KEYWORD = "TAM_DOUBLE";
+    private readonly string TRIPLE_TAM_KEYWORD = "TAM_TRIPLE";
+    private readonly string QUANTIZE_KEYWORD = "QUANTIZE";
+    private readonly string UVS_SCREEN_SPACE_KEYWORD = "UVS_SCREEN_SPACE";
+    private readonly string UVS_OBJECT_SPACE_KEYWORD = "UVS_OBJECT_SPACE";
+    private readonly string SCREEN_SIZE_KEYWORD = "CONSTANT_SCREEN_SIZE";
     
-    protected LocalKeyword SingleKeyword;
-    protected LocalKeyword DoubleKeyword;
-    protected LocalKeyword TripleKeyword;
-    protected LocalKeyword QuantizeKeyword;
+    private LocalKeyword SingleKeyword;
+    private LocalKeyword DoubleKeyword;
+    private LocalKeyword TripleKeyword;
+    private LocalKeyword QuantizeKeyword;
+    private LocalKeyword UVsScreenSpaceKeyword;
+    private LocalKeyword UVsObjectSpaceKeyword;
     
     // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
     // and z and w controls the offset.
@@ -59,6 +64,8 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
         DoubleKeyword = new LocalKeyword(luminanceMat.shader, DOUBLE_TAM_KEYWORD);
         TripleKeyword = new LocalKeyword(luminanceMat.shader, TRIPLE_TAM_KEYWORD);
         QuantizeKeyword = new LocalKeyword(luminanceMat.shader, QUANTIZE_KEYWORD);
+        UVsScreenSpaceKeyword = new LocalKeyword(luminanceMat.shader, UVS_SCREEN_SPACE_KEYWORD);
+        UVsObjectSpaceKeyword = new LocalKeyword(luminanceMat.shader, UVS_OBJECT_SPACE_KEYWORD);
 
         switch (passData.ActiveTonalMap.Tones.Length)
         {
@@ -84,7 +91,18 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
                 luminanceMat.SetTexture(tamThirdShaderID, passData.ActiveTonalMap.Tones[2]);
                 break;
         }
-        
+
+        switch (passData.ProjectionMethod)
+        {
+            case StrokeProjectionMethod.SCREEN_SPACE:
+                luminanceMat.SetKeyword(UVsScreenSpaceKeyword, true);
+                luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
+                break;
+            case StrokeProjectionMethod.OBJECT_SPACE_TEXTURE:
+                luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceKeyword, true);
+                break;
+        }
         luminanceMat.SetKeyword(QuantizeKeyword, !passData.SmoothTransitions);
     }
 
@@ -113,7 +131,8 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
             if(resourceData.isActiveTargetBackBuffer)
                 return;
             
-            builder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
+            if(this.passData.ProjectionMethod == StrokeProjectionMethod.OBJECT_SPACE_TEXTURE)
+                builder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
             
             var sketchData = frameData.GetOrCreate<SketchRendererContext>();
 
