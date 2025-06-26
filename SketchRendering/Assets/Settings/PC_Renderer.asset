@@ -87,7 +87,7 @@ MonoBehaviour:
   m_Active: 1
   LuminanceData:
     ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
-    ProjectionMethod: 0
+    ProjectionMethod: 1
     SmoothTransitions: 1
     ToneScales: {x: 6, y: 6}
     luminanceOffset: 0
@@ -136,6 +136,25 @@ MonoBehaviour:
   m_Name: RenderUVsRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
+  uvsPassData:
+    SkyboxRotation: 133
+    SkyboxRotationMatrix:
+      e00: -0.00000004371139
+      e01: -1
+      e02: 0
+      e03: 0
+      e10: 1
+      e11: -0.00000004371139
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 0
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 0
   renderUVsShader: {fileID: 4800000, guid: 2e94eaa9f37c473cb38caa76f4b7a0ca, type: 3}
 --- !u!114 &7833122117494664109
 MonoBehaviour:

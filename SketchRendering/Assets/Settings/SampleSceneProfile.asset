@@ -21,7 +21,7 @@ MonoBehaviour:
     m_Value: 1
   ToneScales:
     m_OverrideState: 1
-    m_Value: {x: 80, y: 80}
+    m_Value: {x: 10, y: 10}
   LuminanceOffset:
     m_OverrideState: 1
     m_Value: 0

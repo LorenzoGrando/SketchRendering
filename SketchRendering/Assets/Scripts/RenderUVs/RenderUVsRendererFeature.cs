@@ -7,7 +7,9 @@ public class RenderUVsRendererFeature : ScriptableRendererFeature
 {
     [Header("Base Parameters")] 
     [Space(5)] 
-    public RenderUVsPassData uvsPassData;
+    [SerializeField] public RenderUVsPassData uvsPassData = new RenderUVsPassData();
+    private RenderUVsPassData CurrentUVsPassData { get { return uvsPassData.GetPassDataByVolume(); } }
+
     [SerializeField] private Shader renderUVsShader;
     
     private Material renderUVsMaterial;
@@ -33,8 +35,11 @@ public class RenderUVsRendererFeature : ScriptableRendererFeature
         
         if(!AreAllMaterialsValid())
             return;
-
-        renderUVsRenderPass.Setup(uvsPassData, renderUVsMaterial);
+        
+        if(!uvsPassData.IsAllPassDataValid())
+            return;
+        
+        renderUVsRenderPass.Setup(CurrentUVsPassData, renderUVsMaterial);
         renderer.EnqueuePass(renderUVsRenderPass);
     }
 

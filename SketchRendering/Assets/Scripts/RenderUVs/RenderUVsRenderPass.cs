@@ -11,6 +11,11 @@ public class RenderUVsRenderPass : ScriptableRenderPass, ISketchRenderPass<Rende
 
     private RenderUVsPassData passData;
     private Material uvsMaterial;
+
+    private readonly int ROTATION_MATRIX_ID = Shader.PropertyToID("_SkyboxRotationMatrix");
+    private readonly string ROTATE_SKYBOX_ID = "ROTATE_SKYBOX";
+    
+    private LocalKeyword RotateSkyboxKeyword;
     
     // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
     // and z and w controls the offset.
@@ -29,7 +34,15 @@ public class RenderUVsRenderPass : ScriptableRenderPass, ISketchRenderPass<Rende
 
     public void ConfigureMaterial()
     {
+        RotateSkyboxKeyword = new LocalKeyword(uvsMaterial.shader, ROTATE_SKYBOX_ID);
 
+        if (passData.ShouldRotate)
+        {
+            uvsMaterial.SetKeyword(RotateSkyboxKeyword, true);
+            uvsMaterial.SetMatrix(ROTATION_MATRIX_ID, passData.SkyboxRotationMatrix);
+        }
+        else
+            uvsMaterial.SetKeyword(RotateSkyboxKeyword, false);
     }
 
     public void Dispose()
