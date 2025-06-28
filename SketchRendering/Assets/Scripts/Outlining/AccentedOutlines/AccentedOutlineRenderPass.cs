@@ -41,7 +41,7 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
             //If a new calculation is declared, disabling the bake property and reenabling it will recreate the texture
             //TODO: Add native request to have the texture be rebaked
             Vector2Int dimensions = new Vector2Int(RTHandles.maxWidth, RTHandles.maxHeight);
-            bakedDistortionTexture = RTHandles.Alloc(dimensions.x, dimensions.y, GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite: true, name: "_BakedUVDistortionTex");
+            bakedDistortionTexture = RTHandles.Alloc(dimensions.x, dimensions.y, GraphicsFormat.R32G32_SFloat, enableRandomWrite: true, name: "_BakedUVDistortionTex");
         }
         else if (!this.passData.BakeDistortionDuringRuntime && bakedDistortionTexture != null)
         {

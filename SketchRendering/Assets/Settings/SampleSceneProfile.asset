@@ -21,7 +21,10 @@ MonoBehaviour:
     m_Value: 1
   ToneScales:
     m_OverrideState: 1
-    m_Value: {x: 10, y: 10}
+    m_Value: {x: 12, y: 12}
+  SkyboxRotation:
+    m_OverrideState: 1
+    m_Value: 0
   LuminanceOffset:
     m_OverrideState: 1
     m_Value: 0
@@ -61,10 +64,10 @@ MonoBehaviour:
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.39
+    m_Value: 0.22
   Offset:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   AngleSensitivity:
     m_OverrideState: 1
     m_Value: 1
@@ -85,4 +88,4 @@ MonoBehaviour:
     m_Value: 30
   DistortionStrength:
     m_OverrideState: 1
-    m_Value: 0.169
+    m_Value: 0

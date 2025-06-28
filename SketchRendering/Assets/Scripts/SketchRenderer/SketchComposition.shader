@@ -21,6 +21,9 @@ Shader "Hidden/SketchComposition"
 
            Texture2D _OutlineTex;
            Texture2D _LuminanceTex;
+
+           float4 _OutlineColor;
+           float4 _ShadingColor;
            
            float4 Frag(Varyings input) : SV_Target0
            {
@@ -35,12 +38,16 @@ Shader "Hidden/SketchComposition"
                #elif defined(DEBUG_LUMINANCE)
                return float4(luminance.rgb, 1);
                #endif
+               float4 white = float4(1,1,1,1);
 
-               //TODO: Add proper simulation handling of composition, instead of just stacking
-               outline = 1 - outline;
-               luminance *= float4(outline.rrr, 1);
+               float4 outlineShade = outline * _OutlineColor;
+               outline = lerp(white, outlineShade, outline.a * _OutlineColor.a);
+               float4 lumShade = (1 - luminance) * _ShadingColor;
+               luminance = lerp(white, lumShade, (1 - luminance.a) * _ShadingColor.a);
+
+               float3 blend = outline * luminance;
                
-               return float4(luminance.rgb, 1);
+               return float4(blend.rgb, 1);
            }
 
            ENDHLSL

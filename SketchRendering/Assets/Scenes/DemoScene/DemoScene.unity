@@ -1723,9 +1723,9 @@ MonoBehaviour:
   TAMGeneratorShader: {fileID: 7200000, guid: 5fa007b2afa8c484ea868c8714b8ed75, type: 3}
   TAMShader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
   Resolution: 0
-  IterationsPerStroke: 50
+  IterationsPerStroke: 100
   TargetFillRate: 0.75
-  StrokeDataAsset: {fileID: 11400000, guid: 6214bef6ebd61904dbdf35d3995fd9e9, type: 2}
+  StrokeDataAsset: {fileID: 11400000, guid: a74b88f01d652d346907e55b9782a837, type: 2}
   TAMAsset: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
   PackTAMTextures: 1
   OverwriteTexturesOutputPath: Assets/Scenes/DemoScene/Textures

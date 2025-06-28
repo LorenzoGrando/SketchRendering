@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
@@ -138,6 +139,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
 
             var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
             dstDesc.name = "LuminanceTexture";
+            dstDesc.format = GraphicsFormat.R8G8B8A8_UNorm;
             dstDesc.clearBuffer = true;
             dstDesc.msaaSamples = MSAASamples.None;
 

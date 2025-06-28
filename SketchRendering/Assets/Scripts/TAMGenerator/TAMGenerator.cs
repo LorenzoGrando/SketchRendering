@@ -352,10 +352,12 @@ public class TAMGenerator : MonoBehaviour
     public void DisplaySDF()
     {
         CreateOrUpdateTarget();
+        int prevIterations = IterationsPerStroke;
         IterationsPerStroke = 1;
         ConfigureGeneratorData();
         strokeDataBuffers.SetData(new [] {StrokeDataAsset.PreviewDisplay()});
         ExecuteIteratedStrokeKernel();
+        IterationsPerStroke = prevIterations;
     }
     private float ExecuteIteratedStrokeKernel()
     {

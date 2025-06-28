@@ -14,6 +14,8 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     
     protected static readonly int outlinesShaderID = Shader.PropertyToID("_OutlineTex");
     protected static readonly int luminanceShaderID = Shader.PropertyToID("_LuminanceTex");
+    protected static readonly int outlineColorShaderID = Shader.PropertyToID("_OutlineColor");
+    protected static readonly int shadingColorShaderID = Shader.PropertyToID("_ShadingColor");
     
     public static readonly string DEBUG_OUTLINES = "DEBUG_OUTLINES";
     public static readonly string DEBUG_LUMINANCE = "DEBUG_LUMINANCE";
@@ -67,6 +69,9 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
                 mat.EnableKeyword(debugLuminanceKeyword);
                 break;
         }
+        
+        mat.SetColor(outlineColorShaderID, passData.OutlineStrokeColor);
+        mat.SetColor(shadingColorShaderID, passData.ShadingStrokeColor);
     }
 
     public void Dispose()

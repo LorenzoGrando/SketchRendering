@@ -135,7 +135,6 @@ public class TonalArtMapGeneratorVolumeUI : RendererVolumeUIController
         MinHatchingSlider.SetValueWithoutNotify(HatchingStrokeAsset.MinCrossHatchingThreshold);
         MinHatchingText.text = GetFormattedSliderValue(HatchingStrokeAsset.MinCrossHatchingThreshold);
         HatchingStrokeAsset.MaxCrossHatchingThreshold = 1;
-        
         IterationsPerStrokeSlider.SetValueWithoutNotify(TAMGenerator.IterationsPerStroke);
         IterationsPerStrokeText.text = GetFormattedSliderValue(IterationsPerStrokeSlider.value);
         DirectionVariationSlider.SetValueWithoutNotify(currentStrokeAsset.DirectionVariationRange);

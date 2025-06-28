@@ -51,7 +51,7 @@ Shader "Hidden/QuantizeLuminance"
                float stroke = SampleTAM(lum, _NumTones, screenSpaceUV);
                #endif
                
-               return float4(stroke.rrr, 1);
+               return float4(stroke.rrrr);
            }
 
            ENDHLSL

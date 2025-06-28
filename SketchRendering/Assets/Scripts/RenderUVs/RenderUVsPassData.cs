@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [System.Serializable]
 public class RenderUVsPassData : ISketchRenderPassData<RenderUVsPassData>
@@ -24,6 +25,9 @@ public class RenderUVsPassData : ISketchRenderPassData<RenderUVsPassData>
 
     public RenderUVsPassData GetPassDataByVolume()
     {
+        QuantizeLuminanceVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<QuantizeLuminanceVolumeComponent>();
+        if (volumeComponent != null)
+            SkyboxRotation = volumeComponent.SkyboxRotation.overrideState ? Mathf.Lerp(0, 360,volumeComponent.SkyboxRotation.value) : SkyboxRotation;
         if (ShouldRotate)
         {
             SkyboxRotationMatrix = ConstructRotationMatrix(ExpectedRotation);
