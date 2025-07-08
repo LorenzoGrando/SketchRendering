@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   passData:
-    debugMode: 0
+    debugMode: 1
+    OutlineStrokeColor: {r: 0, g: 0, b: 0, a: 1}
+    ShadingStrokeColor: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -44,9 +46,10 @@ MonoBehaviour:
   - {fileID: 7833122117494664109}
   - {fileID: 7023177639391035692}
   - {fileID: 5934963878110555133}
+  - {fileID: 1188875836155123097}
   - {fileID: 5881595255929910442}
   - {fileID: -1607903443327025348}
-  m_RendererFeatureMap: ad6b866f10d7b46c2c815e46da567761fdeb8dcd333a5d52aa345326b99f9f513c7f5d5b5694afe9
+  m_RendererFeatureMap: ad6b866f10d7b46c2c815e46da567761fdeb8dcd333a5d529955122846bc7f10aa345326b99f9f513c7f5d5b5694afe9
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -72,6 +75,35 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &1188875836155123097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85d59e31248b44ac93bfb91aab57250e, type: 3}
+  m_Name: SketchOutlineRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  EdgeDetectionPassData:
+    Method: 1
+    Source: 1
+    OutlineThreshold: 0.179
+    OutlineOffset: 0
+    OutlineAngleSensitivity: 1
+    OutlineAngleConstraint: 0.679
+    OutlineNormalSensitivity: 1
+    OutputType: 1
+  SketchStrokesPassData:
+    OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
+    PreventDownscale: 1
+    StrokeThreshold: 0.057
+  sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
+  depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
+  sketchStrokesComputeShader: {fileID: 7200000, guid: 1e9d703e3298464c9b8b9bc3a35d61ae, type: 3}
 --- !u!114 &5881595255929910442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,19 +136,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d21521743bc98459d8d263ffa1defd, type: 3}
   m_Name: SmoothOutline
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   EdgeDetectionPassData:
     Method: 1
     Source: 1
-    OutlineThreshold: 1
+    OutlineThreshold: 0.525
     OutlineOffset: 1
     OutlineAngleSensitivity: 1
     OutlineAngleConstraint: 1
+    OutlineNormalSensitivity: 0.478
+    OutputType: 0
   UseAccentedOutlines: 1
   AccentedOutlinePassData:
-    BakeDistortionDuringRuntime: 0
+    BakeDistortionDuringRuntime: 1
     Rate: 20
-    Strength: 0
+    Strength: 0.267
     PencilOutlineMask: {fileID: 0}
     MaskScale: {x: 10, y: 10}
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
@@ -137,7 +171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   uvsPassData:
-    SkyboxRotation: 133
+    SkyboxRotation: 0
     SkyboxRotationMatrix:
       e00: -0.00000004371139
       e01: -1

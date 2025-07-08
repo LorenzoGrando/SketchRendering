@@ -57,7 +57,7 @@ Shader "Hidden/AccentedOutline"
                col *= 1 - mask;
                #endif
                
-               return float4(col.rgb, 1.0);
+               return float4(col.rgb, max(col.r, max(col.g, col.b)));
            }
 
            ENDHLSL

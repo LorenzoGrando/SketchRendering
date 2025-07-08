@@ -22,11 +22,15 @@ float2 GetOriginCoordinate(float2 coords, float dimension)
     return float2((coords.x % 1) * (float)dimension, (coords.y % 1) * (float)dimension);
 }
 
+float2 GetOriginCoordinate(float2 coords, float2 dimensions)
+{
+    return float2((coords.x % 1) * (float)dimensions.x, (coords.y % 1) * (float)dimensions.y);
+}
+
 float GetInterpolatedFloatValue(float data, float dimension, float rate)
 {
     return data * (float)dimension/rate;
 }
-
 
 uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     float2 origin = GetOriginCoordinate(data.coords.xy, dimension);
@@ -39,7 +43,8 @@ uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     float minDist = dimension;
     float interpolation = 0;
     [unroll(3)]
-    for(int offsetX = -1; offsetX <= 1; offsetX++) {
+    for(int offsetX = -1; offsetX <= 1; offsetX++)
+    {
         [unroll(3)]
         for(int offsetY = -1; offsetY <= 1; offsetY++) {
             float2 offset = float2(offsetX * dimension, offsetY * dimension);
@@ -59,12 +64,124 @@ uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
             }
         }
     }
+    //TODO: To alter the starting position of the curve, pass interpolation through another curve function to alter where 0 and where 1 are in relation to t
+        
     float minThickness = lerp(0, thickness, data.thicknessFalloffConstraint);
     //attenuate falloff if length is too short
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * interpolation));
     float sample = step(fallOff, minDist);
     float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * interpolation);
+    sample = (1 - sample) * expectedPressure;
+    
+    return (1 - sample) * 255;
+}
+
+uint SampleBaseSDFClamp(StrokeData data, float2 pointID, float dimension)
+{
+    float2 origin = GetOriginCoordinate(data.coords.xy, dimension);
+    float thickness = GetInterpolatedFloatValue(data.thickness, dimension, 8.0);
+    float length = GetInterpolatedFloatValue(data.length, dimension, 2.0);
+    
+    float2 endPoint = origin + normalize(data.direction).xy * length;
+    float2 v = endPoint - origin;
+    float2 u = pointID - origin;
+    
+    float t = saturate(dot(v, u)/dot(v, v));
+    float2 closestPoint = origin + t * v;
+    float2 dir = pointID - closestPoint;
+    float minDist = sqrt(dir.x * dir.x + dir.y * dir.y);
+    //TODO: To alter the starting position of the curve, pass interpolation through another curve function to alter where 0 and where 1 are in relation to t
+        
+    float minThickness = lerp(0, thickness, data.thicknessFalloffConstraint);
+    //attenuate falloff if length is too short
+    float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
+    float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
+    float sample = step(fallOff, minDist);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    sample = (1 - sample) * expectedPressure;
+    
+    return (1 - sample) * 255;
+}
+
+uint SampleBaseSDFClamp(StrokeData data, float2 pointID, float2 dimensions)
+{
+    float largestDimension = max(dimensions.x, dimensions.y);
+    float2 origin = GetOriginCoordinate(data.coords.xy, dimensions);
+    float thickness = GetInterpolatedFloatValue(data.thickness, largestDimension, 8.0);
+    float length = GetInterpolatedFloatValue(data.length, largestDimension, 2.0);
+    
+    float2 endPoint = origin + normalize(data.direction).xy * length;
+    float2 v = endPoint - origin;
+    float2 u = pointID - origin;
+    
+    float t = saturate(dot(v, u)/dot(v, v));
+    float2 closestPoint = origin + t * v;
+    float2 dir = pointID - closestPoint;
+    float minDist = sqrt(dir.x * dir.x + dir.y * dir.y);
+    //TODO: To alter the starting position of the curve, pass interpolation through another curve function to alter where 0 and where 1 are in relation to t
+        
+    float minThickness = lerp(0, thickness, data.thicknessFalloffConstraint);
+    //attenuate falloff if length is too short
+    float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
+    float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
+    float sample = step(fallOff, minDist);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    sample = (1 - sample) * expectedPressure;
+    
+    return (1 - sample) * 255;
+}
+
+uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float dimension, float paramRange)
+{
+    float2 origin = GetOriginCoordinate(data.coords.xy, dimension);
+    float thickness = GetInterpolatedFloatValue(data.thickness, dimension, 8.0 * paramRange);
+    float length = GetInterpolatedFloatValue(data.length, dimension, 2.0 * paramRange);
+    
+    float2 endPoint = origin + normalize(data.direction).xy * length;
+    float2 v = endPoint - origin;
+    float2 u = pointID - origin;
+    
+    float t = saturate(dot(v, u)/dot(v, v));
+    float2 closestPoint = origin + t * v;
+    float2 dir = pointID - closestPoint;
+    float minDist = sqrt(dir.x * dir.x + dir.y * dir.y);
+    //TODO: To alter the starting position of the curve, pass interpolation through another curve function to alter where 0 and where 1 are in relation to t
+        
+    float minThickness = lerp(0, thickness, data.thicknessFalloffConstraint);
+    //attenuate falloff if length is too short
+    float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
+    float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
+    float sample = step(fallOff, minDist);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    sample = (1 - sample) * expectedPressure;
+    
+    return (1 - sample) * 255;
+}
+
+uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float2 dimensions, float paramRange)
+{
+    float largestDimension = max(dimensions.x, dimensions.y);
+    float2 origin = GetOriginCoordinate(data.coords.xy, dimensions);
+    float thickness = GetInterpolatedFloatValue(data.thickness, largestDimension, 8.0 * paramRange);
+    float length = GetInterpolatedFloatValue(data.length, largestDimension, 2.0 * paramRange);
+    
+    float2 endPoint = origin + normalize(data.direction).xy * length;
+    float2 v = endPoint - origin;
+    float2 u = pointID - origin;
+    
+    float t = saturate(dot(v, u)/dot(v, v));
+    float2 closestPoint = origin + t * v;
+    float2 dir = pointID - closestPoint;
+    float minDist = sqrt(dir.x * dir.x + dir.y * dir.y);
+    //TODO: To alter the starting position of the curve, pass interpolation through another curve function to alter where 0 and where 1 are in relation to t
+        
+    float minThickness = lerp(0, thickness, data.thicknessFalloffConstraint);
+    //attenuate falloff if length is too short
+    float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
+    float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
+    float sample = step(fallOff, minDist);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
     sample = (1 - sample) * expectedPressure;
     
     return (1 - sample) * 255;

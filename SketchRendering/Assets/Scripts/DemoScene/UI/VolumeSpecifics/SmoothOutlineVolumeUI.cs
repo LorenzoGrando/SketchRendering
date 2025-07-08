@@ -13,11 +13,17 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
     [SerializeField] private TMP_Dropdown MethodDropdown;
     [SerializeField] private Slider ThresholdSlider;
     [SerializeField] private TextMeshProUGUI ThresholdText;
+    [SerializeField] private Slider OffsetSlider;
+    [SerializeField] private TextMeshProUGUI OffsetText;
     [SerializeField] private GameObject NormalsRequired;
     [SerializeField] private Slider SensitivitySlider;
     [SerializeField] private TextMeshProUGUI SensitivityText;
     [SerializeField] private Slider ConstraintSlider;
     [SerializeField] private TextMeshProUGUI ConstraintText;
+    [SerializeField] private Slider DilationRangeSlider;
+    [SerializeField] private TextMeshProUGUI DilationRangeText;
+    [SerializeField] private Slider DilationStrengthSlider;
+    [SerializeField] private TextMeshProUGUI DilationStrengthText;
     
     private SmoothOutlineVolumeComponent volume;
 
@@ -51,10 +57,16 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
         
         ThresholdSlider.SetValueWithoutNotify(GetLerpedValue(volume.Threshold));
         ThresholdText.text = GetFormattedSliderValue(volume.Threshold);
+        OffsetSlider.SetValueWithoutNotify(GetLerpedValue(volume.Offset));
+        OffsetText.text = GetFormattedSliderValue(volume.Offset);
         SensitivitySlider.SetValueWithoutNotify(GetLerpedValue(volume.AngleSensitivity));
         SensitivityText.text = GetFormattedSliderValue(volume.AngleSensitivity);
         ConstraintSlider.SetValueWithoutNotify(GetLerpedValue(volume.AngleConstraint));
         ConstraintText.text = GetFormattedSliderValue(volume.AngleConstraint);
+        DilationRangeSlider.SetValueWithoutNotify(GetLerpedValue(volume.ThicknessRange));
+        DilationRangeText.text = GetFormattedSliderValue(volume.ThicknessRange);
+        DilationStrengthSlider.SetValueWithoutNotify(GetLerpedValue(volume.ThicknessStrength));
+        DilationStrengthText.text = GetFormattedSliderValue(volume.ThicknessStrength);
         
         DisplayNormalsRequired();
     }
@@ -80,6 +92,12 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
         ThresholdText.text = GetFormattedSliderValue(value);
     }
 
+    public void OffsetSliderChanged(float value)
+    {
+        volume.Offset.Override((int)value);
+        OffsetText.text = GetFormattedSliderValue((int)value);
+    }
+
     public void SensitivitySliderChanged(float value)
     {
         float interpolatedValue = Mathf.Lerp(volume.AngleSensitivity.min, volume.AngleSensitivity.max, value);
@@ -92,6 +110,18 @@ public class SmoothOutlineVolumeUI : RendererVolumeUIController
         float interpolatedValue = Mathf.Lerp(volume.AngleConstraint.min, volume.AngleConstraint.max, value);
         volume.AngleConstraint.Override(interpolatedValue);
         ConstraintText.text = GetFormattedSliderValue(volume.AngleConstraint);
+    }
+
+    public void DilationRangeSliderChanged(float value)
+    {
+        volume.ThicknessRange.Override((int)value);
+        DilationRangeText.text = GetFormattedSliderValue((int)value);
+    }
+
+    public void DilationStrengthSliderChanged(float value)
+    {
+        volume.ThicknessStrength.Override(value);
+        DilationStrengthText.text = GetFormattedSliderValue(value);
     }
 
     private void DisplayNormalsRequired()

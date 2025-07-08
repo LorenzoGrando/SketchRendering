@@ -1,0 +1,170 @@
+#pragma kernel ComputeAverageStroke8
+#pragma kernel ComputeAverageStroke4
+#pragma kernel ApplyStrokeSDFs
+
+#include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
+
+#define PI 3.14159265358979323846;
+
+RWStructuredBuffer<float4> _GradientVectors;
+RWTexture2D<float4> _OriginalSource;
+uint _GroupsX;
+uint _GroupsY;
+uint _TextureWidth;
+uint _TextureHeight;
+float _ThresholdForStroke;
+
+groupshared float4 gradients8[8*8];
+groupshared float localIsEdge8[8*8];
+[numthreads(8, 8, 1)]
+void ComputeAverageStroke8 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    uint gFlatIndex = idG.y * 8 + idG.x;
+    uint groupFlatIndex = idGs.y * _GroupsX + idGs.x;
+
+    float angle = _OriginalSource[id.xy].g;
+    angle = angle * 2.0 * PI - PI;
+    
+    float isEdge = _OriginalSource[id.xy].r;
+    float2 position = float2(id.x/(float)_TextureWidth, id.y/(float)_TextureHeight);
+    float2 direction = float2(cos(angle), sin(angle));
+    float4 gradient = float4(position.xy, direction.xy);
+    gradients8[gFlatIndex] = gradient;
+    localIsEdge8[gFlatIndex] = step(0.5, isEdge);
+    GroupMemoryBarrierWithGroupSync();
+    
+    if (idG.x == 0 && idG.y == 0)
+    {
+        float2 averagePosition = float2(0, 0);
+        float2 averageDirection = float2(0, 0);
+        int summed = 0;
+        [unroll(8*8)]
+        for (int i = 0; i < 8*8; i++)
+        {
+            if (localIsEdge8[i] > 0)
+            {
+                averagePosition += gradients8[i].rg;
+                averageDirection += gradients8[i].ba;
+                summed++;
+            }
+        }
+        float isAverageStroke = step(_ThresholdForStroke, summed/(float)(8.0*8.0));
+        if(isAverageStroke)
+        {
+            averagePosition /= (float)summed;
+            averageDirection /= (float)summed;
+            //averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+        }
+        gradients8[0] = float4(averagePosition, averageDirection * isAverageStroke);
+        _GradientVectors[groupFlatIndex] = gradients8[0];
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    //Debugging
+    float4 grad = gradients8[0];
+    _OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
+    //float x = float(idG.x)/8.0;
+    //float y = float(idG.y)/8.0;
+    //_OriginalSource[id.xy] = float4(x, y, 0.0, 1.0);
+}
+
+groupshared float4 gradients4[4*4];
+groupshared float localIsEdge4[4*4];
+[numthreads(4, 4, 1)]
+void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    uint gFlatIndex = idG.y * 4 + idG.x;
+    uint groupFlatIndex = idGs.y * _GroupsX + idGs.x;
+
+    float angle = _OriginalSource[id.xy].g;
+    angle = angle * 2.0 * PI - PI;
+    
+    float isEdge = _OriginalSource[id.xy].r;
+    float2 position = float2(id.x/(float)_TextureWidth, id.y/(float)_TextureHeight);
+    float2 direction = float2(cos(angle), sin(angle));
+    float4 gradient = float4(position.xy, direction.xy);
+    gradients4[gFlatIndex] = gradient;
+    localIsEdge4[gFlatIndex] = step(0.5, isEdge);
+    GroupMemoryBarrierWithGroupSync();
+    
+    if (idG.x == 0 && idG.y == 0)
+    {
+        float2 averagePosition = float2(0, 0);
+        float2 averageDirection = float2(0, 0);
+        int summed = 0;
+        [unroll(4*4)]
+        for (int i = 0; i < 4*4; i++)
+        {
+            if (localIsEdge4[i] > 0)
+            {
+                averagePosition += gradients4[i].rg;
+                averageDirection += gradients4[i].ba;
+                summed++;
+            }
+        }
+        float isAverageStroke = step(_ThresholdForStroke, summed/(float)(4.0*4.0));
+        if(isAverageStroke)
+        {
+            averagePosition /= (float)summed;
+            averageDirection /= (float)summed;
+            //averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+        }
+        gradients4[0] = float4(averagePosition, averageDirection * isAverageStroke);
+        _GradientVectors[groupFlatIndex] = gradients4[0];
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    //Debugging
+    //float4 grad = gradients4[0];
+    //_OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
+
+    //float x = float(idG.x)/4.0;
+    //float y = float(idG.y)/4.0;
+    //_OriginalSource[id.xy] = float4(x, y, 0.0, 1.0);
+}
+
+RWStructuredBuffer<StrokeData> OutlineStrokeData;
+groupshared StrokeData groupData;
+groupshared float isEdge;
+[numthreads(8,8,1)]
+void ApplyStrokeSDFs(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    float value = 1;
+    float widthScalar = (float)_TextureWidth/8.0;
+    float heightScalar = (float)_TextureHeight/8.0;
+    float scalar = min(widthScalar, heightScalar) * 0.5;
+    StrokeData data = OutlineStrokeData[0];
+    [unroll(3)]
+    for (int x = -1; x < 2; x++)
+    {
+        [unroll(3)]
+        for (int  y = -1; y < 2; y++)
+        {
+            uint xClamp = clamp(idGs.x + (uint)x, 0, _GroupsX - 1);
+            uint yClamp = clamp(idGs.y + (uint)y, 0, _GroupsY - 1);
+            uint groupFlatIndex = yClamp * _GroupsX + xClamp;
+    
+            if(idG.x == 0 && idG.y == 0)
+            {
+                float4 edgeData = _GradientVectors[groupFlatIndex];
+                isEdge = step(0.5, length(float2(edgeData.ba)));
+                data.coords = float4(edgeData.rg, 0, 0);
+                data.direction = float4(edgeData.ba, 0, 0);
+                groupData = data;
+            }
+            GroupMemoryBarrierWithGroupSync();
+
+            if (isEdge)
+            {
+                float localValue = (float)SampleBaseSDFClampParamScalar(groupData, id.xy, float2(_TextureWidth, _TextureHeight), scalar)/255.0;
+                value *= localValue;
+            }
+        }
+    }
+    value = 1 - value;
+    _OriginalSource[id.xy] = float4(value.rrrr);
+    //float u = float(idG.x)/8.0 * (1- value);
+    //float v = float(idG.y)/8.0 * (1- value);
+    //_OriginalSource[id.xy] = float4(u, v, 0.0, 1.0);
+}
+

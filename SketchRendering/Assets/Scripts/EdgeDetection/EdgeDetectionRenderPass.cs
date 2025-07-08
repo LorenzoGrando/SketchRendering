@@ -16,6 +16,11 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
     protected static readonly int outlineThicknessShaderID = Shader.PropertyToID("_OutlineThickness");
     protected static readonly int outlineAngleSensitivityShaderID = Shader.PropertyToID("_OutlineShallowThresholdSensitivity");
     protected static readonly int outlineAngleConstraintShaderID = Shader.PropertyToID("_OutlineShallowThresholdStrength");
+    protected static readonly int outlineNormalSensitivityShaderID = Shader.PropertyToID("_OutlineNormalDistanceSensitivity");
+    
+    protected LocalKeyword outputGreyscaleKeyword;
+    protected LocalKeyword outputDirectionDataKeyword;
+
 
     public virtual void Setup(EdgeDetectionPassData passData, Material mat)
     {
@@ -30,10 +35,26 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
 
     public virtual void ConfigureMaterial()
     {
+        outputGreyscaleKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.OUTPUT_GREYSCALE_KEYWORD);
+        outputDirectionDataKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.OUPUT_DIRECTION_KEYWORD);
+        
         edgeDetectionMaterial.SetInteger(outlineOffsetShaderID, passData.OutlineOffset);
         edgeDetectionMaterial.SetFloat(outlineThresholdShaderID, passData.OutlineThreshold);
         edgeDetectionMaterial.SetFloat(outlineAngleSensitivityShaderID, passData.OutlineAngleSensitivity);
         edgeDetectionMaterial.SetFloat(outlineAngleConstraintShaderID, passData.OutlineAngleConstraint);
+        edgeDetectionMaterial.SetFloat(outlineNormalSensitivityShaderID, passData.OutlineNormalSensitivity);
+
+        switch (passData.OutputType)
+        {
+            case EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_GREYSCALE:
+                edgeDetectionMaterial.SetKeyword(outputGreyscaleKeyword, true);
+                edgeDetectionMaterial.SetKeyword(outputDirectionDataKeyword, false);
+                break;
+            case EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA:
+                edgeDetectionMaterial.SetKeyword(outputDirectionDataKeyword, true);
+                edgeDetectionMaterial.SetKeyword(outputGreyscaleKeyword, false);
+                break;
+        }
     }
 
     public virtual void Dispose() {}

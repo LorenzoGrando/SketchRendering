@@ -16,7 +16,6 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
     private LocalKeyword sourceDepthKeyword;
     private LocalKeyword sourceDepthNormalsKeyword;
     
-    
     public override void Setup(EdgeDetectionPassData passData, Material mat)
     {
         base.Setup(passData, mat);
@@ -75,6 +74,7 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
         dstDesc.format = GraphicsFormat.R8G8B8A8_UNorm;
         dstDesc.clearBuffer = true;
         dstDesc.msaaSamples = MSAASamples.None;
+        dstDesc.enableRandomWrite = true;
 
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
         TextureHandle ping = renderGraph.CreateTexture(dstDesc);

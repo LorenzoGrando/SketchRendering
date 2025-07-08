@@ -33,7 +33,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraDepthTexture_TexelSize.xy, dUL, dUC, dUR, dCL, dCR, dDL, dDC, dDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float depthEdge = SobelDepthHorizontal3X3(BaseSobel3X3VerticalKernel,dUL, dCL, dDL, dUR, dCR, dDR);
+               float depthEdge = SobelDepthHorizontal3X3(ModifiedSobel3X3HorizontalKernel,dUL, dCL, dDL, dUR, dCR, dDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float depthEdge = SobelDepth1X3(Sobel1X3Kernel, dCL, uv, dCR);
                #endif
@@ -45,7 +45,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraNormalsTexture_TexelSize.xy, nUL, nUC, nUR, nCL, nCR, nDL, nDC, nDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float normalEdge = SobelNormalHorizontal3x3(BaseSobel3X3VerticalKernel, uv, nUL, nCL, nDL, nUR, nCR, nDR);
+               float normalEdge = SobelNormalHorizontal3x3(ModifiedSobel3X3HorizontalKernel, uv, nUL, nCL, nDL, nUR, nCR, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float normalEdge = SobelNormal1X3(Sobel1X3Kernel, nCL, uv, nCR);
                #endif
@@ -54,9 +54,9 @@ Shader "Hidden/DepthNormalsSilhouette"
 
                //Store for use in vertical pass
                #if defined(SOURCE_DEPTH)
-               return float4(abs(depthEdge), 0, 0, 1);
+               return float4((depthEdge + 1) * 0.5, 0, 0, 1);
                #elif defined(SOURCE_DEPTH_NORMALS)
-               return float4(abs(depthEdge), normalEdge, 0.0, 1.0);
+               return float4((depthEdge + 1) * 0.5, (normalEdge + 1) * 0.5, 0.0, 1.0);
                #endif
            }
 
@@ -78,11 +78,13 @@ Shader "Hidden/DepthNormalsSilhouette"
 
            #pragma multi_compile_local SOURCE_DEPTH SOURCE_DEPTH_NORMALS
            #pragma multi_compile_local SOBEL_KERNEL_3X3 SOBEL_KERNEL_1X3
+           #pragma multi_compile_local OUTPUT_GREYSCALE OUTPUT_DIRECTION_DATA
 
            int _OutlineOffset;
            float _OutlineThreshold;
            float _OutlineShallowThresholdSensitivity;
            float _OutlineShallowThresholdStrength;
+           float _OutlineNormalDistanceSensitivity;
            
            float4 Frag(Varyings input) : SV_Target0
            {
@@ -95,7 +97,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraDepthTexture_TexelSize.xy, dUL, dUC, dUR, dCL, dCR, dDL, dDC, dDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float depthEdge = SobelDepthVertical3X3(BaseSobel3X3VerticalKernel,dUL, dUC, dUR, dDL, dDC, dDR);
+               float depthEdge = SobelDepthVertical3X3(ModifiedSobel3X3VerticalKernel,dUL, dUC, dUR, dDL, dDC, dDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float depthEdge = SobelDepth1X3(Sobel1X3Kernel, dUC, uv, dDC);
                #endif
@@ -107,21 +109,23 @@ Shader "Hidden/DepthNormalsSilhouette"
                Get3X3NeighborhoodPositions(uv, _OutlineOffset, _CameraNormalsTexture_TexelSize.xy, nUL, nUC, nUR, nCL, nCR, nDL, nDC, nDR);
 
                #if defined(SOBEL_KERNEL_3X3)
-               float3 normalEdge = SobelNormalVertical3x3(BaseSobel3X3VerticalKernel, uv, nUL, nUC, nUR, nDL, nDC, nDR);
+               float3 normalEdge = SobelNormalVertical3x3(ModifiedSobel3X3VerticalKernel, uv, nUL, nUC, nUR, nDL, nDC, nDR);
                #elif defined(SOBEL_KERNEL_1X3)
                float normalEdge = SobelNormal1X3(Sobel1X3Kernel, dUC, uv, dDC);
                #endif
-               
                #endif
                
                
                //Sample horizontal pass (passed as blit texture) and get filter results in RG (depth, normal)
                float4 horizontalValue = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel);
+               //Bring depth back to -1 to 1
+               horizontalValue.r = (horizontalValue.r * 2.0) - 1.0;
                //Get gradient of each image, and threshold for silhouette)
                //If normals texture is available, modify threshold depending on viewing angle to avoid thick edges in very shallow angles
                //Specifically, if view vector is almost perpendicular to surface normal, make the threshold higher.
                #if defined(SOURCE_DEPTH)
-               float depthGradient = step(_OutlineThreshold, length(float2(horizontalValue.r, depthEdge)));
+               float2 depthGradientVector = float2(horizontalValue.r, depthEdge);
+               float depthGradient = step(_OutlineThreshold, length(depthGradientVector));
                #elif defined (SOURCE_DEPTH_NORMALS)
                float3 surfaceNormal = SampleSceneNormals(uv);
                //Get view vector, see bgolus and keijiro: https://discussions.unity.com/t/help-with-view-space-normals/654031/12
@@ -130,19 +134,56 @@ Shader "Hidden/DepthNormalsSilhouette"
                
                half isShallow = step(1 - _OutlineShallowThresholdSensitivity, 1 - dot(viewDir, surfaceNormal));
                float threshold = _OutlineThreshold + isShallow * (_OutlineThreshold * 10.0 * _OutlineShallowThresholdStrength);
-               float depthGradient = step(threshold, length(float2(horizontalValue.r, depthEdge)));
+               float2 depthGradientVector = float2(horizontalValue.r, depthEdge);
+               float depthGradient = step(threshold, length(depthGradientVector));
                #endif
                
                #if defined(SOURCE_DEPTH_NORMALS)
-               float gradN = length(float2(horizontalValue.g, normalEdge.r)/2.0);
-               float normalGradient = step(_OutlineThreshold, gradN);
+               horizontalValue.g = (horizontalValue.g * 2.0) - 1.0;
+               float2 normalGradientVector = float2(horizontalValue.g, normalEdge.r)/2.0;
+               float gradN = length(normalGradientVector);
+
+               float eyeDepth = LinearEyeDepth(SampleSceneDepth(uv), _ZBufferParams);
+               float normalDistanceThresholdOffset = (1 - _OutlineThreshold) * (lerp(0, 1, eyeDepth/32) * ( 1 - _OutlineNormalDistanceSensitivity));
+               
+               float normalGradient = step(_OutlineThreshold + normalDistanceThresholdOffset, gradN);
                #endif
 
                //Set alpha as outline strenght, to easy blending in composite shader
-               #if defined(SOURCE_DEPTH)
-               return float4(max(0, depthGradient).rrrr);
-               #elif defined(SOURCE_DEPTH_NORMALS)
-               return float4(max(0, max(depthGradient, normalGradient)).rrrr);
+               #if defined(OUTPUT_GREYSCALE)
+                   #if defined(SOURCE_DEPTH)
+                   return float4(max(0, depthGradient).rrrr);
+                   #elif defined(SOURCE_DEPTH_NORMALS)
+                   return float4(max(0, max(depthGradient, normalGradient)).rrrr);
+                   #endif
+               #elif defined(OUTPUT_DIRECTION_DATA)
+                    #if defined(SOURCE_DEPTH)
+                    float angle = atan2(depthGradientVector.y, depthGradientVector.x);
+                    angle /= PI;
+                    angle = (angle + 1) * 0.5;
+                    float edge = max(0, depthGradient);
+                    return float4(edge, angle, 0.0, edge);
+                    #elif defined(SOURCE_DEPTH_NORMALS)
+                    float edge = max(0, max(depthGradient, normalGradient));
+                    float angle = 0;
+               /*
+                    if (depthGradient > normalGradient) {
+                        angle = atan2(depthGradientVector.y, depthGradientVector.x);
+                    }
+                   else
+                    {
+                       angle = atan2(normalGradientVector.y, normalGradientVector.x);
+                    }
+                */
+                    float angleDepth = atan2(depthGradientVector.y, depthGradientVector.x);
+                    float angleNormal = atan2(normalGradientVector.y, normalGradientVector.x);
+                    //the stronger the gradient depth, attenuate normals since depth is usually more consistely to the surface flow
+                    float angleNormalAttenuation = lerp(1.0, 0.0, depthGradient);
+                    angle = ((angleDepth * depthGradient) + (angleNormal * normalGradient * angleNormalAttenuation))/(depthGradient + normalGradient * angleNormalAttenuation);
+                    angle /= PI;
+                    angle = (angle + 1) * 0.5;
+                    return float4(edge, angle, 0.0, edge);
+                    #endif
                #endif
            }
 

@@ -3,49 +3,32 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class SmoothOutlineRendererFeature : ScriptableRendererFeature
+public class SketchOutlineRendererFeature : ScriptableRendererFeature
 {
     [Header("Base Parameters")]
     [Space(5)]
     public EdgeDetectionPassData EdgeDetectionPassData = new EdgeDetectionPassData();
     private EdgeDetectionPassData CurrentEdgeDetectionPassData { get { return EdgeDetectionPassData.GetPassDataByVolume(); } }
+    public SketchStrokesPassData SketchStrokesPassData = new SketchStrokesPassData();
+    private SketchStrokesPassData CurrentSketchStrokesPassData { get { return SketchStrokesPassData.GetPassDataByVolume(); } }
     
-    public ThicknessDilationPassData ThicknessPassData = new ThicknessDilationPassData();
-    private ThicknessDilationPassData CurrentThicknessPassData { get { return ThicknessPassData.GetPassDataByVolume(); } }
-
-    [Header("Accented Effects")] 
-    [Space(5)]
-    public bool UseAccentedOutlines;
-    public AccentedOutlinePassData AccentedOutlinePassData = new AccentedOutlinePassData();
-    public AccentedOutlinePassData CurrentAccentOutlinePassData { get { return AccentedOutlinePassData.GetPassDataByVolume(); } }
-
     [SerializeField] private Shader sobelEdgeDetectionShader;
     [SerializeField] private Shader depthNormalsEdgeDetectionShader;
-
-    [SerializeField] private Shader thicknessDilationDetectionShader;
-    [SerializeField] private Shader accentedOutlinesShader;
+    [SerializeField] private ComputeShader sketchStrokesComputeShader;
     
     private Material edgeDetectionMaterial;
-    private Material thicknessDilationMaterial;
-    private Material accentedOutlinesMaterial;
     
     private EdgeDetectionRenderPass edgeDetectionPass;
-    private ThicknessDilationRenderPass thicknessDilationPass;
-    private AccentedOutlineRenderPass accentedOutlinePass;
+    private SketchStrokesComputeRenderPass strokesComputePass;
     
     public override void Create()
     {
-        //This pass dosent care about direction data, so ensure it is greyscale
-        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_GREYSCALE;
+        //This pass needs angles to calculate stroke directins, so set this here
+        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA;
         
         edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
         edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);
-        
-        thicknessDilationMaterial = new Material(thicknessDilationDetectionShader);
-        thicknessDilationPass = new ThicknessDilationRenderPass();
-        
-        accentedOutlinesMaterial = new Material(accentedOutlinesShader);
-        accentedOutlinePass = new AccentedOutlineRenderPass();
+        strokesComputePass = new SketchStrokesComputeRenderPass();
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -62,22 +45,22 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         if(!AreAllMaterialsValid())
             return;
 
+        if (!SystemInfo.supportsComputeShaders)
+        {
+            Debug.LogWarning("[SketchOutlineRendererFeature] Compute Shader Support is not available on this platform.");
+            return;
+        }
+
         if (CurrentEdgeDetectionPassData.IsAllPassDataValid())
         {
             edgeDetectionPass.Setup(CurrentEdgeDetectionPassData, edgeDetectionMaterial);
             renderer.EnqueuePass(edgeDetectionPass);
         }
 
-        if (CurrentThicknessPassData.IsAllPassDataValid())
+        if (SketchStrokesPassData.IsAllPassDataValid())
         {
-            thicknessDilationPass.Setup(CurrentThicknessPassData, thicknessDilationMaterial);
-            renderer.EnqueuePass(thicknessDilationPass);
-        }
-
-        if (UseAccentedOutlines && CurrentAccentOutlinePassData.IsAllPassDataValid())
-        {
-            accentedOutlinePass.Setup(CurrentAccentOutlinePassData, accentedOutlinesMaterial);
-            renderer.EnqueuePass(accentedOutlinePass);
+            strokesComputePass.Setup(CurrentSketchStrokesPassData, edgeDetectionMaterial, sketchStrokesComputeShader);
+            renderer.EnqueuePass(strokesComputePass);
         }
     }
 
@@ -85,27 +68,20 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     {
         edgeDetectionPass?.Dispose();
         edgeDetectionPass = null;
-        
-        thicknessDilationPass?.Dispose();
-        thicknessDilationPass = null;
-        
-        accentedOutlinePass?.Dispose();
-        accentedOutlinePass = null;
+
+        strokesComputePass?.Dispose();
+        strokesComputePass = null;
 
         if (Application.isPlaying)
         {
             if (edgeDetectionMaterial)
                 Destroy(edgeDetectionMaterial);
-            if(thicknessDilationMaterial)
-                Destroy(thicknessDilationMaterial);
-            if(accentedOutlinesMaterial)
-                Destroy(accentedOutlinesMaterial);
         }
     }
 
     private bool AreAllMaterialsValid()
     {
-        return edgeDetectionMaterial != null && thicknessDilationMaterial != null && accentedOutlinesMaterial != null;
+        return edgeDetectionMaterial != null;
     }
 
     private Material CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource edgeDetectionMethod)

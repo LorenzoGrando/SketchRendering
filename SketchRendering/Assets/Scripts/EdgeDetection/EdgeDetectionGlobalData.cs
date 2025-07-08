@@ -16,4 +16,12 @@ public static class EdgeDetectionGlobalData
     
     public static readonly string SOBEL_3X3_KEYWORD = "SOBEL_KERNEL_3X3";
     public static readonly string SOBEL_1X3_KEYWORD = "SOBEL_KERNEL_1X3";
+
+    public enum EdgeDetectionOutputType
+    {
+        OUTPUT_GREYSCALE, OUTPUT_DIRECTION_DATA
+    }
+    
+    public static readonly string OUTPUT_GREYSCALE_KEYWORD = "OUTPUT_GREYSCALE";
+    public static readonly string OUPUT_DIRECTION_KEYWORD = "OUTPUT_DIRECTION_DATA";
 }
