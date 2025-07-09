@@ -9,6 +9,9 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
     public bool PreventDownscale;
     [Range(0f, 1f)] 
     public float StrokeThreshold;
+
+    [HideInInspector] 
+    public bool UsePerpendicularDirection;
     
     public SketchStrokesPassData()
     {
@@ -18,6 +21,19 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
     public bool IsAllPassDataValid()
     {
         return OutlineStrokeData != null;
+    }
+
+    public void ConfigurePerpendicularDirection(EdgeDetectionGlobalData.EdgeDetectionMethod method)
+    {
+        switch (method)
+        {
+            case EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3:
+                UsePerpendicularDirection = false;
+                break;
+            case EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_1X3:
+                UsePerpendicularDirection = true;
+                break;
+        }
     }
     
 

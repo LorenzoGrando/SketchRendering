@@ -30,8 +30,11 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private readonly int COMPUTE_GRADIENT_VECTORS_ID = Shader.PropertyToID("_GradientVectors");
     private readonly int THRESHOLD_ID = Shader.PropertyToID("_ThresholdForStroke");
     private readonly int STROKE_DATA_ID = Shader.PropertyToID("OutlineStrokeData");
+    private readonly string PERPENDICULAR_DIRECTION_KEYWORD_ID = "USE_PERPENDICULAR_DIRECTION";
     private Vector3Int strokesKernelThreads;
     private Vector3Int applyKernelThreads;
+
+    private LocalKeyword PerpendicularDirectionKeyword;
 
     private readonly int GRADIENT_VECTOR_STRIDE_LENGTH = sizeof(float) * 4;
     private readonly Vector2Int DOWNSCALE_TARGET_DIMENSION = new Vector2Int(Mathf.CeilToInt(1920f/2f), Mathf.CeilToInt(1080f/2f));
@@ -62,6 +65,9 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         computeApplyStrokeKernelID = sketchComputeShader.FindKernel(APPLY_STROKES_KERNEL);
         sketchComputeShader.GetKernelThreadGroupSizes(computeApplyStrokeKernelID, out uint x1, out uint y1, out uint z1);
         applyKernelThreads = new Vector3Int((int)x1, (int)y1, (int)z1);
+        
+        PerpendicularDirectionKeyword = new LocalKeyword(sketchComputeShader, PERPENDICULAR_DIRECTION_KEYWORD_ID);
+        sketchComputeShader.SetKeyword(PerpendicularDirectionKeyword, passData.UsePerpendicularDirection);
     }
 
     public void Dispose()

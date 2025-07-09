@@ -2,6 +2,8 @@
 #pragma kernel ComputeAverageStroke4
 #pragma kernel ApplyStrokeSDFs
 
+#pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
+
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
 
 #define PI 3.14159265358979323846;
@@ -53,7 +55,9 @@ void ComputeAverageStroke8 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_Group
         {
             averagePosition /= (float)summed;
             averageDirection /= (float)summed;
-            //averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            #if defined (USE_PERPENDICULAR_DIRECTION)
+            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            #endif
         }
         gradients8[0] = float4(averagePosition, averageDirection * isAverageStroke);
         _GradientVectors[groupFlatIndex] = gradients8[0];
@@ -107,7 +111,9 @@ void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_Group
         {
             averagePosition /= (float)summed;
             averageDirection /= (float)summed;
-            //averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            #if defined (USE_PERPENDICULAR_DIRECTION)
+            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            #endif
         }
         gradients4[0] = float4(averagePosition, averageDirection * isAverageStroke);
         _GradientVectors[groupFlatIndex] = gradients4[0];

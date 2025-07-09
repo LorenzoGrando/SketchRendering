@@ -59,7 +59,11 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
 
         if (SketchStrokesPassData.IsAllPassDataValid())
         {
-            strokesComputePass.Setup(CurrentSketchStrokesPassData, edgeDetectionMaterial, sketchStrokesComputeShader);
+            //TODO: The variant sobel kernel produces directions perpendicular to the sillhouete direction
+            //Honestly, i couldn`t quite figure out why, and ideally this wouldnt even be necessary, but its the solution i found for now.
+            SketchStrokesPassData sketchStrokesPassData = CurrentSketchStrokesPassData;
+            sketchStrokesPassData.ConfigurePerpendicularDirection(CurrentEdgeDetectionPassData.Method);
+            strokesComputePass.Setup(sketchStrokesPassData, edgeDetectionMaterial, sketchStrokesComputeShader);
             renderer.EnqueuePass(strokesComputePass);
         }
     }
