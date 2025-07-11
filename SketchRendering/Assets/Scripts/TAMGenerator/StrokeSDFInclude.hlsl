@@ -71,7 +71,7 @@ uint SampleBaseSDF(StrokeData data, float2 pointID, float dimension) {
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * interpolation));
     float sample = step(fallOff, minDist);
-    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * interpolation);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(data.pressureFalloff * interpolation);
     sample = (1 - sample) * expectedPressure;
     
     return (1 - sample) * 255;
@@ -98,7 +98,7 @@ uint SampleBaseSDFClamp(StrokeData data, float2 pointID, float dimension)
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
     float sample = step(fallOff, minDist);
-    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(data.pressureFalloff * t);
     sample = (1 - sample) * expectedPressure;
     
     return (1 - sample) * 255;
@@ -126,7 +126,7 @@ uint SampleBaseSDFClamp(StrokeData data, float2 pointID, float2 dimensions)
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
     float sample = step(fallOff, minDist);
-    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(data.pressureFalloff * t);
     sample = (1 - sample) * expectedPressure;
     
     return (1 - sample) * 255;
@@ -153,7 +153,7 @@ uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float dimens
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
     float sample = step(fallOff, minDist);
-    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(data.pressureFalloff * t);
     sample = (1 - sample) * expectedPressure;
     
     return (1 - sample) * 255;
@@ -181,7 +181,7 @@ uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float2 dimen
     float lengthFalloff = data.lengthThicknessFalloff * step(thickness/2, length + minThickness/2);
     float fallOff = lerp(thickness, minThickness, FalloffFunction(lengthFalloff * t));
     float sample = step(fallOff, minDist);
-    float expectedPressure = data.pressure * 1 - FalloffFunction(lengthFalloff * data.pressureFalloff * t);
+    float expectedPressure = data.pressure * 1 - FalloffFunction(data.pressureFalloff * t);
     sample = (1 - sample) * expectedPressure;
     
     return (1 - sample) * 255;

@@ -64,7 +64,7 @@ MonoBehaviour:
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.253
+    m_Value: 0.099
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -73,10 +73,10 @@ MonoBehaviour:
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 0.294
+    m_Value: 0.467
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 0.853
+    m_Value: 1
   ThicknessRange:
     m_OverrideState: 1
     m_Value: 0

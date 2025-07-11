@@ -1,6 +1,11 @@
+#pragma kernel ComputeAverageStroke32
+#pragma kernel ComputeAverageStroke16
 #pragma kernel ComputeAverageStroke8
 #pragma kernel ComputeAverageStroke4
-#pragma kernel ApplyStrokeSDFs
+#pragma kernel ApplyStrokes32
+#pragma kernel ApplyStrokes16
+#pragma kernel ApplyStrokes8
+#pragma kernel ApplyStrokes4
 
 #pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
 
@@ -16,128 +21,101 @@ uint _TextureWidth;
 uint _TextureHeight;
 float _ThresholdForStroke;
 
-groupshared float4 gradients8[8*8];
-groupshared float localIsEdge8[8*8];
+//declare them at max supported kernel size, though this does lead to some wasted memory
+groupshared float4 gradients[32*32];
+groupshared float localIsEdge[32*32];
+void ComputeAverageStroke (uint3 id, uint3 idG, uint3 idGs, uint2 kernelSizes)
+{
+    uint gFlatIndex = idG.y * kernelSizes.x + idG.x;
+    uint groupFlatIndex = idGs.y * _GroupsX + idGs.x;
+    int totalElements = (int)(kernelSizes.x * kernelSizes.y);
+
+    float angle = _OriginalSource[id.xy].g;
+    angle = angle * 2.0 * PI - PI;
+    
+    float isEdge = _OriginalSource[id.xy].r;
+    float2 position = float2(id.x/(float)_TextureWidth, id.y/(float)_TextureHeight);
+    float2 direction = float2(cos(angle), sin(angle));
+    float4 gradient = float4(position.xy, direction.xy);
+    gradients[gFlatIndex] = gradient;
+    localIsEdge[gFlatIndex] = step(0.5, isEdge);
+    GroupMemoryBarrierWithGroupSync();
+    
+    if (idG.x == 0 && idG.y == 0)
+    {
+        float2 averagePosition = float2(0, 0);
+        float2 averageDirection = float2(0, 0);
+        int summed = 0;
+        [loop]
+        for (int i = 0; i < totalElements; i++)
+        {
+            if (localIsEdge[i] > 0)
+            {
+                averagePosition += gradients[i].rg;
+                averageDirection += gradients[i].ba;
+                summed++;
+            }
+        }
+        float isAverageStroke = step(_ThresholdForStroke, summed/(float)(totalElements));
+        if(isAverageStroke)
+        {
+            averagePosition /= (float)summed;
+            averageDirection /= (float)summed;
+            #if defined (USE_PERPENDICULAR_DIRECTION)
+            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            #endif
+        }
+        gradients[0] = float4(averagePosition, averageDirection * isAverageStroke);
+        _GradientVectors[groupFlatIndex] = gradients[0];
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    //Debugging
+    float4 grad = gradients[0];
+    _OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
+    //float x = float(idG.x)/(float)kernelSizes.x;
+    //float y = float(idG.y)/(float)kernelSizes.y;
+    //_OriginalSource[id.xy] = float4(x, y, 0.0, 1.0);
+    //if (idGs.x == 0 && idGs.y == 0)
+    //{
+    //    _OriginalSource[id.xy] = float4(1.0, 1.0, 1.0, 1.0);
+    //}
+}
+
+
+[numthreads(32, 32, 1)]
+void ComputeAverageStroke32 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    ComputeAverageStroke(id, idG, idGs, uint2(32, 32));
+}
+
+[numthreads(16, 16, 1)]
+void ComputeAverageStroke16 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    ComputeAverageStroke(id, idG, idGs, uint2(16, 16));
+}
+
 [numthreads(8, 8, 1)]
 void ComputeAverageStroke8 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_GroupThreadID, uint3 idGs : SV_GroupID)
 {
-    uint gFlatIndex = idG.y * 8 + idG.x;
-    uint groupFlatIndex = idGs.y * _GroupsX + idGs.x;
-
-    float angle = _OriginalSource[id.xy].g;
-    angle = angle * 2.0 * PI - PI;
-    
-    float isEdge = _OriginalSource[id.xy].r;
-    float2 position = float2(id.x/(float)_TextureWidth, id.y/(float)_TextureHeight);
-    float2 direction = float2(cos(angle), sin(angle));
-    float4 gradient = float4(position.xy, direction.xy);
-    gradients8[gFlatIndex] = gradient;
-    localIsEdge8[gFlatIndex] = step(0.5, isEdge);
-    GroupMemoryBarrierWithGroupSync();
-    
-    if (idG.x == 0 && idG.y == 0)
-    {
-        float2 averagePosition = float2(0, 0);
-        float2 averageDirection = float2(0, 0);
-        int summed = 0;
-        [unroll(8*8)]
-        for (int i = 0; i < 8*8; i++)
-        {
-            if (localIsEdge8[i] > 0)
-            {
-                averagePosition += gradients8[i].rg;
-                averageDirection += gradients8[i].ba;
-                summed++;
-            }
-        }
-        float isAverageStroke = step(_ThresholdForStroke, summed/(float)(8.0*8.0));
-        if(isAverageStroke)
-        {
-            averagePosition /= (float)summed;
-            averageDirection /= (float)summed;
-            #if defined (USE_PERPENDICULAR_DIRECTION)
-            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
-            #endif
-        }
-        gradients8[0] = float4(averagePosition, averageDirection * isAverageStroke);
-        _GradientVectors[groupFlatIndex] = gradients8[0];
-    }
-    GroupMemoryBarrierWithGroupSync();
-
-    //Debugging
-    float4 grad = gradients8[0];
-    _OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
-    //float x = float(idG.x)/8.0;
-    //float y = float(idG.y)/8.0;
-    //_OriginalSource[id.xy] = float4(x, y, 0.0, 1.0);
+    ComputeAverageStroke(id, idG, idGs, uint2(8, 8));
 }
 
-groupshared float4 gradients4[4*4];
-groupshared float localIsEdge4[4*4];
 [numthreads(4, 4, 1)]
 void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_GroupThreadID, uint3 idGs : SV_GroupID)
 {
-    uint gFlatIndex = idG.y * 4 + idG.x;
-    uint groupFlatIndex = idGs.y * _GroupsX + idGs.x;
-
-    float angle = _OriginalSource[id.xy].g;
-    angle = angle * 2.0 * PI - PI;
-    
-    float isEdge = _OriginalSource[id.xy].r;
-    float2 position = float2(id.x/(float)_TextureWidth, id.y/(float)_TextureHeight);
-    float2 direction = float2(cos(angle), sin(angle));
-    float4 gradient = float4(position.xy, direction.xy);
-    gradients4[gFlatIndex] = gradient;
-    localIsEdge4[gFlatIndex] = step(0.5, isEdge);
-    GroupMemoryBarrierWithGroupSync();
-    
-    if (idG.x == 0 && idG.y == 0)
-    {
-        float2 averagePosition = float2(0, 0);
-        float2 averageDirection = float2(0, 0);
-        int summed = 0;
-        [unroll(4*4)]
-        for (int i = 0; i < 4*4; i++)
-        {
-            if (localIsEdge4[i] > 0)
-            {
-                averagePosition += gradients4[i].rg;
-                averageDirection += gradients4[i].ba;
-                summed++;
-            }
-        }
-        float isAverageStroke = step(_ThresholdForStroke, summed/(float)(4.0*4.0));
-        if(isAverageStroke)
-        {
-            averagePosition /= (float)summed;
-            averageDirection /= (float)summed;
-            #if defined (USE_PERPENDICULAR_DIRECTION)
-            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
-            #endif
-        }
-        gradients4[0] = float4(averagePosition, averageDirection * isAverageStroke);
-        _GradientVectors[groupFlatIndex] = gradients4[0];
-    }
-    GroupMemoryBarrierWithGroupSync();
-
-    //Debugging
-    //float4 grad = gradients4[0];
-    //_OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
-
-    //float x = float(idG.x)/4.0;
-    //float y = float(idG.y)/4.0;
-    //_OriginalSource[id.xy] = float4(x, y, 0.0, 1.0);
+    ComputeAverageStroke(id, idG, idGs, uint2(4, 4));
 }
+
 
 RWStructuredBuffer<StrokeData> OutlineStrokeData;
 groupshared StrokeData groupData;
 groupshared float isEdge;
-[numthreads(8,8,1)]
-void ApplyStrokeSDFs(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID, uint3 idGs : SV_GroupID)
+void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
 {
     float value = 1;
-    float widthScalar = (float)_TextureWidth/8.0;
-    float heightScalar = (float)_TextureHeight/8.0;
+    float widthScalar = (float)_TextureWidth/(float)kernelSizes.x;
+    float heightScalar = (float)_TextureHeight/(float)kernelSizes.y;
     float scalar = min(widthScalar, heightScalar) * 0.5;
     StrokeData data = OutlineStrokeData[0];
     [unroll(3)]
@@ -169,8 +147,38 @@ void ApplyStrokeSDFs(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID
     }
     value = 1 - value;
     _OriginalSource[id.xy] = float4(value.rrrr);
-    //float u = float(idG.x)/8.0 * (1- value);
-    //float v = float(idG.y)/8.0 * (1- value);
+    //float u = float(idG.x)/(float)kernelSizes.x * (1- value);
+    //float v = float(idG.y)/(float)kernelSizes.y * (1- value);
     //_OriginalSource[id.xy] = float4(u, v, 0.0, 1.0);
+    //if (idGs.x == 0 && idGs.y == 0)
+    //{
+    //    _OriginalSource[id.xy] = float4(1.0, 1.0, 1.0, 1.0);
+    //}
 }
+
+[numthreads(32,32,1)]
+void ApplyStrokes32(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    ApplyStrokeSDFs(id, idG, idGs, uint2(32, 32));
+}
+
+[numthreads(16,16,1)]
+void ApplyStrokes16(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    ApplyStrokeSDFs(id, idG, idGs, uint2(16, 16));
+}
+
+[numthreads(8,8,1)]
+void ApplyStrokes8(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    ApplyStrokeSDFs(id, idG, idGs, uint2(8, 8));
+}
+
+[numthreads(4,4,1)]
+void ApplyStrokes4(uint3 id : SV_DispatchThreadID, uint2 idG: SV_GroupThreadID, uint3 idGs : SV_GroupID)
+{
+    ApplyStrokeSDFs(id, idG, idGs, uint2(4, 4));
+}
+
+
 

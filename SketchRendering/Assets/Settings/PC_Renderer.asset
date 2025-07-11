@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   passData:
-    debugMode: 1
+    debugMode: 0
     OutlineStrokeColor: {r: 0, g: 0, b: 0, a: 1}
     ShadingStrokeColor: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
@@ -101,6 +101,7 @@ MonoBehaviour:
     OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
     PreventDownscale: 1
     StrokeThreshold: 0.057
+    UsePerpendicularDirection: 0
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
   sketchStrokesComputeShader: {fileID: 7200000, guid: 1e9d703e3298464c9b8b9bc3a35d61ae, type: 3}

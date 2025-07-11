@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData>
 {
     public TAMStrokeAsset OutlineStrokeData;
+    public ComputeData.KernelSize2D SampleArea;
     public bool PreventDownscale;
     [Range(0f, 1f)] 
     public float StrokeThreshold;
@@ -44,6 +45,7 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
             return this;
         
         SketchStrokesPassData overrideData = new SketchStrokesPassData();
+        overrideData.SampleArea = SampleArea;
         overrideData.PreventDownscale = PreventDownscale;
         overrideData.StrokeThreshold = StrokeThreshold;
         overrideData.OutlineStrokeData = OutlineStrokeData;

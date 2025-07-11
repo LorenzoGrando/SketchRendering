@@ -17,9 +17,8 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private ComputeBuffer strokeDataBuffer;
     
     //Compute Data
-    private readonly string COMPUTE_STROKE_KERNEL_8 = "ComputeAverageStroke8";
-    private readonly string COMPUTE_STROKE_KERNEL_4 = "ComputeAverageStroke4";
-    private readonly string APPLY_STROKES_KERNEL = "ApplyStrokeSDFs";
+    private readonly string COMPUTE_STROKE_KERNEL = "ComputeAverageStroke";
+    private readonly string APPLY_STROKES_KERNEL = "ApplyStrokes";
     private int computeStrokeKernelID;
     private int computeApplyStrokeKernelID;
     private readonly int SOURCE_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
@@ -57,17 +56,22 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
 
     private void ConfigureComputeShader()
     {
-        //computeStrokeKernelID = sketchComputeShader.FindKernel(COMPUTE_STROKE_KERNEL_4);
-        computeStrokeKernelID = sketchComputeShader.FindKernel(COMPUTE_STROKE_KERNEL_8);
+        computeStrokeKernelID = sketchComputeShader.FindKernel(Get1DAreaReliantKernelID(COMPUTE_STROKE_KERNEL, passData.SampleArea));
         sketchComputeShader.GetKernelThreadGroupSizes(computeStrokeKernelID, out uint x, out uint y, out uint z);
         strokesKernelThreads = new Vector3Int((int)x, (int)y, (int)z);
 
-        computeApplyStrokeKernelID = sketchComputeShader.FindKernel(APPLY_STROKES_KERNEL);
+        computeApplyStrokeKernelID = sketchComputeShader.FindKernel(Get1DAreaReliantKernelID(APPLY_STROKES_KERNEL, passData.SampleArea));
         sketchComputeShader.GetKernelThreadGroupSizes(computeApplyStrokeKernelID, out uint x1, out uint y1, out uint z1);
         applyKernelThreads = new Vector3Int((int)x1, (int)y1, (int)z1);
-        
+
         PerpendicularDirectionKeyword = new LocalKeyword(sketchComputeShader, PERPENDICULAR_DIRECTION_KEYWORD_ID);
         sketchComputeShader.SetKeyword(PerpendicularDirectionKeyword, passData.UsePerpendicularDirection);
+    }
+
+    private string Get1DAreaReliantKernelID(string kernelName, ComputeData.KernelSize2D kernelSize)
+    {
+        Vector2Int sizes = ComputeData.GetKernelSizeFromEnum(kernelSize);
+        return $"{kernelName}{sizes.x}";
     }
 
     public void Dispose()
@@ -217,6 +221,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             
             if (gradientBuffer == null || gradientBuffer.count != (groups.x * groups.y))
             {
+                Debug.Log("Creating gradient buffer with sizes: " + groups);
                 gradientBuffer = new ComputeBuffer(groups.x * groups.y, GRADIENT_VECTOR_STRIDE_LENGTH);
             }
 
@@ -269,7 +274,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             passData.groupsXID = GROUPS_X_ID;
             passData.groupsYID = GROUPS_Y_ID;
             passData.threadGroupSize = groups;
-            
                 
             if (strokeDataBuffer == null)
             {
