@@ -7,7 +7,9 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
 {
     public TAMStrokeAsset OutlineStrokeData;
     public ComputeData.KernelSize2D SampleArea;
-    public bool PreventDownscale;
+    public bool DoDownscale;
+    [Range(2, 4)]
+    public int DownscaleFactor;
     [Range(0f, 1f)] 
     public float StrokeThreshold;
 
@@ -46,7 +48,8 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
         
         SketchStrokesPassData overrideData = new SketchStrokesPassData();
         overrideData.SampleArea = SampleArea;
-        overrideData.PreventDownscale = PreventDownscale;
+        overrideData.DoDownscale = DoDownscale;
+        overrideData.DownscaleFactor = DoDownscale ? DownscaleFactor : 1;
         overrideData.StrokeThreshold = StrokeThreshold;
         overrideData.OutlineStrokeData = OutlineStrokeData;
         

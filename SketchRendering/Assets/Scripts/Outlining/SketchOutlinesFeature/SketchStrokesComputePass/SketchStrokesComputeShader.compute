@@ -17,6 +17,7 @@ RWStructuredBuffer<float4> _GradientVectors;
 RWTexture2D<float4> _OriginalSource;
 uint _GroupsX;
 uint _GroupsY;
+uint _DownscaleFactor;
 uint _TextureWidth;
 uint _TextureHeight;
 float _ThresholdForStroke;
@@ -65,21 +66,18 @@ void ComputeAverageStroke (uint3 id, uint3 idG, uint3 idGs, uint2 kernelSizes)
             averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
             #endif
         }
-        gradients[0] = float4(averagePosition, averageDirection * isAverageStroke);
+        gradients[0] = float4(averagePosition.xy, averageDirection.xy * isAverageStroke);
         _GradientVectors[groupFlatIndex] = gradients[0];
     }
     GroupMemoryBarrierWithGroupSync();
 
     //Debugging
-    float4 grad = gradients[0];
-    _OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
+    //float4 grad = gradients[0];
+    //_OriginalSource[id.xy] = float4(abs(grad.ba), 0.0, 1.0);
+    
     //float x = float(idG.x)/(float)kernelSizes.x;
     //float y = float(idG.y)/(float)kernelSizes.y;
     //_OriginalSource[id.xy] = float4(x, y, 0.0, 1.0);
-    //if (idGs.x == 0 && idGs.y == 0)
-    //{
-    //    _OriginalSource[id.xy] = float4(1.0, 1.0, 1.0, 1.0);
-    //}
 }
 
 
@@ -111,12 +109,13 @@ void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_Group
 RWStructuredBuffer<StrokeData> OutlineStrokeData;
 groupshared StrokeData groupData;
 groupshared float isEdge;
+groupshared uint flatIndex;
 void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
 {
     float value = 1;
     float widthScalar = (float)_TextureWidth/(float)kernelSizes.x;
     float heightScalar = (float)_TextureHeight/(float)kernelSizes.y;
-    float scalar = min(widthScalar, heightScalar) * 0.5;
+    float scalar = min(widthScalar, heightScalar) / ((float)_DownscaleFactor * 2.0);
     StrokeData data = OutlineStrokeData[0];
     [unroll(3)]
     for (int x = -1; x < 2; x++)
@@ -124,9 +123,14 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
         [unroll(3)]
         for (int  y = -1; y < 2; y++)
         {
-            uint xClamp = clamp(idGs.x + (uint)x, 0, _GroupsX - 1);
-            uint yClamp = clamp(idGs.y + (uint)y, 0, _GroupsY - 1);
-            uint groupFlatIndex = yClamp * _GroupsX + xClamp;
+            uint xClamp = clamp((uint)(((int)idGs.x + x)), 0, _GroupsX - 1);
+            uint yClamp = clamp((uint)(((int)idGs.y + y)), 0, _GroupsY - 1);
+            //if we did downscale, the division will be by a value higher than one
+            //taking the floor of both x and y collapses the higher grid from the upscale into the downscale-espected group index
+            xClamp = (uint)floor((float)xClamp/(float)_DownscaleFactor);
+            yClamp = (uint)floor((float)yClamp/(float)_DownscaleFactor);
+            uint groupsClamp = (uint)(floor((float)_GroupsX/(float)_DownscaleFactor));
+            uint groupFlatIndex = yClamp * groupsClamp + xClamp;
     
             if(idG.x == 0 && idG.y == 0)
             {
@@ -135,6 +139,8 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
                 data.coords = float4(edgeData.rg, 0, 0);
                 data.direction = float4(edgeData.ba, 0, 0);
                 groupData = data;
+                if (x == 0 && y == 0)
+                    flatIndex = groupFlatIndex;
             }
             GroupMemoryBarrierWithGroupSync();
 
@@ -150,10 +156,6 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
     //float u = float(idG.x)/(float)kernelSizes.x * (1- value);
     //float v = float(idG.y)/(float)kernelSizes.y * (1- value);
     //_OriginalSource[id.xy] = float4(u, v, 0.0, 1.0);
-    //if (idGs.x == 0 && idGs.y == 0)
-    //{
-    //    _OriginalSource[id.xy] = float4(1.0, 1.0, 1.0, 1.0);
-    //}
 }
 
 [numthreads(32,32,1)]

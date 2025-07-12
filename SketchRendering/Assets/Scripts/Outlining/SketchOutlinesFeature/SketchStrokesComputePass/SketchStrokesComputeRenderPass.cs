@@ -26,6 +26,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private readonly int DIMENSION_HEIGHT_ID = Shader.PropertyToID("_TextureHeight");
     private readonly int GROUPS_X_ID = Shader.PropertyToID("_GroupsX");
     private readonly int GROUPS_Y_ID = Shader.PropertyToID("_GroupsY");
+    private readonly int DOWNSCALE_FACTOR_ID = Shader.PropertyToID("_DownscaleFactor");
     private readonly int COMPUTE_GRADIENT_VECTORS_ID = Shader.PropertyToID("_GradientVectors");
     private readonly int THRESHOLD_ID = Shader.PropertyToID("_ThresholdForStroke");
     private readonly int STROKE_DATA_ID = Shader.PropertyToID("OutlineStrokeData");
@@ -36,8 +37,14 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private LocalKeyword PerpendicularDirectionKeyword;
 
     private readonly int GRADIENT_VECTOR_STRIDE_LENGTH = sizeof(float) * 4;
-    private readonly Vector2Int DOWNSCALE_TARGET_DIMENSION = new Vector2Int(Mathf.CeilToInt(1920f/2f), Mathf.CeilToInt(1080f/2f));
     
+    private Vector2Int GetDownscaleTargetDimension(Vector2 currentResolution, int factor)
+    {
+        if(currentResolution.x > 1920f || currentResolution.y > 1080f)
+            currentResolution = new Vector2(1920f, 1080f);
+        return new Vector2Int(Mathf.CeilToInt(currentResolution.x / factor), Mathf.CeilToInt(currentResolution.y / factor));
+    }
+
     public void Setup(SketchStrokesPassData passData, Material mat, ComputeShader computeShader)
     {
         sketchMaterial = mat;
@@ -84,7 +91,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
 
         if (strokeDataBuffer != null)
         {
-            Debug.Log("Disposed strokes");
             strokeDataBuffer.Release();
             strokeDataBuffer = null;
         }
@@ -121,12 +127,17 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         public int groupsXID;
         public int groupsYID;
         public Vector3Int threadGroupSize;
+        public int widthID;
+        public int heightID;
+        public Vector2Int dimensions;
         public int texturePropertyID;
         public TextureHandle outlineTex;
         public int computeInputID;
         public ComputeBuffer inputBuffer;
         public int strokeDataID;
         public ComputeBuffer strokeDataBuffer;
+        public int downscaleFactorID;
+        public int downscaleFactor;
     }
 
     static void ExecuteDownscale(DownscalePassData passData, UnsafeGraphContext context)
@@ -153,6 +164,9 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         context.cmd.SetRenderTarget(passData.outlineTex);
         context.cmd.SetComputeIntParam(passData.computeShader, passData.groupsXID, passData.threadGroupSize.x);
         context.cmd.SetComputeIntParam(passData.computeShader, passData.groupsYID, passData.threadGroupSize.y);
+        context.cmd.SetComputeIntParam(passData.computeShader, passData.downscaleFactorID, passData.downscaleFactor);
+        context.cmd.SetComputeIntParam(passData.computeShader, passData.widthID, passData.dimensions.x);
+        context.cmd.SetComputeIntParam(passData.computeShader, passData.heightID, passData.dimensions.y);
         context.cmd.SetComputeTextureParam(passData.computeShader, passData.kernelID, passData.texturePropertyID, passData.outlineTex);
         context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, passData.computeInputID, passData.inputBuffer);
         context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, passData.strokeDataID, passData.strokeDataBuffer);
@@ -174,7 +188,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         var desc = renderGraph.GetTextureDesc(sketchData.OutlinesTexture);
         TextureHandle downscaleTex = TextureHandle.nullHandle;
         TextureHandle originalOutlines = sketchData.OutlinesTexture;
-        if (!passData.PreventDownscale && (desc.width > DOWNSCALE_TARGET_DIMENSION.x || desc.height > DOWNSCALE_TARGET_DIMENSION.y))
+        if (passData.DoDownscale && (GetDownscaleTargetDimension(new Vector2(desc.width, desc.height), passData.DownscaleFactor) is Vector2Int downscaleRes && (desc.width > downscaleRes.x || desc.height > downscaleRes.y)))
         {
             //If we are downscaling, for some reason this has always been culled even when the texture is assigned back
             //so prevent it from ever culling
@@ -184,8 +198,8 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
                 downBuilder.UseTexture(originalOutlines);
                 //create a temporary downscaled version to blit to
                 var downDesc = desc;
-                downDesc.width = DOWNSCALE_TARGET_DIMENSION.x;
-                downDesc.height = DOWNSCALE_TARGET_DIMENSION.y;
+                downDesc.width = downscaleRes.x;
+                downDesc.height = downscaleRes.y;
                 downscaleTex = renderGraph.CreateTexture(downDesc);
                 downBuilder.UseTexture(downscaleTex);
 
@@ -221,7 +235,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             
             if (gradientBuffer == null || gradientBuffer.count != (groups.x * groups.y))
             {
-                Debug.Log("Creating gradient buffer with sizes: " + groups);
+                Debug.Log("Creating gradient buffer of size " + groups);
                 gradientBuffer = new ComputeBuffer(groups.x * groups.y, GRADIENT_VECTOR_STRIDE_LENGTH);
             }
 
@@ -252,17 +266,19 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             }
         }
 
-        using (var applyBuilder = renderGraph.AddUnsafePass(PassName + "_ApplyStrokes", out StrokesPassData passData))
+        using (var applyBuilder = renderGraph.AddUnsafePass(PassName + "_ApplyStrokes", out StrokesPassData computePassData))
         {
             applyBuilder.AllowPassCulling(false);
             applyBuilder.UseTexture(sketchData.OutlinesTexture);
-            passData.outlineTex = sketchData.OutlinesTexture;
-            passData.texturePropertyID = SOURCE_TEXTURE_ID;
-            passData.computeInputID = COMPUTE_GRADIENT_VECTORS_ID;
-            passData.inputBuffer = gradientBuffer;
+            computePassData.outlineTex = sketchData.OutlinesTexture;
+            computePassData.texturePropertyID = SOURCE_TEXTURE_ID;
+            computePassData.computeInputID = COMPUTE_GRADIENT_VECTORS_ID;
+            computePassData.inputBuffer = gradientBuffer;
+            computePassData.downscaleFactorID = DOWNSCALE_FACTOR_ID;
+            computePassData.downscaleFactor = passData.DownscaleFactor;
 
-            passData.computeShader = sketchComputeShader;
-            passData.kernelID = computeApplyStrokeKernelID;
+            computePassData.computeShader = sketchComputeShader;
+            computePassData.kernelID = computeApplyStrokeKernelID;
             
             var computeDesc = renderGraph.GetTextureDesc(sketchData.OutlinesTexture);
             Vector2Int dimensions = new Vector2Int(computeDesc.width, computeDesc.height);
@@ -271,18 +287,21 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
                 Mathf.CeilToInt((float)dimensions.y / (float)applyKernelThreads.y),
                 1
             );
-            passData.groupsXID = GROUPS_X_ID;
-            passData.groupsYID = GROUPS_Y_ID;
-            passData.threadGroupSize = groups;
+            computePassData.groupsXID = GROUPS_X_ID;
+            computePassData.groupsYID = GROUPS_Y_ID;
+            computePassData.threadGroupSize = groups;
+            
+            computePassData.widthID = DIMENSION_WIDTH_ID;
+            computePassData.heightID = DIMENSION_HEIGHT_ID;
+            computePassData.dimensions = new Vector2Int(dimensions.x, dimensions.y);
                 
             if (strokeDataBuffer == null)
             {
-                Debug.Log("Created strokes");
-                strokeDataBuffer = new ComputeBuffer(1, this.passData.OutlineStrokeData.StrokeData.GetStrideLength());
+                strokeDataBuffer = new ComputeBuffer(1, passData.OutlineStrokeData.StrokeData.GetStrideLength());
             }
-            strokeDataBuffer.SetData(new [] {this.passData.OutlineStrokeData.StrokeData});
-            passData.strokeDataID = STROKE_DATA_ID;
-            passData.strokeDataBuffer = strokeDataBuffer;
+            strokeDataBuffer.SetData(new [] {passData.OutlineStrokeData.StrokeData});
+            computePassData.strokeDataID = STROKE_DATA_ID;
+            computePassData.strokeDataBuffer = strokeDataBuffer;
             
             applyBuilder.SetRenderFunc((StrokesPassData data, UnsafeGraphContext context) => ExecuteApplyStrokesCompute(data, context));
         }
