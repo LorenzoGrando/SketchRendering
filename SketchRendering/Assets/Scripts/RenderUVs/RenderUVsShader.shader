@@ -12,7 +12,7 @@ Shader "Hidden/RenderUVsShader"
             #pragma vertex vert
             #pragma fragment frag
             
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"            
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct Attributes
             {
@@ -31,19 +31,20 @@ Shader "Hidden/RenderUVsShader"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
                 Varyings o;
-                            
+                
                 VertexPositionInputs vertexPositions = GetVertexPositionInputs(i.positionOS.xyz);
                 o.positionCS = vertexPositions.positionCS;
 
                 o.uvs = i.uvs;
-
+                
                 return o;
             }
                         
             float4 frag(Varyings i) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                return float4(i.uvs, 0.0, 1.0);
+                
+                return float4(i.uvs, 0.0, 0.0);
             }
             ENDHLSL
         }

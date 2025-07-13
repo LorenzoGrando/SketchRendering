@@ -89,18 +89,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   EdgeDetectionPassData:
-    Method: 1
+    Method: 0
     Source: 1
-    OutlineThreshold: 0.179
+    OutlineThreshold: 0.896
     OutlineOffset: 0
     OutlineAngleSensitivity: 1
-    OutlineAngleConstraint: 0.679
+    OutlineAngleConstraint: 0.538
     OutlineNormalSensitivity: 1
     OutputType: 1
   SketchStrokesPassData:
     OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
-    PreventDownscale: 1
-    StrokeThreshold: 0.057
+    SampleArea: 1
+    DoDownscale: 0
+    DownscaleFactor: 2
+    StrokeThreshold: 0
     UsePerpendicularDirection: 0
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}

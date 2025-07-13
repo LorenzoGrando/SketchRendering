@@ -18,8 +18,11 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     
     private readonly int numTonesShaderID = Shader.PropertyToID("_NumTones");
     private readonly int tamFirstShaderID = Shader.PropertyToID("_Tam0_2");
+    private readonly int tamFirstTexelShaderID = Shader.PropertyToID("_Tam0_2_TexelSize");
     private readonly int tamSecondShaderID = Shader.PropertyToID("_Tam3_5");
+    private readonly int tamSecondTexelShaderID = Shader.PropertyToID("_Tam3_5_TexelSize");
     private readonly int tamThirdShaderID = Shader.PropertyToID("_Tam6_8");
+    private readonly int tamThirdTexelShaderID = Shader.PropertyToID("_Tam6_8_TexelSize");
     private readonly int tamScalesShaderID = Shader.PropertyToID("_TamScales");
     private readonly int luminanceOffsetShaderID = Shader.PropertyToID("_LuminanceOffset");
 
@@ -75,21 +78,27 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
                 luminanceMat.SetKeyword(DoubleKeyword, false);
                 luminanceMat.SetKeyword(TripleKeyword, false);
                 luminanceMat.SetTexture(tamFirstShaderID, passData.ActiveTonalMap.Tones[0]);
+                luminanceMat.SetVector(tamFirstTexelShaderID, passData.ActiveTonalMap.Tones[0].GetTexelSize());
                 break;
             case var _ when passData.ActiveTonalMap.Tones.Length == 2:
                 luminanceMat.SetKeyword(SingleKeyword, false);
                 luminanceMat.SetKeyword(DoubleKeyword, true);
                 luminanceMat.SetKeyword(TripleKeyword, false);
                 luminanceMat.SetTexture(tamFirstShaderID, passData.ActiveTonalMap.Tones[0]);
+                luminanceMat.SetVector(tamFirstTexelShaderID, passData.ActiveTonalMap.Tones[0].GetTexelSize());
                 luminanceMat.SetTexture(tamSecondShaderID, passData.ActiveTonalMap.Tones[1]);
+                luminanceMat.SetVector(tamSecondTexelShaderID, passData.ActiveTonalMap.Tones[1].GetTexelSize());
                 break;
             case var _ when passData.ActiveTonalMap.Tones.Length == 3:
                 luminanceMat.SetKeyword(SingleKeyword, false);
                 luminanceMat.SetKeyword(DoubleKeyword, false);
                 luminanceMat.SetKeyword(TripleKeyword, true);
                 luminanceMat.SetTexture(tamFirstShaderID, passData.ActiveTonalMap.Tones[0]);
+                luminanceMat.SetVector(tamFirstTexelShaderID, passData.ActiveTonalMap.Tones[0].GetTexelSize());
                 luminanceMat.SetTexture(tamSecondShaderID, passData.ActiveTonalMap.Tones[1]);
+                luminanceMat.SetVector(tamSecondTexelShaderID, passData.ActiveTonalMap.Tones[1].GetTexelSize());
                 luminanceMat.SetTexture(tamThirdShaderID, passData.ActiveTonalMap.Tones[2]);
+                luminanceMat.SetVector(tamThirdTexelShaderID, passData.ActiveTonalMap.Tones[2].GetTexelSize());
                 break;
         }
 
