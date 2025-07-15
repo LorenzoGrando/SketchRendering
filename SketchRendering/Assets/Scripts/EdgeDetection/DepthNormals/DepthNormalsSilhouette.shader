@@ -165,21 +165,11 @@ Shader "Hidden/DepthNormalsSilhouette"
                     return float4(edge, angle, 0.0, edge);
                     #elif defined(SOURCE_DEPTH_NORMALS)
                     float edge = max(0, max(depthGradient, normalGradient));
-                    float angle = 0;
-               /*
-                    if (depthGradient > normalGradient) {
-                        angle = atan2(depthGradientVector.y, depthGradientVector.x);
-                    }
-                   else
-                    {
-                       angle = atan2(normalGradientVector.y, normalGradientVector.x);
-                    }
-                */
                     float angleDepth = atan2(depthGradientVector.y, depthGradientVector.x);
                     float angleNormal = atan2(normalGradientVector.y, normalGradientVector.x);
                     //the stronger the gradient depth, attenuate normals since depth is usually more consistely to the surface flow
                     float angleNormalAttenuation = lerp(1.0, 0.0, depthGradient);
-                    angle = ((angleDepth * depthGradient) + (angleNormal * normalGradient * angleNormalAttenuation))/(depthGradient + normalGradient * angleNormalAttenuation);
+                    float angle = ((angleDepth * depthGradient) + (angleNormal * normalGradient * angleNormalAttenuation))/(depthGradient + normalGradient * angleNormalAttenuation);
                     angle /= PI;
                     angle = (angle + 1) * 0.5;
                     return float4(edge, angle, 0.0, edge);

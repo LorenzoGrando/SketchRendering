@@ -15,9 +15,9 @@ MonoBehaviour:
   StrokeData:
     OriginPoint: {x: 0.25, y: 0.5, z: 0, w: 0}
     Direction: {x: 1, y: 1, z: 0, w: 0}
-    Thickness: 0.5
-    ThicknessFalloffConstraint: 0.276
-    Length: 0.75
+    Thickness: 1
+    ThicknessFalloffConstraint: 0.642
+    Length: 0.677
     LengthThicknessFalloff: 1
     Pressure: 1
     PressureFalloff: 0

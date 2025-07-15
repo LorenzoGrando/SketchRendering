@@ -15,8 +15,8 @@ MonoBehaviour:
   m_Active: 1
   passData:
     debugMode: 0
-    OutlineStrokeColor: {r: 0, g: 0, b: 0, a: 1}
-    ShadingStrokeColor: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
+    OutlineStrokeColor: {r: 0.03773582, g: 0.03773582, b: 0.03773582, a: 1}
+    ShadingStrokeColor: {r: 0, g: 0, b: 0, a: 1}
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -91,10 +91,10 @@ MonoBehaviour:
   EdgeDetectionPassData:
     Method: 0
     Source: 1
-    OutlineThreshold: 0.896
+    OutlineThreshold: 0.384
     OutlineOffset: 0
     OutlineAngleSensitivity: 1
-    OutlineAngleConstraint: 0.538
+    OutlineAngleConstraint: 0.55
     OutlineNormalSensitivity: 1
     OutputType: 1
   SketchStrokesPassData:
@@ -102,7 +102,8 @@ MonoBehaviour:
     SampleArea: 1
     DoDownscale: 0
     DownscaleFactor: 2
-    StrokeThreshold: 0
+    StrokeThreshold: 0.03
+    StrokeSampleScale: 4
     UsePerpendicularDirection: 0
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
@@ -176,12 +177,12 @@ MonoBehaviour:
   uvsPassData:
     SkyboxRotation: 0
     SkyboxRotationMatrix:
-      e00: -0.00000004371139
-      e01: -1
+      e00: 0.000000011924881
+      e01: 1
       e02: 0
       e03: 0
-      e10: 1
-      e11: -0.00000004371139
+      e10: -1
+      e11: 0.000000011924881
       e12: 0
       e13: 0
       e20: 0

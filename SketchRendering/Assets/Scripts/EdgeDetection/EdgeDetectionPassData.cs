@@ -50,13 +50,36 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
         return true;
     }
 
+    private OutlineVolumeComponent UpdateTargetVolume()
+    {
+        //This honestly feels really bad to do,
+        //but i found it ideal over needing two add two different components to a stack, one for edge detection and one for outline specifics.
+        //So each class inherits from a common base, and we choose here based on the stack
+        //TODO: This just fires a warning, ideally select the correct volume based on universal data?
+
+        SmoothOutlineVolumeComponent smoothComponent = VolumeManager.instance.stack.GetComponent<SmoothOutlineVolumeComponent>();
+        SketchOutlineVolumeComponent sketchComponent = VolumeManager.instance.stack.GetComponent<SketchOutlineVolumeComponent>();
+        bool hasSmooth = smoothComponent != null && smoothComponent.AnyPropertiesIsOverridden();
+        bool hasSketch = sketchComponent != null && sketchComponent.AnyPropertiesIsOverridden();
+        if (hasSmooth && hasSketch)
+        {
+            Debug.LogWarning("Multiple edge detection outline volumes detected in scene, defaulting to Settings values. Please remove or disable one of the overrides.");
+            return null;
+        }
+        else if (hasSmooth)
+            return smoothComponent;
+        else if (hasSketch)
+            return sketchComponent;
+        else return null;
+    }
+
     public EdgeDetectionPassData GetPassDataByVolume()
     {
-        SmoothOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SmoothOutlineVolumeComponent>();
+        OutlineVolumeComponent volumeComponent = UpdateTargetVolume();
         if (volumeComponent == null)
             return this;
+
         EdgeDetectionPassData overrideData = new EdgeDetectionPassData();
-        
         
         overrideData.Method = volumeComponent.Method.overrideState
             ? volumeComponent.Method.value : Method;

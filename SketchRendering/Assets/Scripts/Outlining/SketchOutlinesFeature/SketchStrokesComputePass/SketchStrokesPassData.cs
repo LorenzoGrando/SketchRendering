@@ -12,6 +12,8 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
     public int DownscaleFactor;
     [Range(0f, 1f)] 
     public float StrokeThreshold;
+    [Range(1f, 4f)] 
+    public int StrokeSampleScale;
 
     [HideInInspector] 
     public bool UsePerpendicularDirection;
@@ -42,16 +44,20 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
 
     public SketchStrokesPassData GetPassDataByVolume()
     {
-        SmoothOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SmoothOutlineVolumeComponent>();
+        SketchOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SketchOutlineVolumeComponent>();
         if (volumeComponent == null)
             return this;
         
         SketchStrokesPassData overrideData = new SketchStrokesPassData();
-        overrideData.SampleArea = SampleArea;
-        overrideData.DoDownscale = DoDownscale;
-        overrideData.DownscaleFactor = DoDownscale ? DownscaleFactor : 1;
-        overrideData.StrokeThreshold = StrokeThreshold;
         overrideData.OutlineStrokeData = OutlineStrokeData;
+        overrideData.SampleArea = volumeComponent.StrokeArea.overrideState ? volumeComponent.StrokeArea.value : SampleArea;
+        overrideData.StrokeSampleScale = volumeComponent.StrokeScale.overrideState ? volumeComponent.StrokeScale.value : StrokeSampleScale;
+        overrideData.DoDownscale = volumeComponent.DoDownscale.overrideState ? volumeComponent.DoDownscale.value : DoDownscale;
+        if(overrideData.DoDownscale)
+            overrideData.DownscaleFactor = volumeComponent.DownscaleFactor.overrideState ? volumeComponent.DownscaleFactor.value : DownscaleFactor;
+        else
+            overrideData.DownscaleFactor = 1;
+        overrideData.StrokeThreshold = volumeComponent.MinThresholdForStroke.overrideState ? volumeComponent.MinThresholdForStroke.value : StrokeThreshold;;
         
         return overrideData;
     }

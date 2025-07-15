@@ -10,6 +10,7 @@
 #pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
 
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
+#include "Assets/Scripts/Includes/HashingFunctions.hlsl"
 
 #define PI 3.14159265358979323846;
 
@@ -40,6 +41,7 @@ void ComputeAverageStroke (uint3 id, uint3 idG, uint3 idGs, uint2 kernelSizes)
     float4 gradient = float4(position.xy, direction.xy);
     gradients[gFlatIndex] = gradient;
     localIsEdge[gFlatIndex] = step(0.5, isEdge);
+    
     GroupMemoryBarrierWithGroupSync();
     
     if (idG.x == 0 && idG.y == 0)
@@ -63,7 +65,7 @@ void ComputeAverageStroke (uint3 id, uint3 idG, uint3 idGs, uint2 kernelSizes)
             averagePosition /= (float)summed;
             averageDirection /= (float)summed;
             #if defined (USE_PERPENDICULAR_DIRECTION)
-            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            //averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
             #endif
         }
         gradients[0] = float4(averagePosition.xy, averageDirection.xy * isAverageStroke);
@@ -107,6 +109,7 @@ void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_Group
 
 
 RWStructuredBuffer<StrokeData> OutlineStrokeData;
+int _StrokeSampleScale;
 groupshared StrokeData groupData;
 groupshared float isEdge;
 groupshared uint flatIndex;
@@ -115,13 +118,14 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
     float value = 1;
     float widthScalar = (float)_TextureWidth/(float)kernelSizes.x;
     float heightScalar = (float)_TextureHeight/(float)kernelSizes.y;
-    float scalar = min(widthScalar, heightScalar) / ((float)_DownscaleFactor * 2.0);
+    float baseScalar = (min(widthScalar, heightScalar)) / ((float)_DownscaleFactor);
+    float lengthSampleScalar = baseScalar / _StrokeSampleScale;
     StrokeData data = OutlineStrokeData[0];
-    [unroll(3)]
-    for (int x = -1; x < 2; x++)
+    [loop]
+    for (int x = -_StrokeSampleScale; x < _StrokeSampleScale + 1; x++)
     {
-        [unroll(3)]
-        for (int  y = -1; y < 2; y++)
+        [loop]
+        for (int  y = -_StrokeSampleScale; y < _StrokeSampleScale + 1; y++)
         {
             uint xClamp = clamp((uint)(((int)idGs.x + x)), 0, _GroupsX - 1);
             uint yClamp = clamp((uint)(((int)idGs.y + y)), 0, _GroupsY - 1);
@@ -146,7 +150,7 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
 
             if (isEdge)
             {
-                float localValue = (float)SampleBaseSDFClampParamScalar(groupData, id.xy, float2(_TextureWidth, _TextureHeight), scalar)/255.0;
+                float localValue = (float)SampleBaseSDFClampParamScalar(groupData, id.xy, float2(_TextureWidth, _TextureHeight), baseScalar, lengthSampleScalar)/255.0;
                 value *= localValue;
             }
         }

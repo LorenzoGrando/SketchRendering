@@ -21,16 +21,19 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private readonly string APPLY_STROKES_KERNEL = "ApplyStrokes";
     private int computeStrokeKernelID;
     private int computeApplyStrokeKernelID;
-    private readonly int SOURCE_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
-    private readonly int DIMENSION_WIDTH_ID = Shader.PropertyToID("_TextureWidth");
-    private readonly int DIMENSION_HEIGHT_ID = Shader.PropertyToID("_TextureHeight");
-    private readonly int GROUPS_X_ID = Shader.PropertyToID("_GroupsX");
-    private readonly int GROUPS_Y_ID = Shader.PropertyToID("_GroupsY");
-    private readonly int DOWNSCALE_FACTOR_ID = Shader.PropertyToID("_DownscaleFactor");
-    private readonly int COMPUTE_GRADIENT_VECTORS_ID = Shader.PropertyToID("_GradientVectors");
-    private readonly int THRESHOLD_ID = Shader.PropertyToID("_ThresholdForStroke");
-    private readonly int STROKE_DATA_ID = Shader.PropertyToID("OutlineStrokeData");
-    private readonly string PERPENDICULAR_DIRECTION_KEYWORD_ID = "USE_PERPENDICULAR_DIRECTION";
+    
+    private static readonly int SOURCE_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
+    private static readonly int DIMENSION_WIDTH_ID = Shader.PropertyToID("_TextureWidth");
+    private static readonly int DIMENSION_HEIGHT_ID = Shader.PropertyToID("_TextureHeight");
+    private static readonly int GROUPS_X_ID = Shader.PropertyToID("_GroupsX");
+    private static readonly int GROUPS_Y_ID = Shader.PropertyToID("_GroupsY");
+    private static readonly int DOWNSCALE_FACTOR_ID = Shader.PropertyToID("_DownscaleFactor");
+    private static readonly int COMPUTE_GRADIENT_VECTORS_ID = Shader.PropertyToID("_GradientVectors");
+    private static readonly int THRESHOLD_ID = Shader.PropertyToID("_ThresholdForStroke");
+    private static  readonly int STROKE_SCALE_ID = Shader.PropertyToID("_StrokeSampleScale");
+    private static readonly int STROKE_DATA_ID = Shader.PropertyToID("OutlineStrokeData");
+    private static readonly string PERPENDICULAR_DIRECTION_KEYWORD_ID = "USE_PERPENDICULAR_DIRECTION";
+    
     private Vector3Int strokesKernelThreads;
     private Vector3Int applyKernelThreads;
 
@@ -100,17 +103,10 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     {
         public ComputeShader computeShader;
         public int kernelID;
-        public int groupsXID;
-        public int groupsYID;
         public Vector3Int threadGroupSize;
-        public int widthID;
-        public int heightID;
         public Vector2Int dimensions;
-        public int texturePropertyID;
         public TextureHandle outlineTex;
-        public int thresholdID;
         public float threshold;
-        public int computeOutputID;
         public ComputeBuffer outputBuffer;
     }
 
@@ -127,17 +123,12 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         public int groupsXID;
         public int groupsYID;
         public Vector3Int threadGroupSize;
-        public int widthID;
-        public int heightID;
         public Vector2Int dimensions;
-        public int texturePropertyID;
         public TextureHandle outlineTex;
-        public int computeInputID;
         public ComputeBuffer inputBuffer;
-        public int strokeDataID;
         public ComputeBuffer strokeDataBuffer;
-        public int downscaleFactorID;
         public int downscaleFactor;
+        public int strokeSampleScale;
     }
 
     static void ExecuteDownscale(DownscalePassData passData, UnsafeGraphContext context)
@@ -149,27 +140,28 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     static void ExecuteFindStrokesCompute(ComputePassData passData, UnsafeGraphContext context)
     {
         context.cmd.SetRenderTarget(passData.outlineTex);
-        context.cmd.SetComputeTextureParam(passData.computeShader, passData.kernelID, passData.texturePropertyID, passData.outlineTex);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.widthID, passData.dimensions.x);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.heightID, passData.dimensions.y);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.groupsXID, passData.threadGroupSize.x);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.groupsYID, passData.threadGroupSize.y);
-        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, passData.computeOutputID, passData.outputBuffer);
-        context.cmd.SetComputeFloatParam(passData.computeShader, passData.thresholdID, passData.threshold);
+        context.cmd.SetComputeTextureParam(passData.computeShader, passData.kernelID, SOURCE_TEXTURE_ID, passData.outlineTex);
+        context.cmd.SetComputeIntParam(passData.computeShader, DIMENSION_WIDTH_ID, passData.dimensions.x);
+        context.cmd.SetComputeIntParam(passData.computeShader, DIMENSION_HEIGHT_ID, passData.dimensions.y);
+        context.cmd.SetComputeIntParam(passData.computeShader, GROUPS_X_ID, passData.threadGroupSize.x);
+        context.cmd.SetComputeIntParam(passData.computeShader, GROUPS_Y_ID, passData.threadGroupSize.y);
+        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, COMPUTE_GRADIENT_VECTORS_ID, passData.outputBuffer);
+        context.cmd.SetComputeFloatParam(passData.computeShader, THRESHOLD_ID, passData.threshold);
         context.cmd.DispatchCompute(passData.computeShader, passData.kernelID, passData.threadGroupSize.x, passData.threadGroupSize.y, passData.threadGroupSize.z);
     }
 
     static void ExecuteApplyStrokesCompute(StrokesPassData passData, UnsafeGraphContext context)
     {
         context.cmd.SetRenderTarget(passData.outlineTex);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.groupsXID, passData.threadGroupSize.x);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.groupsYID, passData.threadGroupSize.y);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.downscaleFactorID, passData.downscaleFactor);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.widthID, passData.dimensions.x);
-        context.cmd.SetComputeIntParam(passData.computeShader, passData.heightID, passData.dimensions.y);
-        context.cmd.SetComputeTextureParam(passData.computeShader, passData.kernelID, passData.texturePropertyID, passData.outlineTex);
-        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, passData.computeInputID, passData.inputBuffer);
-        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, passData.strokeDataID, passData.strokeDataBuffer);
+        context.cmd.SetComputeIntParam(passData.computeShader, GROUPS_X_ID, passData.threadGroupSize.x);
+        context.cmd.SetComputeIntParam(passData.computeShader, GROUPS_Y_ID, passData.threadGroupSize.y);
+        context.cmd.SetComputeIntParam(passData.computeShader, DOWNSCALE_FACTOR_ID, passData.downscaleFactor);
+        context.cmd.SetComputeIntParam(passData.computeShader, STROKE_SCALE_ID, passData.strokeSampleScale);
+        context.cmd.SetComputeIntParam(passData.computeShader, DIMENSION_WIDTH_ID, passData.dimensions.x);
+        context.cmd.SetComputeIntParam(passData.computeShader, DIMENSION_HEIGHT_ID, passData.dimensions.y);
+        context.cmd.SetComputeTextureParam(passData.computeShader, passData.kernelID, SOURCE_TEXTURE_ID, passData.outlineTex);
+        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, COMPUTE_GRADIENT_VECTORS_ID, passData.inputBuffer);
+        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, STROKE_DATA_ID, passData.strokeDataBuffer);
         context.cmd.DispatchCompute(passData.computeShader, passData.kernelID, passData.threadGroupSize.x, passData.threadGroupSize.y, passData.threadGroupSize.z);
     }
 
@@ -220,7 +212,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
       
             builder.UseTexture(sketchData.OutlinesTexture);
             computePassData.outlineTex = sketchData.OutlinesTexture;
-            computePassData.texturePropertyID = SOURCE_TEXTURE_ID;
             
             var computeDesc = renderGraph.GetTextureDesc(sketchData.OutlinesTexture);
             Vector2Int dimensions = new Vector2Int(computeDesc.width, computeDesc.height);
@@ -229,22 +220,15 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
                 Mathf.CeilToInt((float)dimensions.y / (float)strokesKernelThreads.y),
                 1
             );
-            computePassData.groupsXID = GROUPS_X_ID;
-            computePassData.groupsYID = GROUPS_Y_ID;
             computePassData.threadGroupSize = groups;
             
             if (gradientBuffer == null || gradientBuffer.count != (groups.x * groups.y))
             {
-                Debug.Log("Creating gradient buffer of size " + groups);
                 gradientBuffer = new ComputeBuffer(groups.x * groups.y, GRADIENT_VECTOR_STRIDE_LENGTH);
             }
-
-            computePassData.widthID = DIMENSION_WIDTH_ID;
-            computePassData.heightID = DIMENSION_HEIGHT_ID;
+            
             computePassData.dimensions = new Vector2Int(dimensions.x, dimensions.y);
-            computePassData.thresholdID = THRESHOLD_ID;
             computePassData.threshold = passData.StrokeThreshold;
-            computePassData.computeOutputID = COMPUTE_GRADIENT_VECTORS_ID;
             computePassData.outputBuffer = gradientBuffer;
             
             computePassData.computeShader = sketchComputeShader;
@@ -271,11 +255,9 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             applyBuilder.AllowPassCulling(false);
             applyBuilder.UseTexture(sketchData.OutlinesTexture);
             computePassData.outlineTex = sketchData.OutlinesTexture;
-            computePassData.texturePropertyID = SOURCE_TEXTURE_ID;
-            computePassData.computeInputID = COMPUTE_GRADIENT_VECTORS_ID;
             computePassData.inputBuffer = gradientBuffer;
-            computePassData.downscaleFactorID = DOWNSCALE_FACTOR_ID;
             computePassData.downscaleFactor = passData.DownscaleFactor;
+            computePassData.strokeSampleScale = passData.StrokeSampleScale;
 
             computePassData.computeShader = sketchComputeShader;
             computePassData.kernelID = computeApplyStrokeKernelID;
@@ -290,9 +272,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             computePassData.groupsXID = GROUPS_X_ID;
             computePassData.groupsYID = GROUPS_Y_ID;
             computePassData.threadGroupSize = groups;
-            
-            computePassData.widthID = DIMENSION_WIDTH_ID;
-            computePassData.heightID = DIMENSION_HEIGHT_ID;
             computePassData.dimensions = new Vector2Int(dimensions.x, dimensions.y);
                 
             if (strokeDataBuffer == null)
@@ -300,7 +279,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
                 strokeDataBuffer = new ComputeBuffer(1, passData.OutlineStrokeData.StrokeData.GetStrideLength());
             }
             strokeDataBuffer.SetData(new [] {passData.OutlineStrokeData.StrokeData});
-            computePassData.strokeDataID = STROKE_DATA_ID;
             computePassData.strokeDataBuffer = strokeDataBuffer;
             
             applyBuilder.SetRenderFunc((StrokesPassData data, UnsafeGraphContext context) => ExecuteApplyStrokesCompute(data, context));

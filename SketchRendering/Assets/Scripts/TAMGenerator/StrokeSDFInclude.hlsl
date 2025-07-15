@@ -17,6 +17,14 @@ struct StrokeData
     float pressureFalloff;
 };
 
+struct VariationData
+{
+    float directionVariation;
+    float thicknessVariation;
+    float lengthVariation;
+    float pressureVariation;
+};
+
 float2 GetOriginCoordinate(float2 coords, float dimension)
 {
     return float2((coords.x % 1) * (float)dimension, (coords.y % 1) * (float)dimension);
@@ -132,11 +140,11 @@ uint SampleBaseSDFClamp(StrokeData data, float2 pointID, float2 dimensions)
     return (1 - sample) * 255;
 }
 
-uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float dimension, float paramRange)
+uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float dimension, float thicknessScalar, float lengthScalar)
 {
     float2 origin = GetOriginCoordinate(data.coords.xy, dimension);
-    float thickness = GetInterpolatedFloatValue(data.thickness, dimension, 8.0 * paramRange);
-    float length = GetInterpolatedFloatValue(data.length, dimension, 2.0 * paramRange);
+    float thickness = GetInterpolatedFloatValue(data.thickness, dimension, 8.0 * thicknessScalar);
+    float length = GetInterpolatedFloatValue(data.length, dimension, 2.0 * lengthScalar);
     
     float2 endPoint = origin + normalize(data.direction).xy * length;
     float2 v = endPoint - origin;
@@ -159,12 +167,12 @@ uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float dimens
     return (1 - sample) * 255;
 }
 
-uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float2 dimensions, float paramRange)
+uint SampleBaseSDFClampParamScalar(StrokeData data, float2 pointID, float2 dimensions,  float thicknessScalar, float lengthScalar)
 {
     float largestDimension = max(dimensions.x, dimensions.y);
     float2 origin = GetOriginCoordinate(data.coords.xy, dimensions);
-    float thickness = GetInterpolatedFloatValue(data.thickness, largestDimension, 8.0 * paramRange);
-    float length = GetInterpolatedFloatValue(data.length, largestDimension, 2.0 * paramRange);
+    float thickness = GetInterpolatedFloatValue(data.thickness, largestDimension, 8.0 * thicknessScalar);
+    float length = GetInterpolatedFloatValue(data.length, largestDimension, 2.0 * lengthScalar);
     
     float2 endPoint = origin + normalize(data.direction).xy * length;
     float2 v = endPoint - origin;
