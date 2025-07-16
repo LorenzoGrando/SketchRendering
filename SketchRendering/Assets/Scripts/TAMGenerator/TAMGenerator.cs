@@ -31,19 +31,23 @@ public class TAMGenerator : MonoBehaviour
     private int Dimension;
     
     //Compute Data
+    private readonly string GENERATE_STROKE_BUFFER_KERNEL = "GenerateRandomStrokeBuffer";
     private readonly string APPLY_STROKE_KERNEL = "ApplyStrokeIterated";
     private readonly string TONE_FILL_RATE_KERNEL = "FindAverageTextureFillRate";
     private readonly string BLIT_STROKE_KERNEL = "BlitFinalSelectedStroke";
     private readonly string PACK_STROKES_KERNEL = "PackStrokeTextures";
+    private int csGenerateStrokeBufferKernelID;
     private int csApplyStrokeKernelID;
     private int csFillRateKernelID;
     private int csBlitStrokeKernelID;
     private int csPackStrokesKernelID;
+    private Vector3Int csGenerateStrokeBufferKernelThreads;
     private Vector3Int csApplyStrokeKernelThreads;
     private Vector3Int csFillRateKernelThreads;
     private Vector3Int csBlitStrokeKernelThreads;
     private Vector3Int csPackStrokesKernelThreads;
-    private ComputeBuffer strokeDataBuffers;
+    private ComputeBuffer strokeDataBuffer;
+    private ComputeBuffer variationDataBuffer;
     private ComputeBuffer[] strokeIterationTextureBuffers;
     private ComputeBuffer strokeTextureTonesBuffer;
     private ComputeBuffer strokeReducedSource;
@@ -53,10 +57,12 @@ public class TAMGenerator : MonoBehaviour
     private readonly int RENDER_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
     private readonly int REDUCED_SOURCE_ID = Shader.PropertyToID("_ReducedSource");
     private readonly int STROKE_DATA_ID = Shader.PropertyToID("_StrokeData");
+    private readonly int VARIATION_DATA_ID = Shader.PropertyToID("_VariationData");    
     private readonly int ITERATION_STEP_TEXTURE_ID = Shader.PropertyToID("_IterationOutputs");
     private readonly int TONE_RESULTS_ID = Shader.PropertyToID("_ToneResults");
     private readonly int ITERATIONS_ID = Shader.PropertyToID("_Iteration");
     private readonly int DIMENSION_ID = Shader.PropertyToID("_Dimension");
+    private readonly int SEED_ID = Shader.PropertyToID("_Seed");
     private readonly int FILL_RATE_ID = Shader.PropertyToID("_Tone_GlobalCache");
     private readonly int FILL_RATE_BUFFER_SIZE_ID = Shader.PropertyToID("_BufferSize");
     private readonly int FILL_RATE_SPLIT_BUFFER_SIZE_ID = Shader.PropertyToID("_SplitBufferSize");
@@ -223,6 +229,21 @@ public class TAMGenerator : MonoBehaviour
     private void PrepareComputeData()
     {
         ManageStrokeDataKeywords();
+
+        if (TAMGeneratorShader.HasKernel(GENERATE_STROKE_BUFFER_KERNEL))
+        {
+            csGenerateStrokeBufferKernelID = TAMGeneratorShader.FindKernel(GENERATE_STROKE_BUFFER_KERNEL);
+            TAMGeneratorShader.GetKernelThreadGroupSizes(csGenerateStrokeBufferKernelID, out uint groupsX, out uint groupsY, out uint groupsZ);
+            csGenerateStrokeBufferKernelThreads = new Vector3Int(
+                Mathf.CeilToInt((float)IterationsPerStroke / groupsX), 
+                1, 
+                1);
+            
+            TAMGeneratorShader.SetInt(DIMENSION_ID, Dimension);
+            TAMGeneratorShader.SetBuffer(csGenerateStrokeBufferKernelID, STROKE_DATA_ID, strokeDataBuffer);      
+            TAMGeneratorShader.SetBuffer(csGenerateStrokeBufferKernelID, VARIATION_DATA_ID, variationDataBuffer);      
+        }
+        
         if (TAMGeneratorShader.HasKernel(APPLY_STROKE_KERNEL))
         {
             csApplyStrokeKernelID = TAMGeneratorShader.FindKernel(APPLY_STROKE_KERNEL);
@@ -234,7 +255,7 @@ public class TAMGenerator : MonoBehaviour
             
             TAMGeneratorShader.SetTexture(csApplyStrokeKernelID, RENDER_TEXTURE_ID, targetRT);
             TAMGeneratorShader.SetBuffer(csApplyStrokeKernelID, REDUCED_SOURCE_ID, strokeReducedSource);
-            TAMGeneratorShader.SetBuffer(csApplyStrokeKernelID, STROKE_DATA_ID, strokeDataBuffers);
+            TAMGeneratorShader.SetBuffer(csApplyStrokeKernelID, STROKE_DATA_ID, strokeDataBuffer);
             TAMGeneratorShader.SetInt(DIMENSION_ID, Dimension);
         }
 
@@ -294,23 +315,35 @@ public class TAMGenerator : MonoBehaviour
     private void ConfigureStrokesBuffer(float fillRate)
     {
         TAMStrokeData[] strokeDatas = new TAMStrokeData[IterationsPerStroke];
+        TAMVariationData[] variationDatas = new TAMVariationData[IterationsPerStroke];
+        TAMStrokeData expectedStrokeData = StrokeDataAsset.UpdatedDataByFillRate(fillRate);
         for (int i = 0; i < IterationsPerStroke; i++)
         {
-            TAMStrokeData iterationData = StrokeDataAsset.Randomize(fillRate);
-            strokeDatas[i] = iterationData;
+            //TAMStrokeData iterationData = StrokeDataAsset.Randomize(fillRate);
+            strokeDatas[i] = expectedStrokeData;
+            variationDatas[i] = StrokeDataAsset.VariationData;
         }
-        if(strokeDataBuffers == null)
-            strokeDataBuffers = new ComputeBuffer(IterationsPerStroke, StrokeDataAsset.StrokeData.GetStrideLength());
+        if(strokeDataBuffer == null)
+            strokeDataBuffer = new ComputeBuffer(IterationsPerStroke, StrokeDataAsset.StrokeData.GetStrideLength());
+        if (variationDataBuffer == null)
+            variationDataBuffer = new ComputeBuffer(IterationsPerStroke, StrokeDataAsset.VariationData.GetStrideLength());
 
-        strokeDataBuffers.SetData(strokeDatas);
+        strokeDataBuffer.SetData(strokeDatas);
+        variationDataBuffer.SetData(variationDatas);
     }
 
     private void ReleaseBuffers()
     {
-        if (strokeDataBuffers != null)
+        if (strokeDataBuffer != null)
         {
-            strokeDataBuffers.Release();
-            strokeDataBuffers = null;
+            strokeDataBuffer.Release();
+            strokeDataBuffer = null;
+        }
+
+        if (variationDataBuffer != null)
+        {
+            variationDataBuffer.Release();
+            variationDataBuffer = null;
         }
 
         if (strokeIterationTextureBuffers != null)
@@ -344,8 +377,11 @@ public class TAMGenerator : MonoBehaviour
         }
     }
     
-    public float ApplyStrokeKernel()
+    public float ApplyStrokeKernel(int iteration)
     {
+        //Randomize stroke positions
+        TAMGeneratorShader.SetInt(SEED_ID, (int)Time.realtimeSinceStartup + Mathf.RoundToInt(UnityEngine.Random.value * iteration * 997));
+        TAMGeneratorShader.Dispatch(csGenerateStrokeBufferKernelID, csGenerateStrokeBufferKernelThreads.x, csGenerateStrokeBufferKernelThreads.y, csGenerateStrokeBufferKernelThreads.z);
         return ExecuteIteratedStrokeKernel();
     }
 
@@ -355,7 +391,7 @@ public class TAMGenerator : MonoBehaviour
         int prevIterations = IterationsPerStroke;
         IterationsPerStroke = 1;
         ConfigureGeneratorData();
-        strokeDataBuffers.SetData(new [] {StrokeDataAsset.PreviewDisplay()});
+        strokeDataBuffer.SetData(new [] {StrokeDataAsset.PreviewDisplay()});
         ExecuteIteratedStrokeKernel();
         IterationsPerStroke = prevIterations;
     }
@@ -512,15 +548,16 @@ public class TAMGenerator : MonoBehaviour
     private IEnumerator ApplyStrokesUntilFillRateRoutine(float targetFillRate, float achievedFillRate = 0)
     {
         int maxStrokesPerFrame = 10;
+        int strokesApplied = 0;
         while (achievedFillRate < targetFillRate)
         {
             ConfigureStrokesBuffer(achievedFillRate);
             if (Application.isPlaying)
             {
-                int strokesApplied = 0;
+                strokesApplied = 0;
                 while (strokesApplied < maxStrokesPerFrame)
                 {
-                    achievedFillRate = ApplyStrokeKernel();
+                    achievedFillRate = ApplyStrokeKernel(strokesApplied);
                     if (achievedFillRate > targetFillRate)
                         break;
                     strokesApplied++;
@@ -528,7 +565,10 @@ public class TAMGenerator : MonoBehaviour
                 yield return null;
             }
             else
-                achievedFillRate = ApplyStrokeKernel();
+            {
+                achievedFillRate = ApplyStrokeKernel(strokesApplied);
+                strokesApplied++;
+            }
         }
     }
 

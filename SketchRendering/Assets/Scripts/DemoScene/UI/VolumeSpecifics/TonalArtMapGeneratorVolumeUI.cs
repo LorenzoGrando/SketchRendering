@@ -137,13 +137,13 @@ public class TonalArtMapGeneratorVolumeUI : RendererVolumeUIController
         HatchingStrokeAsset.MaxCrossHatchingThreshold = 1;
         IterationsPerStrokeSlider.SetValueWithoutNotify(TAMGenerator.IterationsPerStroke);
         IterationsPerStrokeText.text = GetFormattedSliderValue(IterationsPerStrokeSlider.value);
-        DirectionVariationSlider.SetValueWithoutNotify(currentStrokeAsset.DirectionVariationRange);
+        DirectionVariationSlider.SetValueWithoutNotify(currentStrokeAsset.VariationData.DirectionVariationRange);
         DirectionVariationText.text = GetFormattedSliderValue(DirectionVariationSlider.value);
-        ThicnkessVariationSlider.SetValueWithoutNotify(currentStrokeAsset.ThicknessVariationRange);
+        ThicnkessVariationSlider.SetValueWithoutNotify(currentStrokeAsset.VariationData.ThicknessVariationRange);
         ThicnkessVariationText.text = GetFormattedSliderValue(ThicnkessVariationSlider.value);
-        LengthVariationSlider.SetValueWithoutNotify(currentStrokeAsset.LengthVariationRange);
+        LengthVariationSlider.SetValueWithoutNotify(currentStrokeAsset.VariationData.LengthVariationRange);
         LengthVariationText.text = GetFormattedSliderValue(LengthVariationSlider.value);
-        PressureVariationSlider.SetValueWithoutNotify(currentStrokeAsset.PressureVariationRange);
+        PressureVariationSlider.SetValueWithoutNotify(currentStrokeAsset.VariationData.PressureVariationRange);
         PressureVariationText.text = GetFormattedSliderValue(PressureVariationSlider.value);
         
         UpdateStrokeAssetDatas();
@@ -297,29 +297,29 @@ public class TonalArtMapGeneratorVolumeUI : RendererVolumeUIController
 
     public void DirectionVariationChanged(float value)
     {
-        SimpleStrokeAsset.DirectionVariationRange = value;
-        HatchingStrokeAsset.DirectionVariationRange = value;
+        SimpleStrokeAsset.VariationData.DirectionVariationRange = value;
+        HatchingStrokeAsset.VariationData.DirectionVariationRange = value;
         DirectionVariationText.text = GetFormattedSliderValue(value);
     }
     
     public void ThicknessVariationChanged(float value)
     {
-        SimpleStrokeAsset.ThicknessVariationRange = value;
-        HatchingStrokeAsset.ThicknessVariationRange = value;
+        SimpleStrokeAsset.VariationData.ThicknessVariationRange = value;
+        HatchingStrokeAsset.VariationData.ThicknessVariationRange = value;
         ThicnkessVariationText.text = GetFormattedSliderValue(value);
     }
     
     public void LengthVariationChanged(float value)
     {
-        SimpleStrokeAsset.LengthVariationRange = value;
-        HatchingStrokeAsset.LengthVariationRange = value;
+        SimpleStrokeAsset.VariationData.LengthVariationRange = value;
+        HatchingStrokeAsset.VariationData.LengthVariationRange = value;
         LengthVariationText.text = GetFormattedSliderValue(value);
     }
     
     public void PressureVariationChanged(float value)
     {
-        SimpleStrokeAsset.PressureVariationRange = value;
-        HatchingStrokeAsset.PressureVariationRange = value;
+        SimpleStrokeAsset.VariationData.PressureVariationRange = value;
+        HatchingStrokeAsset.VariationData.PressureVariationRange = value;
         PressureVariationText.text = GetFormattedSliderValue(value);
     }
     

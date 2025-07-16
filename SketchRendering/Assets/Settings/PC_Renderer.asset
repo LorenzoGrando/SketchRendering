@@ -91,16 +91,16 @@ MonoBehaviour:
   EdgeDetectionPassData:
     Method: 0
     Source: 1
-    OutlineThreshold: 0.384
+    OutlineThreshold: 0.264
     OutlineOffset: 0
     OutlineAngleSensitivity: 1
-    OutlineAngleConstraint: 0.55
-    OutlineNormalSensitivity: 1
+    OutlineAngleConstraint: 0.449
+    OutlineNormalSensitivity: 0.427
     OutputType: 1
   SketchStrokesPassData:
     OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
     SampleArea: 1
-    DoDownscale: 0
+    DoDownscale: 1
     DownscaleFactor: 2
     StrokeThreshold: 0.03
     StrokeSampleScale: 4

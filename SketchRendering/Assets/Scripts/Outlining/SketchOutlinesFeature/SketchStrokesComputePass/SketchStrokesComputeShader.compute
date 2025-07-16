@@ -10,7 +10,6 @@
 #pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
 
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
-#include "Assets/Scripts/Includes/HashingFunctions.hlsl"
 
 #define PI 3.14159265358979323846;
 

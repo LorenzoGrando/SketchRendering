@@ -1,3 +1,4 @@
+#pragma kernel GenerateRandomStrokeBuffer
 #pragma kernel ApplyStrokeIterated
 #pragma kernel FindAverageTextureFillRate
 #pragma kernel BlitFinalSelectedStroke
@@ -11,7 +12,8 @@
 
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
 
-StructuredBuffer<StrokeData> _StrokeData;
+RWStructuredBuffer<StrokeData> _StrokeData;
+RWStructuredBuffer<VariationData> _VariationData;
 RWTexture2D<float4> _OriginalSource;
 RWStructuredBuffer<uint> _ReducedSource;
 uint _Iteration;
@@ -27,6 +29,15 @@ uint SampleSDF(StrokeData data, float2 pointID, float dimension)
     #endif
 
     return isStroke;
+}
+
+uint _Seed;
+[numthreads(32, 1, 1)]
+void GenerateRandomStrokeBuffer (uint3 id : SV_DispatchThreadID)
+{
+    StrokeData randData = RandomizeStrokePosition(_StrokeData[0], id.x + _Seed);
+    randData = GetRandomizedParamsStrokeData(randData, _VariationData[0], id.x  + _Seed, float(_Dimension));
+    _StrokeData[id.x] = randData;
 }
 
 [numthreads(8, 8, 1)]

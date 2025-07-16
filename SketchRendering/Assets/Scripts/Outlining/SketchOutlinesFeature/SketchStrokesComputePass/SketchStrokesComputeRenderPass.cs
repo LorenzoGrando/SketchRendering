@@ -9,8 +9,7 @@ using UnityEngine.Rendering.Universal;
 public class SketchStrokesComputeRenderPass : ScriptableRenderPass
 {
     public string PassName => "SketchyStrokesCompute";
-
-    private Material sketchMaterial;
+    
     private SketchStrokesPassData passData;
     private ComputeShader sketchComputeShader;
     private ComputeBuffer gradientBuffer;
@@ -43,25 +42,19 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     
     private Vector2Int GetDownscaleTargetDimension(Vector2 currentResolution, int factor)
     {
-        if(currentResolution.x > 1920f || currentResolution.y > 1080f)
-            currentResolution = new Vector2(1920f, 1080f);
+        //if(currentResolution.x > 1920f || currentResolution.y > 1080f)
+            //currentResolution = new Vector2(1920f, 1080f);
         return new Vector2Int(Mathf.CeilToInt(currentResolution.x / factor), Mathf.CeilToInt(currentResolution.y / factor));
     }
 
-    public void Setup(SketchStrokesPassData passData, Material mat, ComputeShader computeShader)
+    public void Setup(SketchStrokesPassData passData, Material _, ComputeShader computeShader)
     {
-        sketchMaterial = mat;
         this.passData = passData;
         sketchComputeShader = computeShader;
         
         requiresIntermediateTexture = false;
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         ConfigureComputeShader();
-    }
-
-    public void ConfigureMaterial()
-    {
-
     }
 
     private void ConfigureComputeShader()
@@ -224,6 +217,9 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             
             if (gradientBuffer == null || gradientBuffer.count != (groups.x * groups.y))
             {
+                if(gradientBuffer != null)
+                    gradientBuffer.Release();
+                
                 gradientBuffer = new ComputeBuffer(groups.x * groups.y, GRADIENT_VECTOR_STRIDE_LENGTH);
             }
             

@@ -32,7 +32,6 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private readonly string QUANTIZE_KEYWORD = "QUANTIZE";
     private readonly string UVS_SCREEN_SPACE_KEYWORD = "UVS_SCREEN_SPACE";
     private readonly string UVS_OBJECT_SPACE_KEYWORD = "UVS_OBJECT_SPACE";
-    private readonly string SCREEN_SIZE_KEYWORD = "CONSTANT_SCREEN_SIZE";
     
     private LocalKeyword SingleKeyword;
     private LocalKeyword DoubleKeyword;

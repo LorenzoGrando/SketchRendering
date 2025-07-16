@@ -14,26 +14,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   active: 1
   Method:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   Source:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   Threshold:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 1
   Offset:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   AngleSensitivity:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.386
   AngleConstraint:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.148
   NormalSensitivity:
-    m_OverrideState: 0
+    m_OverrideState: 1
+    m_Value: 0.273
+  StrokeArea:
+    m_OverrideState: 1
+    m_Value: 1
+  DoDownscale:
+    m_OverrideState: 1
     m_Value: 0
+  DownscaleFactor:
+    m_OverrideState: 1
+    m_Value: 2
+  MinThresholdForStroke:
+    m_OverrideState: 1
+    m_Value: 0.07
+  StrokeScale:
+    m_OverrideState: 1
+    m_Value: 4
 --- !u!114 &-2386304827005023468
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -76,8 +91,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   components:
   - {fileID: 9002950201578859607}
-  - {fileID: -2386304827005023468}
   - {fileID: -5979567211299422457}
+  - {fileID: -2386304827005023468}
 --- !u!114 &9002950201578859607
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -90,16 +105,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a84c80c46746a197a431d994f71049, type: 3}
   m_Name: SmoothOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   Method:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   Source:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.19
+    m_Value: 0.179
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -108,10 +123,10 @@ MonoBehaviour:
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 0.215
+    m_Value: 0.412
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.229
   ThicknessRange:
     m_OverrideState: 1
     m_Value: 0

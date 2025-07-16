@@ -15,14 +15,15 @@ MonoBehaviour:
   StrokeData:
     OriginPoint: {x: 0.25, y: 0.5, z: 0, w: 0}
     Direction: {x: 1, y: 1, z: 0, w: 0}
-    Thickness: 1
-    ThicknessFalloffConstraint: 0.642
-    Length: 0.677
-    LengthThicknessFalloff: 1
+    Thickness: 0.824
+    ThicknessFalloffConstraint: 0.562
+    Length: 0.686
+    LengthThicknessFalloff: 0.516
     Pressure: 1
     PressureFalloff: 0
   SelectedFalloffFunction: 1
-  DirectionVariationRange: 0
-  ThicknessVariationRange: 0
-  LengthVariationRange: 0
-  PressureVariationRange: 0
+  VariationData:
+    DirectionVariationRange: 0
+    ThicknessVariationRange: 0
+    LengthVariationRange: 0
+    PressureVariationRange: 0

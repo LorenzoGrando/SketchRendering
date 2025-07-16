@@ -14,15 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StrokeData:
     OriginPoint: {x: 0.25, y: 0.5, z: 0, w: 0}
-    Direction: {x: 1, y: 5, z: 0, w: 0}
-    Thickness: 0.075358756
+    Direction: {x: 1, y: 0, z: 0, w: 0}
+    Thickness: 0.061
     ThicknessFalloffConstraint: 0.1
-    Length: 0.12510622
+    Length: 0.73316646
     LengthThicknessFalloff: 0.39
-    Pressure: 0.166
-    PressureFalloff: 1
+    Pressure: 1
+    PressureFalloff: 0.7221783
   SelectedFalloffFunction: 0
-  DirectionVariationRange: 0.03240138
-  ThicknessVariationRange: 0.03240138
-  LengthVariationRange: 0
-  PressureVariationRange: 0.03240138
+  VariationData:
+    DirectionVariationRange: 0.30868846
+    ThicknessVariationRange: 0.092607036
+    LengthVariationRange: 0.43216848
+    PressureVariationRange: 0.18521345

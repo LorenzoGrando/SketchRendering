@@ -1648,7 +1648,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050983138}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -1702,7 +1702,7 @@ MonoBehaviour:
   TAMShader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
   Resolution: 2
   IterationsPerStroke: 100
-  TargetFillRate: 1
+  TargetFillRate: 0.771
   StrokeDataAsset: {fileID: 11400000, guid: a74b88f01d652d346907e55b9782a837, type: 2}
   TAMAsset: {fileID: 11400000, guid: 695f8d89e1afd73439167208abb0fa33, type: 2}
   PackTAMTextures: 1
