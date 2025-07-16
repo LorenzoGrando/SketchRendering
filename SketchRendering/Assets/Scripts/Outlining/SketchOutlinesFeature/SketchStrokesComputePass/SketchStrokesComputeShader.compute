@@ -107,7 +107,8 @@ void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_Group
 }
 
 
-RWStructuredBuffer<StrokeData> OutlineStrokeData;
+RWStructuredBuffer<StrokeData> _OutlineStrokeData;
+StructuredBuffer<VariationData> _OutlineStrokeVariationData;
 int _StrokeSampleScale;
 groupshared StrokeData groupData;
 groupshared float isEdge;
@@ -119,7 +120,7 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
     float heightScalar = (float)_TextureHeight/(float)kernelSizes.y;
     float baseScalar = (min(widthScalar, heightScalar)) / ((float)_DownscaleFactor);
     float lengthSampleScalar = baseScalar / _StrokeSampleScale;
-    StrokeData data = OutlineStrokeData[0];
+    StrokeData data = _OutlineStrokeData[0];
     [loop]
     for (int x = -_StrokeSampleScale; x < _StrokeSampleScale + 1; x++)
     {
@@ -141,6 +142,7 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
                 isEdge = step(0.5, length(float2(edgeData.ba)));
                 data.coords = float4(edgeData.rg, 0, 0);
                 data.direction = float4(edgeData.ba, 0, 0);
+                data = GetRandomizedParamsStrokeData(data, _OutlineStrokeVariationData[0], int(groupFlatIndex), float(_TextureWidth));
                 groupData = data;
                 if (x == 0 && y == 0)
                     flatIndex = groupFlatIndex;

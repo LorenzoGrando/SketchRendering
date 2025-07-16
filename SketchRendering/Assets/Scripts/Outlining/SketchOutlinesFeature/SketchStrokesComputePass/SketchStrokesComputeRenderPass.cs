@@ -14,6 +14,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private ComputeShader sketchComputeShader;
     private ComputeBuffer gradientBuffer;
     private ComputeBuffer strokeDataBuffer;
+    private ComputeBuffer strokeVariationDataBuffer;
     
     //Compute Data
     private readonly string COMPUTE_STROKE_KERNEL = "ComputeAverageStroke";
@@ -30,7 +31,8 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private static readonly int COMPUTE_GRADIENT_VECTORS_ID = Shader.PropertyToID("_GradientVectors");
     private static readonly int THRESHOLD_ID = Shader.PropertyToID("_ThresholdForStroke");
     private static  readonly int STROKE_SCALE_ID = Shader.PropertyToID("_StrokeSampleScale");
-    private static readonly int STROKE_DATA_ID = Shader.PropertyToID("OutlineStrokeData");
+    private static readonly int STROKE_DATA_ID = Shader.PropertyToID("_OutlineStrokeData");
+    private static readonly int STROKE_VARIATION_DATA_ID = Shader.PropertyToID("_OutlineStrokeVariationData");
     private static readonly string PERPENDICULAR_DIRECTION_KEYWORD_ID = "USE_PERPENDICULAR_DIRECTION";
     
     private Vector3Int strokesKernelThreads;
@@ -90,6 +92,12 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             strokeDataBuffer.Release();
             strokeDataBuffer = null;
         }
+
+        if (strokeVariationDataBuffer != null)
+        {
+            strokeVariationDataBuffer.Release();
+            strokeVariationDataBuffer = null;
+        }
     }
 
     class ComputePassData
@@ -120,6 +128,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         public TextureHandle outlineTex;
         public ComputeBuffer inputBuffer;
         public ComputeBuffer strokeDataBuffer;
+        public ComputeBuffer strokeVariationDataBuffer;
         public int downscaleFactor;
         public int strokeSampleScale;
     }
@@ -155,6 +164,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         context.cmd.SetComputeTextureParam(passData.computeShader, passData.kernelID, SOURCE_TEXTURE_ID, passData.outlineTex);
         context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, COMPUTE_GRADIENT_VECTORS_ID, passData.inputBuffer);
         context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, STROKE_DATA_ID, passData.strokeDataBuffer);
+        context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, STROKE_VARIATION_DATA_ID, passData.strokeVariationDataBuffer);
         context.cmd.DispatchCompute(passData.computeShader, passData.kernelID, passData.threadGroupSize.x, passData.threadGroupSize.y, passData.threadGroupSize.z);
     }
 
@@ -276,6 +286,13 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             }
             strokeDataBuffer.SetData(new [] {passData.OutlineStrokeData.StrokeData});
             computePassData.strokeDataBuffer = strokeDataBuffer;
+            
+            if (strokeVariationDataBuffer == null)
+            {
+                strokeVariationDataBuffer = new ComputeBuffer(1, passData.OutlineStrokeData.VariationData.GetStrideLength());
+            }
+            strokeVariationDataBuffer.SetData(new [] {passData.OutlineStrokeData.VariationData});
+            computePassData.strokeVariationDataBuffer = strokeVariationDataBuffer;
             
             applyBuilder.SetRenderFunc((StrokesPassData data, UnsafeGraphContext context) => ExecuteApplyStrokesCompute(data, context));
         }
