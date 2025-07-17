@@ -37,6 +37,9 @@ MonoBehaviour:
   StrokeArea:
     m_OverrideState: 1
     m_Value: 1
+  StrokeScale:
+    m_OverrideState: 1
+    m_Value: 4
   DoDownscale:
     m_OverrideState: 1
     m_Value: 0
@@ -45,10 +48,10 @@ MonoBehaviour:
     m_Value: 2
   MinThresholdForStroke:
     m_OverrideState: 1
-    m_Value: 0.07
-  StrokeScale:
+    m_Value: 0.139
+  FrameSmoothingFactor:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 0
 --- !u!114 &-2386304827005023468
 MonoBehaviour:
   m_ObjectHideFlags: 3

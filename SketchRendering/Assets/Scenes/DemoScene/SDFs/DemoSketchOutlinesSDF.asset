@@ -17,13 +17,13 @@ MonoBehaviour:
     Direction: {x: 1, y: 1, z: 0, w: 0}
     Thickness: 1
     ThicknessFalloffConstraint: 0.475
-    Length: 0.624
+    Length: 0.814
     LengthThicknessFalloff: 0.129
     Pressure: 1
-    PressureFalloff: 0
+    PressureFalloff: 0.957
   SelectedFalloffFunction: 1
   VariationData:
-    DirectionVariationRange: 0.129
-    ThicknessVariationRange: 0.069
-    LengthVariationRange: 0.05
+    DirectionVariationRange: 0.205
+    ThicknessVariationRange: 0.043
+    LengthVariationRange: 0.019
     PressureVariationRange: 0

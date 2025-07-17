@@ -8,6 +8,7 @@
 #pragma kernel ApplyStrokes4
 
 #pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
+#pragma multi_compile_local _ FRAME_SMOOTHING
 
 #include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
 
@@ -21,6 +22,7 @@ uint _DownscaleFactor;
 uint _TextureWidth;
 uint _TextureHeight;
 float _ThresholdForStroke;
+float _SmoothingThreshold;
 
 //declare them at max supported kernel size, though this does lead to some wasted memory
 groupshared float4 gradients[32*32];
@@ -64,10 +66,18 @@ void ComputeAverageStroke (uint3 id, uint3 idG, uint3 idGs, uint2 kernelSizes)
             averagePosition /= (float)summed;
             averageDirection /= (float)summed;
             #if defined (USE_PERPENDICULAR_DIRECTION)
-            //averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
+            averageDirection = float4(cross(float3(averageDirection.xy, 0), float3(0, 0, 1)).xy, 0, 0);
             #endif
         }
         gradients[0] = float4(averagePosition.xy, averageDirection.xy * isAverageStroke);
+
+        #if defined (FRAME_SMOOTHING)
+        float4 previousGradient = _GradientVectors[groupFlatIndex];
+        float4 diff = abs(gradients[0] - previousGradient);
+        if(max(diff.x, max(diff.y, max(diff.z, diff.w))) > 0.5)
+            gradients[0] = lerp(gradients[0], previousGradient, _SmoothingThreshold);
+        #endif
+        
         _GradientVectors[groupFlatIndex] = gradients[0];
     }
     GroupMemoryBarrierWithGroupSync();

@@ -30,15 +30,19 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     private static readonly int DOWNSCALE_FACTOR_ID = Shader.PropertyToID("_DownscaleFactor");
     private static readonly int COMPUTE_GRADIENT_VECTORS_ID = Shader.PropertyToID("_GradientVectors");
     private static readonly int THRESHOLD_ID = Shader.PropertyToID("_ThresholdForStroke");
-    private static  readonly int STROKE_SCALE_ID = Shader.PropertyToID("_StrokeSampleScale");
+    private static readonly int SMOOTHING_THRESHOLD_ID = Shader.PropertyToID("_SmoothingThreshold");
+    private static readonly int STROKE_SCALE_ID = Shader.PropertyToID("_StrokeSampleScale");
     private static readonly int STROKE_DATA_ID = Shader.PropertyToID("_OutlineStrokeData");
     private static readonly int STROKE_VARIATION_DATA_ID = Shader.PropertyToID("_OutlineStrokeVariationData");
+    
     private static readonly string PERPENDICULAR_DIRECTION_KEYWORD_ID = "USE_PERPENDICULAR_DIRECTION";
+    private static readonly string SMOOTHING_KEYWORD_ID = "FRAME_SMOOTHING";
     
     private Vector3Int strokesKernelThreads;
     private Vector3Int applyKernelThreads;
 
     private LocalKeyword PerpendicularDirectionKeyword;
+    private LocalKeyword SmoothingThresholdKeyword;
 
     private readonly int GRADIENT_VECTOR_STRIDE_LENGTH = sizeof(float) * 4;
     
@@ -70,7 +74,10 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         applyKernelThreads = new Vector3Int((int)x1, (int)y1, (int)z1);
 
         PerpendicularDirectionKeyword = new LocalKeyword(sketchComputeShader, PERPENDICULAR_DIRECTION_KEYWORD_ID);
+        SmoothingThresholdKeyword = new LocalKeyword(sketchComputeShader, SMOOTHING_KEYWORD_ID);
+        
         sketchComputeShader.SetKeyword(PerpendicularDirectionKeyword, passData.UsePerpendicularDirection);
+        sketchComputeShader.SetKeyword(SmoothingThresholdKeyword, passData.FrameSmoothingFactor > 0);
     }
 
     private string Get1DAreaReliantKernelID(string kernelName, ComputeData.KernelSize2D kernelSize)
@@ -108,6 +115,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         public Vector2Int dimensions;
         public TextureHandle outlineTex;
         public float threshold;
+        public float frameSmoothingFactor;
         public ComputeBuffer outputBuffer;
     }
 
@@ -121,8 +129,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
     {
         public ComputeShader computeShader;
         public int kernelID;
-        public int groupsXID;
-        public int groupsYID;
         public Vector3Int threadGroupSize;
         public Vector2Int dimensions;
         public TextureHandle outlineTex;
@@ -149,6 +155,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         context.cmd.SetComputeIntParam(passData.computeShader, GROUPS_Y_ID, passData.threadGroupSize.y);
         context.cmd.SetComputeBufferParam(passData.computeShader, passData.kernelID, COMPUTE_GRADIENT_VECTORS_ID, passData.outputBuffer);
         context.cmd.SetComputeFloatParam(passData.computeShader, THRESHOLD_ID, passData.threshold);
+        context.cmd.SetComputeFloatParam(passData.computeShader, SMOOTHING_THRESHOLD_ID, passData.frameSmoothingFactor);
         context.cmd.DispatchCompute(passData.computeShader, passData.kernelID, passData.threadGroupSize.x, passData.threadGroupSize.y, passData.threadGroupSize.z);
     }
 
@@ -235,6 +242,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             
             computePassData.dimensions = new Vector2Int(dimensions.x, dimensions.y);
             computePassData.threshold = passData.StrokeThreshold;
+            computePassData.frameSmoothingFactor = passData.FrameSmoothingFactor;
             computePassData.outputBuffer = gradientBuffer;
             
             computePassData.computeShader = sketchComputeShader;
@@ -275,8 +283,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
                 Mathf.CeilToInt((float)dimensions.y / (float)applyKernelThreads.y),
                 1
             );
-            computePassData.groupsXID = GROUPS_X_ID;
-            computePassData.groupsYID = GROUPS_Y_ID;
             computePassData.threadGroupSize = groups;
             computePassData.dimensions = new Vector2Int(dimensions.x, dimensions.y);
                 

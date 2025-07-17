@@ -7,13 +7,16 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
 {
     public TAMStrokeAsset OutlineStrokeData;
     public ComputeData.KernelSize2D SampleArea;
+    [Range(1f, 4f)] 
+    public int StrokeSampleScale;
     public bool DoDownscale;
     [Range(2, 4)]
     public int DownscaleFactor;
     [Range(0f, 1f)] 
     public float StrokeThreshold;
-    [Range(1f, 4f)] 
-    public int StrokeSampleScale;
+    [Range(0f, 1f)] 
+    public float FrameSmoothingFactor;
+    
 
     [HideInInspector] 
     public bool UsePerpendicularDirection;
@@ -58,6 +61,7 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
         else
             overrideData.DownscaleFactor = 1;
         overrideData.StrokeThreshold = volumeComponent.MinThresholdForStroke.overrideState ? volumeComponent.MinThresholdForStroke.value : StrokeThreshold;;
+        overrideData.FrameSmoothingFactor = volumeComponent.FrameSmoothingFactor.overrideState ? volumeComponent.FrameSmoothingFactor.value : FrameSmoothingFactor;
         
         return overrideData;
     }
