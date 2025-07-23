@@ -8,12 +8,23 @@ using UnityEngine.Rendering;
 using UnityEditor;
 
 [ExecuteAlways]
-public class TAMGenerator : MonoBehaviour
+public class TAMGenerator : TextureGenerator
 {
+    protected override string DefaultFileOutputName => "StrokesTexture";
+    protected override string DefaultFileOutputPath
+    {
+        get
+        {
+            if (TAMAsset != null)
+                return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset).Split('.')[0], "ToneTextures");
+            
+            return Path.Combine("Assets", "ToneTextures");
+        }
+    }
+    
     //TODO: Hide later
+    [Header("TAMGenerator Settings")]
     public ComputeShader TAMGeneratorShader;
-    public Shader TAMShader;
-    public TextureResolution Resolution;
     [Range(1, 100)]
     public int IterationsPerStroke;
     [Range(0, 1)] 
@@ -21,14 +32,6 @@ public class TAMGenerator : MonoBehaviour
     public TAMStrokeAsset StrokeDataAsset;
     public TonalArtMapAsset TAMAsset;
     public bool PackTAMTextures;
-    public string OverwriteTexturesOutputPath;
-    
-    //Editor assets
-    private RenderTexture targetRT;
-    private Material material;
-    public Material GetRTMaterial { get { return material; } }
-    
-    private int Dimension;
     
     //Compute Data
     private readonly string GENERATE_STROKE_BUFFER_KERNEL = "GenerateRandomStrokeBuffer";
@@ -52,6 +55,8 @@ public class TAMGenerator : MonoBehaviour
     private ComputeBuffer strokeTextureTonesBuffer;
     private ComputeBuffer strokeReducedSource;
     private ComputeBuffer fillRateBuffer;
+    
+    private const int MAX_THREADS_PER_DISPATCH = 65535;
     
     //Shader Properties
     private readonly int RENDER_TEXTURE_ID = Shader.PropertyToID("_OriginalSource");
@@ -84,109 +89,25 @@ public class TAMGenerator : MonoBehaviour
     private LocalKeyword[] strokeTypeLocalKeywords;
     private LocalKeyword packTextures2LocalKeyword;
     private LocalKeyword packTextures3LocalKeyword;
-
-    private const int MAX_THREADS_PER_DISPATCH = 65535;
     
     private bool generating = false;
     public bool CanRequest { get { return !generating; } }
-    
-    public void OnEnable()
-    {
-        if(TAMShader == null)
-            return;
-        CreateMaterial();
-    }
 
     public void OnDisable()
     {
         ReleaseBuffers();
     }
-    
-    public void OnValidate()
-    {
-        ConfigureGeneratorData();
-    }
 
-    public void ConfigureGeneratorData()
+    public override void ConfigureGeneratorData()
     {
         if(TAMGeneratorShader == null || StrokeDataAsset == null || TAMAsset == null)
             return;
         
-        Dimension = TextureAssetManager.GetTextureResolution(Resolution);
+        base.ConfigureGeneratorData();
         
-        if(targetRT == null || Dimension != targetRT.width)
-            CreateOrUpdateTarget();
         ConfigureBuffers();
         PrepareComputeData();
     }
-    
-    #region Asset Prep
-    public void CreateOrUpdateTarget()
-    {
-        if (targetRT != null)
-        {
-            targetRT.Release();
-            targetRT = null;
-        }
-
-        targetRT = CreateRT(Dimension);
-        
-        //TEMP
-        if (targetRT && material)
-        {
-            MeshRenderer mr = GetComponent<MeshRenderer>();
-            material.mainTexture = targetRT;
-            mr.material = material;
-        }
-    }
-
-    private void CreateMaterial()
-    {
-        if(material != null)
-            return;
-        
-        material = new Material(TAMShader);
-        material.hideFlags = HideFlags.HideAndDontSave;
-    }
-    
-    private RenderTexture CreateRT(int dimension)
-    {
-        RenderTexture rt = new RenderTexture(dimension, dimension, GraphicsFormat.R8G8B8A8_SRGB, GraphicsFormat.None);
-        rt.enableRandomWrite = true;
-        rt.hideFlags = HideFlags.HideAndDontSave;
-        Graphics.Blit(Texture2D.whiteTexture, rt);
-        return rt;
-    }
-    
-    private RenderTexture CreateTempTargetCopy()
-    {
-        if (targetRT == null)
-            return null;
-
-        return CopyRT(targetRT);
-    }
-    
-    private RenderTexture CopyRT(RenderTexture copy)
-    {
-        RenderTexture rt = new RenderTexture(copy);
-        rt.enableRandomWrite = true;
-        rt.hideFlags = HideFlags.HideAndDontSave;
-        
-        return rt;
-    }
-    
-    private RenderTexture CopyToRT(Texture2D copy)
-    {
-        RenderTexture rt = new RenderTexture(copy.width, copy.height, 32);
-        rt.enableRandomWrite = true;
-        rt.hideFlags = HideFlags.HideAndDontSave;
-        RenderTexture.active = rt;
-        Graphics.Blit(copy, rt);
-        RenderTexture.active = null;
-        return rt;
-    }
-    
-    #endregion
     
     #region Compute
 
@@ -521,7 +442,6 @@ public class TAMGenerator : MonoBehaviour
         if(generating)
             return;
         
-        
         //Force Clear
         CreateOrUpdateTarget();
         ConfigureGeneratorData();
@@ -630,30 +550,5 @@ public class TAMGenerator : MonoBehaviour
         TAMAsset.SetPackedTams(packedTAMs.ToArray());
     }
     
-    #endregion
-    
-    #region Editor Asset Management
-    public Texture2D SaveCurrentTargetTexture(bool overwrite, string fileName = null)
-    {
-        if (targetRT == null)
-            return null;
-
-        string path = GetTextureOutputPath();
-        
-        if(fileName == null)
-            fileName = "StrokeTexture";
-        
-        return TextureAssetManager.OutputToAssetTexture(targetRT, path, fileName, overwrite);
-    }
-    private string GetTextureOutputPath()
-    {
-#if UNITY_EDITOR
-        if (!string.IsNullOrEmpty(OverwriteTexturesOutputPath))
-            return OverwriteTexturesOutputPath;
-        else return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset).Split('.')[0], "ToneTextures");
-#elif !UNITY_EDITOR
-        return string.Empty;
-#endif
-    }
     #endregion
 }

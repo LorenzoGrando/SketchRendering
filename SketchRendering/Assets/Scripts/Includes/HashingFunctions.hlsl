@@ -1,4 +1,7 @@
-#pragma once
+#ifndef HASHING_FUNCTIONS
+#define HASHING_FUNCTIONS
+
+#include "Assets/Scripts/Includes/MathUtils.hlsl"
 
 //----------------------------------------------------------------------------------------
 // Hashes found in: https://www.shadertoy.com/view/4djSRW
@@ -120,3 +123,78 @@ float4 hash44(float4 p4)
     p4 += dot(p4, p4.wzxy+33.33);
     return frac((p4.xxyz+p4.yzzw)*p4.zywx);
 }
+
+
+// ########## Hashing from tuxalin ###########
+// Adapted from this amazing repo: https://github.com/tuxalin/procedural-tileable-shaders/blob/master/multiHash.glsl
+
+uint ihash1D(uint q)
+{
+    // hash by Hugo Elias, Integer Hash - I, 2017
+    q = q * 747796405u + 2891336453u;
+    q = (q << 13u) ^ q;
+    return q * (q * q * 15731u + 789221u) + 1376312589u;
+}
+
+uint2 ihash1D(uint2 q)
+{
+    // hash by Hugo Elias, Integer Hash - I, 2017
+    q = q * 747796405u + 2891336453u;
+    q = (q << 13u) ^ q;
+    return q * (q * q * 15731u + 789221u) + 1376312589u;
+}
+
+uint4 ihash1D(uint4 q)
+{
+    // hash by Hugo Elias, Integer Hash - I, 2017
+    q = q * 747796405u + 2891336453u;
+    q = (q << 13u) ^ q;
+    return q * (q * q * 15731u + 789221u) + 1376312589u;
+}
+
+// generates 2 random numbers for the coordinate
+float2 betterHash2D(float2 x)
+{
+    uint2 q = uint2(x);
+    uint h0 = ihash1D(ihash1D(q.x) + q.y);
+    uint h1 = h0 * 1933247u + ~h0 ^ 230123u;
+    return float2(h0, h1)  * (1.0 / float(0xffffffffu));
+}
+
+// generates a random number for each of the 4 cell corners
+float4 betterHash2D(float4 cell)    
+{
+    uint4 i = uint4(cell);
+    uint4 hash = ihash1D(ihash1D(i.xzxz) + i.yyww);
+    return float4(hash) * (1.0 / float(0xffffffffu));
+}
+
+// generates 2 random numbers for each of the 4 cell corners
+void betterHash2D(float4 cell, out float4 hashX, out float4 hashY)
+{
+    uint4 i = uint4(cell);
+    uint4 hash0 = ihash1D(ihash1D(i.xzxz) + i.yyww);
+    uint4 hash1 = ihash1D(hash0 ^ 1933247u);
+    hashX = float4(hash0) * (1.0 / float(0xffffffffu));
+    hashY = float4(hash1) * (1.0 / float(0xffffffffu));
+}
+
+// generates 2 random numbers for each of the 2D coordinates
+float4 betterHash2D(float2 coords0, float2 coords1)
+{
+    uint4 i = uint4(coords0, coords1);
+    uint4 hash = ihash1D(ihash1D(i.xz) + i.yw).xxyy;
+    hash.yw = hash.yw * 1933247u + bitwiseNot(hash.yw) ^ 230123u;
+    return float4(hash) * (1.0 / float(0xffffffffu));;
+}
+
+// generates 2 random numbers for each of the four 2D coordinates
+void betterHash2D(float4 coords0, float4 coords1, out float4 hashX, out float4 hashY)
+{
+    uint4 hash0 = ihash1D(ihash1D(uint4(coords0.xz, coords1.xz)) + uint4(coords0.yw, coords1.yw));
+    uint4 hash1 = hash0 * 1933247u + (bitwiseNot(hash0) ^ 230123u);
+    hashX = float4(hash0) * (1.0 / float(0xffffffffu));
+    hashY = float4(hash1) * (1.0 / float(0xffffffffu));
+} 
+
+#endif

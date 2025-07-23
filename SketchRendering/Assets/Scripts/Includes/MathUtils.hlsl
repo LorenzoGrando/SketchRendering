@@ -1,7 +1,25 @@
 #pragma once
 
+#define PI 3.14159265
+#define TAU 6.28318531
+
 float invLerp(float from, float to, float value){
     return (value - from) / (to - from);
+}
+
+uint2 bitwiseNot(uint2 v)
+{
+    return uint2(~v.x, ~v.y);
+}
+
+uint3 bitwiseNot(uint3 v)
+{
+    return uint3(~v.x, ~v.y, ~v.z);
+}
+
+uint4 bitwiseNot(uint4 v)
+{
+    return uint4(~v.x, ~v.y, ~v.z, ~v.w);
 }
 
 float RangeConstrainedSmoothRandom(float current, float range, float rand, float minValue, float maxValue)

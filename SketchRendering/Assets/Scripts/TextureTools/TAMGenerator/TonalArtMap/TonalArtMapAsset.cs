@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "TonalArtMapAsset", menuName = "Scriptable Objects/TonalArtMapAsset")]
+[CreateAssetMenu(fileName = "TonalArtMapAsset", menuName = "SketchRendering/Scriptable Objects/TonalArtMapAsset")]
 public class TonalArtMapAsset : ScriptableObject
 {
     [Range(1, 9)]

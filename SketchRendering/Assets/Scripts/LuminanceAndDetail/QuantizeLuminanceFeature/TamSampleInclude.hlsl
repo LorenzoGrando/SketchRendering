@@ -14,7 +14,7 @@ TEXTURE2D(_Tam6_8);
 float4 _Tam6_8_TexelSize;
 
 //TODO: I really hate this, since texelMip represents two possibly different things and requires the function below to work
-#if defined(UVS_OBJECT_SPACE)
+#if defined(UVS_OBJECT_SPACE_CONSTANT)
 #define SAMPLE_TEX(tex, sampler, texelMip, uv) SAMPLE_TEXTURE2D_CONSTANT_SCALE(tex, sampler, texelMip, uv, _TamScales)
 #else
 #define SAMPLE_TEX(tex, sampler, texelMip, uv) SAMPLE_TEXTURE2D_X_LOD(tex, sampler, uv * _TamScales, texelMip)
@@ -22,7 +22,7 @@ float4 _Tam6_8_TexelSize;
 
 float GetMipOrTexel(float mip, float4 texelSize)
 {
-    #if defined(UVS_OBJECT_SPACE)
+    #if defined(UVS_OBJECT_SPACE_CONSTANT)
     return texelSize.z;
     #else
     return mip;
@@ -32,7 +32,6 @@ float GetMipOrTexel(float mip, float4 texelSize)
 //The only reason we split into preprocessor directives here is to prevent extra texture sampling when we dont care about the result in those TAMs
 //Even if our total tones amount does not equal the full range of channels in a tam (say, only 2 textures)
 //Since the luminance only takes into account the total expected tones, those always return 0 weight when clamped
-
 
 float3 GetWeightsFromQuantizedLuminance(float luminance, int tones, int offset)
 {

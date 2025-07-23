@@ -10,9 +10,7 @@
 #pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
 #pragma multi_compile_local _ FRAME_SMOOTHING
 
-#include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
-
-#define PI 3.14159265358979323846;
+#include "Assets/Scripts/TextureTools/TAMGenerator/StrokeSDFInclude.hlsl"
 
 RWStructuredBuffer<float4> _GradientVectors;
 RWTexture2D<float4> _OriginalSource;

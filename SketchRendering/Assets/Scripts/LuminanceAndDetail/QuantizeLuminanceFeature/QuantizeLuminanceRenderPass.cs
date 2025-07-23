@@ -32,6 +32,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private readonly string QUANTIZE_KEYWORD = "QUANTIZE";
     private readonly string UVS_SCREEN_SPACE_KEYWORD = "UVS_SCREEN_SPACE";
     private readonly string UVS_OBJECT_SPACE_KEYWORD = "UVS_OBJECT_SPACE";
+    private readonly string UVS_OBJECT_SPACE_CONSTANT_KEYWORD = "UVS_OBJECT_SPACE_CONSTANT";
     
     private LocalKeyword SingleKeyword;
     private LocalKeyword DoubleKeyword;
@@ -39,6 +40,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private LocalKeyword QuantizeKeyword;
     private LocalKeyword UVsScreenSpaceKeyword;
     private LocalKeyword UVsObjectSpaceKeyword;
+    private LocalKeyword UVsObjectSpaceConstantKeyword;
     
     // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
     // and z and w controls the offset.
@@ -69,6 +71,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
         QuantizeKeyword = new LocalKeyword(luminanceMat.shader, QUANTIZE_KEYWORD);
         UVsScreenSpaceKeyword = new LocalKeyword(luminanceMat.shader, UVS_SCREEN_SPACE_KEYWORD);
         UVsObjectSpaceKeyword = new LocalKeyword(luminanceMat.shader, UVS_OBJECT_SPACE_KEYWORD);
+        UVsObjectSpaceConstantKeyword = new LocalKeyword(luminanceMat.shader, UVS_OBJECT_SPACE_CONSTANT_KEYWORD);
 
         switch (passData.ActiveTonalMap.Tones.Length)
         {
@@ -106,10 +109,17 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
             case StrokeProjectionMethod.SCREEN_SPACE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, true);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
                 break;
-            case StrokeProjectionMethod.OBJECT_SPACE_TEXTURE:
+            case StrokeProjectionMethod.OBJECT_SPACE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, true);
+                luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
+                break;
+            case StrokeProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE:
+                luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, true);
                 break;
         }
         luminanceMat.SetKeyword(QuantizeKeyword, !passData.SmoothTransitions);
@@ -139,10 +149,14 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
             var resourceData = frameData.Get<UniversalResourceData>();
             if(resourceData.isActiveTargetBackBuffer)
                 return;
-            
-            if(this.passData.ProjectionMethod == StrokeProjectionMethod.OBJECT_SPACE_TEXTURE)
+
+            if (this.passData.ProjectionMethod 
+                is StrokeProjectionMethod.OBJECT_SPACE
+                or StrokeProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE)
+            {
                 builder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
-            
+            }
+
             var sketchData = frameData.GetOrCreate<SketchRendererContext>();
 
             var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);

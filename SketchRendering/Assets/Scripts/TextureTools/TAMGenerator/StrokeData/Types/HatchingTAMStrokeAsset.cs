@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "HatchingStrokeAsset", menuName = "Scriptable Objects/TAMStrokeAssets/HatchingStrokeAsset")]
+[CreateAssetMenu(fileName = "HatchingStrokeAsset", menuName = "SketchRendering/Scriptable Objects/TAMStrokeAssets/HatchingStrokeAsset")]
 public class HatchingTAMStrokeAsset : TAMStrokeAsset
 {
     public override StrokeSDFType PatternType => StrokeSDFType.HATCHING;

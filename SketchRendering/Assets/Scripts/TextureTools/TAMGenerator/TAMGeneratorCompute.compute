@@ -10,7 +10,7 @@
 #pragma multi_compile_local _ IS_LAST_REDUCTION
 #pragma multi_compile_local _ PACK_TEXTURES_2 PACK_TEXTURES_3
 
-#include "Assets/Scripts/TAMGenerator/StrokeSDFInclude.hlsl"
+#include "Assets/Scripts/TextureTools/TAMGenerator/StrokeSDFInclude.hlsl"
 
 RWStructuredBuffer<StrokeData> _StrokeData;
 RWStructuredBuffer<VariationData> _VariationData;

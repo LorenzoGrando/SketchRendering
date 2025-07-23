@@ -15,7 +15,7 @@ MonoBehaviour:
   StrokeData:
     OriginPoint: {x: 0.25, y: 0.5, z: 0, w: 0}
     Direction: {x: 1, y: 0, z: 0, w: 0}
-    Thickness: 0.097099274
+    Thickness: 0.051
     ThicknessFalloffConstraint: 0.1
     Length: 0.73316646
     LengthThicknessFalloff: 0.64720166
@@ -24,8 +24,8 @@ MonoBehaviour:
   SelectedFalloffFunction: 1
   VariationData:
     DirectionVariationRange: 0.06277202
-    ThicknessVariationRange: 0.0068733627
-    LengthVariationRange: 0.3250003
-    PressureVariationRange: 0.085733674
+    ThicknessVariationRange: 0.043
+    LengthVariationRange: 0.419
+    PressureVariationRange: 0.137
   MinCrossHatchingThreshold: 0.45402387
   MaxCrossHatchingThreshold: 0.876
