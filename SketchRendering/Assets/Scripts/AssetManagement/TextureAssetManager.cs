@@ -76,7 +76,7 @@ public static class TextureAssetManager
 #endif
     }
 
-    public static Texture2D OutputToAssetTexture(RenderTexture tex, string folderPath, string fileName, bool overwrite)
+    public static Texture2D OutputToAssetTexture(RenderTexture tex, string folderPath, string fileName, bool overwrite, TextureImporterType textureType = TextureImporterType.Default)
     {
         if (tex == null)
             throw new ArgumentNullException(nameof(tex));
@@ -121,6 +121,10 @@ public static class TextureAssetManager
         AssetDatabase.Refresh();
         
         Object.DestroyImmediate(outputTexture);
+        TextureImporter importer = TextureImporter.GetAtPath(targetPath) as TextureImporter;
+        importer.textureType = textureType;
+        EditorUtility.SetDirty(importer);
+        importer.SaveAndReimport();
         //Return a reference to the created asset
         return AssetDatabase.LoadAssetAtPath<Texture2D>(targetPath);
 #endif

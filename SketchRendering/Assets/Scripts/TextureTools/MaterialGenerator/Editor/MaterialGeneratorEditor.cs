@@ -15,14 +15,19 @@ public class MaterialGeneratorEditor : Editor
             editor.CreateOrUpdateTarget();
         }
         
-        if (GUILayout.Button("Regenerate Albedo"))
+        if (GUILayout.Button("Generate Albedo Texture"))
         {
             editor.UpdateMaterialAlbedoTexture();
         }
         
+        if (GUILayout.Button("Generate Directional Map"))
+        {
+            editor.UpdateMaterialDirectionalTexture();
+        }
+        
         if (GUILayout.Button("Save Current Texture"))
         {
-            editor.SaveCurrentTargetTexture(false);
+            editor.SaveCurrentTargetTexture(editor.TextureOutputType, false);
         }
     }
 }

@@ -14,25 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UseGranularity: 1
   Granularity:
-    Scale: {x: 3, y: 3}
+    Scale: {x: 4, y: 4}
     DetailLevel: 5
     DetailFrequency: 5
     DetailPersistence: 0.35
-    MinimumGranularity: 0.6
+    MinimumGranularity: 0.654
     MaximumGranularity: 0.85
   UseLaidLines: 1
   LaidLines:
     LineFrequency: 90
-    LineThickness: 0.5
-    LineStrength: 0.051
-    LineGranularityDisplacement: 0.12
+    LineThickness: 0.577
+    LineStrength: 0.109
+    LineGranularityDisplacement: 0.091
     LineGranularityMasking: 0.35
   UseCrumples: 1
   Crumples:
     CrumpleScale: {x: 4, y: 4}
-    CrumplesJitter: 0.537
-    CrumpleStrength: 0.514
-    CrumpleDetailLevel: 3
-    CrumpleDetailFrequency: 3
-    CrumpleDetailPersistence: 0.3
+    CrumplesJitter: 0.531
+    CrumpleStrength: 0.314
+    CrumpleDetailLevel: 2
+    CrumpleDetailFrequency: 5
+    CrumpleDetailPersistence: 0.15
     CrumpleTintStrength: 0.1

@@ -129,6 +129,103 @@ Shader "Hidden/MaterialGeneratorShader"
             }
             ENDHLSL
         }
+
+        Pass
+        {
+            Name "Generate Directional Map"
+            
+            HLSLPROGRAM
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Assets/Scripts/Includes/NoiseFunctions.hlsl"
+            #include "Assets/Scripts/Includes/MathUtils.hlsl"
+
+            #pragma multi_compile_local_fragment _ USE_GRANULARITY
+            #pragma multi_compile_local_fragment _ USE_CRUMPLES
+
+            struct Attributes
+            {
+                uint vertexID : SV_VertexID;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float2 texcoord   : TEXCOORD0;
+                UNITY_VERTEX_OUTPUT_STEREO
+            };
+            
+            #pragma vertex Vert
+            #pragma fragment Frag
+
+            //Granularity
+            float2 _GranularityScale;
+            int _GranularityOctaves;
+            float _GranularityLacunarity;
+            float _GranularityPersistence;
+            float2 _GranularityValueRange;
+
+            //Crumples
+            float2 _CrumplesScale;
+            float _CrumplesJitter;
+            float _CrumplesStrength;
+            int _CrumplesOctaves;
+            float _CrumplesLacunarity;
+            float _CrumplesPersistence;
+
+            Varyings Vert(Attributes i)
+            {
+                Varyings o;
+                o.positionCS = GetFullScreenTriangleVertexPosition(i.vertexID);
+                o.texcoord = GetFullScreenTriangleTexCoord(i.vertexID);
+
+                return o;
+            }
+            
+            float4 Frag(Varyings i) : SV_Target
+            {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                float2 uv = i.texcoord;
+
+                //Create polygonal-esque bumps in the paper, to simulate being crumpled and flattened
+                float crumpleDir = 0;
+                #if defined (USE_CRUMPLES)
+                float crumpleFrequency = 1.0;
+                float crumpleAmplitude = 1.0;
+                float3 crumpleT = 0;
+                for (int i = 0; i < _CrumplesOctaves; i++)
+                {
+                    crumpleT += cellularNoiseDirTileable(uv, _CrumplesScale * crumpleFrequency, _CrumplesJitter, 0) * crumpleAmplitude;
+                    crumpleFrequency *= _CrumplesLacunarity;
+                    crumpleAmplitude *= _CrumplesPersistence;
+                }
+                float3 crumpleSum = crumpleT * _CrumplesStrength;
+                crumpleDir = (crumpleSum.y * (1.0 - crumpleT.x));
+                uv.x += crumpleDir.x;
+                #endif
+                
+                // Base Granularity of paper, defining a heightmap
+                float2 granularityDir = float2(0, 0);
+                #if defined (USE_GRANULARITY)
+                float frequency = 1.0;
+                float amplitude = 1.0;
+                float3 t = 0;
+                for (int i = 0; i < _GranularityOctaves; i++)
+                {
+                    t += perlinNoiseDirTileable(uv, _GranularityScale * frequency, 0) * amplitude;
+                    frequency *= _GranularityLacunarity;
+                    amplitude *= _GranularityPersistence;
+                }
+                granularityDir = t.yz ;
+                #endif
+                
+                //Combine all elements
+                float2 dir = (granularityDir.xy + float2(crumpleDir, 0))/2.0;
+                dir = float2((dir + 1) * 0.5);
+                return float4(dir.xy, 1.0, 1.0);
+            }
+            ENDHLSL
+        }
     }
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
 }

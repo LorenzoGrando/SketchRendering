@@ -1,10 +1,30 @@
+using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 [ExecuteAlways]
 public class MaterialGenerator : TextureGenerator
 {
-    protected override string DefaultFileOutputName => "MaterialAlbedoTexture";
+    protected override string DefaultFileOutputName
+    {
+        get
+        {
+#if UNITY_EDITOR
+            switch (TextureOutputType)
+            {
+                case TextureImporterType.Default:
+                    return "MaterialAlbedoTexture";
+                case TextureImporterType.NormalMap:
+                    return "MaterialDirectionalTexture";
+                default:
+                    return "MaterialTexture";
+            }
+#else
+            return "MaterialTexture";
+#endif
+        }
+    }
     
     [Header("MaterialGenerator Settings")]
     public Shader MaterialGeneratorShader;
@@ -14,6 +34,7 @@ public class MaterialGenerator : TextureGenerator
     
     //Shader Data
     private const int ALBEDO_PASS_ID = 0;
+    private const int DIRECTIONAL_PASS_ID = 1;
     
     //Shader Properties
     //Granularity
@@ -128,12 +149,30 @@ public class MaterialGenerator : TextureGenerator
     {
         CreateOrUpdateTarget();
         ConfigureGeneratorData();
+#if UNITY_EDITOR
+        TextureOutputType = TextureImporterType.Default;
+#endif
         BlitAlbedoTexture();
+    }
+    
+    public void UpdateMaterialDirectionalTexture()
+    {
+        CreateOrUpdateTarget();
+        ConfigureGeneratorData();
+#if UNITY_EDITOR
+        TextureOutputType = TextureImporterType.NormalMap;
+#endif
+        BlitDirectionalTexture();
     }
 
     private void BlitAlbedoTexture()
     {
         Graphics.Blit(null, targetRT,  blitMaterial, ALBEDO_PASS_ID);
+    }
+
+    private void BlitDirectionalTexture()
+    {
+        Graphics.Blit(null, targetRT,  blitMaterial, DIRECTIONAL_PASS_ID);
     }
     
     #endregion

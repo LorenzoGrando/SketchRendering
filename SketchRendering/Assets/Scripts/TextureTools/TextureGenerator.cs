@@ -3,6 +3,10 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public abstract class TextureGenerator : MonoBehaviour
 {
     [Header("Base Settings")]
@@ -26,6 +30,14 @@ public abstract class TextureGenerator : MonoBehaviour
             return "Assets";
         }
     }
+    
+#if UNITY_EDITOR
+    private TextureImporterType textureOutputType = TextureImporterType.Default;
+    public TextureImporterType TextureOutputType
+    {
+        get { return textureOutputType; } protected set { textureOutputType = value; }
+    }
+#endif
     
     public virtual void OnEnable()
     {
@@ -132,6 +144,22 @@ public abstract class TextureGenerator : MonoBehaviour
         
         return TextureAssetManager.OutputToAssetTexture(targetRT, path, fileName, overwrite);
     }
+    
+#if UNITY_EDITOR
+    public Texture2D SaveCurrentTargetTexture(TextureImporterType texType, bool overwrite, string fileName = null)
+    {
+        if (targetRT == null)
+            return null;
+
+        string path = GetTextureOutputPath();
+        
+        if(fileName == null)
+            fileName = DefaultFileOutputName;
+        
+        return TextureAssetManager.OutputToAssetTexture(targetRT, path, fileName, overwrite, texType);
+    }
+#endif
+    
     protected string GetTextureOutputPath()
     {
 #if UNITY_EDITOR
