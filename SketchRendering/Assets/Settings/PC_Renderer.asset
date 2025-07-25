@@ -91,7 +91,7 @@ MonoBehaviour:
   EdgeDetectionPassData:
     Method: 0
     Source: 1
-    OutlineThreshold: 0.264
+    OutlineThreshold: 0.338
     OutlineOffset: 0
     OutlineAngleSensitivity: 1
     OutlineAngleConstraint: 0.449
@@ -100,10 +100,11 @@ MonoBehaviour:
   SketchStrokesPassData:
     OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
     SampleArea: 1
+    StrokeSampleScale: 4
     DoDownscale: 1
     DownscaleFactor: 2
     StrokeThreshold: 0.03
-    StrokeSampleScale: 4
+    FrameSmoothingFactor: 0
     UsePerpendicularDirection: 0
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}

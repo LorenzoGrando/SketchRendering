@@ -74,4 +74,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # User Defined Ignores
-# /[Aa]ssets/_Temp_
+/[Aa]ssets/_Temp_
+/.idea/

@@ -87,7 +87,8 @@ Shader "Hidden/MaterialGeneratorShader"
                     crumpleAmplitude *= _CrumplesPersistence;
                 }
                 float3 crumpleSum = crumpleT * _CrumplesStrength;
-                float crushDir = (crumpleSum.y * (1.0 - crumpleT.x));
+                float crushDir = (crumpleSum.y * (1.0 - crumpleT.x) * 1.0/_CrumplesScale.x);
+                //return float4(abs(crushDir), 0, 0, 1.0);
                 crumpleTint = pow(crumpleT.x, _CrumplesTintSharpness) * _CrumplesTintStrength;
                 uv.x += crushDir.x;
                 #endif
@@ -229,7 +230,7 @@ Shader "Hidden/MaterialGeneratorShader"
                 #endif
                 
                 //Combine all elements
-                float2 dir = (granularityDir.xy + float2(crumpleDir, 0))/2.0;
+                float2 dir = ((granularityDir.xy * 0.5) + float2(crumpleDir, 0))/2.0;
                 dir = float2((dir + 1) * 0.5);
                 return float4(dir.xy, 1.0, 1.0);
             }

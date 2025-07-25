@@ -15,10 +15,12 @@ public class TAMGenerator : TextureGenerator
     {
         get
         {
+#if UNITY_EDITOR
             if (TAMAsset != null)
                 return Path.Combine(TextureAssetManager.GetAssetPath(TAMAsset).Split('.')[0], "ToneTextures");
+#endif
             
-            return Path.Combine("Assets", "ToneTextures");
+            return base.DefaultFileOutputPath;
         }
     }
     
@@ -455,7 +457,7 @@ public class TAMGenerator : TextureGenerator
         for (int i = 0; i < TAMAsset.Tones.Length; i++)
         {
             if(TAMAsset.Tones[i] != null)
-                TextureAssetManager.ClearTexture(TAMAsset.Tones[i]);
+                ClearAndDeleteTexture(TAMAsset.Tones[i]);
         }
         TAMAsset.ResetTones();
     }
@@ -502,7 +504,7 @@ public class TAMGenerator : TextureGenerator
             Texture2D output = SaveCurrentTargetTexture(true, $"Tone_{i}");
             if (output == null)
             {
-                Debug.LogException(new Exception("Failed to generate Tam texture"));
+                Debug.LogException(new Exception("Failed to generate TAM texture"));
                 yield break;
             }
             TAMAsset.Tones[i] = output;

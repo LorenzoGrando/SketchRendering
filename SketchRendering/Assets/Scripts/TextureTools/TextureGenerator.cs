@@ -27,7 +27,11 @@ public abstract class TextureGenerator : MonoBehaviour
     {
         get
         {
+#if UNITY_EDITOR
             return "Assets";
+#elif !UNITY_EDITOR
+            return Path.Combine(Application.persistentDataPath, "GeneratedTextures");
+#endif
         }
     }
     
@@ -159,6 +163,18 @@ public abstract class TextureGenerator : MonoBehaviour
         return TextureAssetManager.OutputToAssetTexture(targetRT, path, fileName, overwrite, texType);
     }
 #endif
+
+    protected void ClearAndDeleteTexture(Texture2D texture)
+    {
+        if (texture != null)
+        {
+#if UNITY_EDITOR
+            TextureAssetManager.ClearTexture(texture);
+#elif !UNITY_EDITOR
+            TextureAssetManager.ClearTexture(texture, GetTextureOutputPath());
+#endif
+        }
+    }
     
     protected string GetTextureOutputPath()
     {
@@ -167,7 +183,7 @@ public abstract class TextureGenerator : MonoBehaviour
             return OverwriteTexturesOutputPath;
         else return DefaultFileOutputPath;
 #elif !UNITY_EDITOR
-        return string.Empty;
+        return DefaultFileOutputPath;
 #endif
     }
     #endregion
