@@ -43,6 +43,7 @@ public class MaterialGenerator : TextureGenerator
     private readonly int GRANULARITY_LACUNARITY_ID = Shader.PropertyToID("_GranularityLacunarity");
     private readonly int GRANULARITY_PERSISTENCE_ID = Shader.PropertyToID("_GranularityPersistence");
     private readonly int GRANULARITY_VALUE_RANGES_ID = Shader.PropertyToID("_GranularityValueRange");
+    private readonly int GRANULARITY_TINT_ID = Shader.PropertyToID("_GranularityTint");
     
     //Laid Lines
     private readonly int LAID_LINE_FREQUENCY_ID = Shader.PropertyToID("_LaidLineFrequency");
@@ -50,6 +51,7 @@ public class MaterialGenerator : TextureGenerator
     private readonly int LAID_LINE_STRENGTH_ID = Shader.PropertyToID("_LaidLineStrength");
     private readonly int LAID_LINE_GRANULARITY_DISPLACEMENT_ID = Shader.PropertyToID("_LaidLineDisplacement");
     private readonly int LAID_LINE_GRANULARITY_MASK_ID = Shader.PropertyToID("_LaidLineMask");
+    private readonly int LAID_LINE_TINT_ID = Shader.PropertyToID("_LaidLineTint");
     
     //Crumples
     private readonly int CRUMPLES_SCALE_ID = Shader.PropertyToID("_CrumplesScale");
@@ -59,6 +61,8 @@ public class MaterialGenerator : TextureGenerator
     private readonly int CRUMPLES_LACUNARITY_ID = Shader.PropertyToID("_CrumplesLacunarity");
     private readonly int CRUMPLES_PERSISTENCE_ID = Shader.PropertyToID("_CrumplesPersistence");
     private readonly int CRUMPLES_TINT_STRENGTH_ID = Shader.PropertyToID("_CrumplesTintStrength");
+    private readonly int CRUMPLES_SHARPNESS_ID = Shader.PropertyToID("_CrumplesTintSharpness");
+    private readonly int CRUMPLES_TINT_ID = Shader.PropertyToID("_CrumplesTint");
     
     //Shader Keywords
     private readonly string USE_GRANULARITY_KEYWORD = "USE_GRANULARITY";
@@ -120,6 +124,7 @@ public class MaterialGenerator : TextureGenerator
             blitMaterial.SetFloat(GRANULARITY_LACUNARITY_ID, MaterialData.Granularity.DetailFrequency);
             blitMaterial.SetFloat(GRANULARITY_PERSISTENCE_ID, MaterialData.Granularity.DetailPersistence);
             blitMaterial.SetVector(GRANULARITY_VALUE_RANGES_ID, new Vector4(MaterialData.Granularity.MinimumGranularity, MaterialData.Granularity.MaximumGranularity, 0, 0));
+            blitMaterial.SetVector(GRANULARITY_TINT_ID, MaterialData.Granularity.GranularityTint);
         }
 
         if (MaterialData.UseLaidLines)
@@ -129,6 +134,7 @@ public class MaterialGenerator : TextureGenerator
             blitMaterial.SetFloat(LAID_LINE_STRENGTH_ID, MaterialData.LaidLines.LineStrength);
             blitMaterial.SetFloat(LAID_LINE_GRANULARITY_DISPLACEMENT_ID, MaterialData.LaidLines.LineGranularityDisplacement);
             blitMaterial.SetFloat(LAID_LINE_GRANULARITY_MASK_ID, MaterialData.LaidLines.LineGranularityMasking);
+            blitMaterial.SetVector(LAID_LINE_TINT_ID, MaterialData.LaidLines.LineTint);
         }
 
         if (MaterialData.UseCrumples)
@@ -140,6 +146,8 @@ public class MaterialGenerator : TextureGenerator
             blitMaterial.SetFloat(CRUMPLES_LACUNARITY_ID, MaterialData.Crumples.CrumpleDetailFrequency);
             blitMaterial.SetFloat(CRUMPLES_PERSISTENCE_ID, MaterialData.Crumples.CrumpleDetailPersistence);
             blitMaterial.SetFloat(CRUMPLES_TINT_STRENGTH_ID, MaterialData.Crumples.CrumpleTintStrength);
+            blitMaterial.SetFloat(CRUMPLES_SHARPNESS_ID, MaterialData.Crumples.CrumpleTintSharpness);
+            blitMaterial.SetVector(CRUMPLES_TINT_ID, MaterialData.Crumples.CrumpleTint);
         }
     }
     

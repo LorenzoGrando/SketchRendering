@@ -39,6 +39,7 @@ Shader "Hidden/MaterialGeneratorShader"
             float _GranularityLacunarity;
             float _GranularityPersistence;
             float2 _GranularityValueRange;
+            float4 _GranularityTint;
 
             //Laid Lines
             float _LaidLineFrequency;
@@ -46,6 +47,7 @@ Shader "Hidden/MaterialGeneratorShader"
             float _LaidLineStrength;
             float _LaidLineDisplacement;
             float _LaidLineMask;
+            float4 _LaidLineTint;
 
             //Crumples
             float2 _CrumplesScale;
@@ -54,6 +56,8 @@ Shader "Hidden/MaterialGeneratorShader"
             int _CrumplesOctaves;
             float _CrumplesLacunarity;
             float _CrumplesPersistence;
+            float4 _CrumplesTint;
+            float _CrumplesTintSharpness;
             float _CrumplesTintStrength;
 
             Varyings Vert(Attributes i)
@@ -84,7 +88,7 @@ Shader "Hidden/MaterialGeneratorShader"
                 }
                 float3 crumpleSum = crumpleT * _CrumplesStrength;
                 float crushDir = (crumpleSum.y * (1.0 - crumpleT.x));
-                crumpleTint = crumpleT.x * _CrumplesTintStrength;
+                crumpleTint = pow(crumpleT.x, _CrumplesTintSharpness) * _CrumplesTintStrength;
                 uv.x += crushDir.x;
                 #endif
                 
@@ -124,8 +128,13 @@ Shader "Hidden/MaterialGeneratorShader"
                 #endif
                 
                 //Combine all elements
-                float paperHeightmap = granularity + crumpleTint - laidLines;
-                return float4(paperHeightmap.rrr, 1.0);
+                float4 paperColor = lerp(_GranularityTint * _GranularityValueRange.x, _GranularityTint * _GranularityValueRange.y, granularity);
+                float4 laidLineColor = _LaidLineTint * laidLines;
+                float4 crumpleColor = _CrumplesTint * crumpleTint;
+                //float paperHeightmap = granularity + crumpleTint - laidLines;
+                float4 composite = lerp(paperColor, laidLineColor, laidLineColor.a);
+                composite = lerp(composite, crumpleColor, crumpleColor.a);
+                return float4(composite.rgb, 1.0);
             }
             ENDHLSL
         }

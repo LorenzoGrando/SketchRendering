@@ -13,6 +13,7 @@ public struct GranularityData
     public float MinimumGranularity;
     [Range(0, 1)]
     public float MaximumGranularity;
+    public Color GranularityTint;
 }
 
 [System.Serializable]
@@ -27,6 +28,7 @@ public struct LaidLineData
     public float LineGranularityDisplacement;
     [Range(0, 1)]
     public float LineGranularityMasking;
+    public Color LineTint;
 }
 
 [System.Serializable]
@@ -44,4 +46,6 @@ public struct CrumpleData
     public float CrumpleDetailPersistence;
     [Range(0, 1)]
     public float CrumpleTintStrength;
+    public float CrumpleTintSharpness;
+    public Color CrumpleTint;
 }
