@@ -11,7 +11,7 @@ Shader "Hidden/QuantizeLuminance"
            HLSLPROGRAM
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
-           #include "Assets/Scripts/LuminanceAndDetail/QuantizeLuminanceFeature/TamSampleInclude.hlsl"
+           #include "Assets/Scripts/TextureProjection/LuminanceAndDetail/QuantizeLuminanceFeature/TamSampleInclude.hlsl"
         
            
            #pragma vertex Vert
@@ -20,7 +20,6 @@ Shader "Hidden/QuantizeLuminance"
            #pragma multi_compile_local_fragment TAM_SINGLE TAM_DOUBLE TAM_TRIPLE
            #pragma multi_compile_local_fragment _ QUANTIZE
            #pragma multi_compile_local_fragment UVS_SCREEN_SPACE UVS_OBJECT_SPACE UVS_OBJECT_SPACE_CONSTANT
-           #pragma multi_compile_local_fragment _ CONSTANT_SCREEN_SIZE
 
            int _NumTones;
            float _LuminanceOffset;

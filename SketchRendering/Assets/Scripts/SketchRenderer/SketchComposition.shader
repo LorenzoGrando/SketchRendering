@@ -17,8 +17,9 @@ Shader "Hidden/SketchComposition"
            #pragma vertex Vert
            #pragma fragment Frag
 
-           #pragma multi_compile_local_fragment _ DEBUG_OUTLINES DEBUG_LUMINANCE
+           #pragma multi_compile_local_fragment _ DEBUG_MATERIAL DEBUG_OUTLINES DEBUG_LUMINANCE
 
+           Texture2D _MaterialTex;
            Texture2D _OutlineTex;
            Texture2D _LuminanceTex;
 
@@ -30,6 +31,7 @@ Shader "Hidden/SketchComposition"
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 uv = input.texcoord;
 
+               float4 material = SAMPLE_TEXTURE2D_X_LOD(_MaterialTex, sampler_LinearClamp, uv, _BlitMipLevel);
                float4 outline = SAMPLE_TEXTURE2D_X_LOD(_OutlineTex, sampler_LinearClamp, uv, _BlitMipLevel);
                float4 luminance = SAMPLE_TEXTURE2D_X_LOD(_LuminanceTex, sampler_LinearClamp, uv, _BlitMipLevel);
                #if defined(DEBUG_OUTLINES)
@@ -46,7 +48,7 @@ Shader "Hidden/SketchComposition"
                luminance = lerp(white, lumShade, (1 - luminance.a) * _ShadingColor.a);
 
                float3 blend = outline * luminance;
-               
+               blend *= material;
                return float4(blend.rgb, 1);
            }
 

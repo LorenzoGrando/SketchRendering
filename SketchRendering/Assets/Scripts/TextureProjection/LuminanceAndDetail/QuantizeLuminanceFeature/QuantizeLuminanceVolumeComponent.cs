@@ -6,8 +6,8 @@ using UnityEngine.Rendering;
 [VolumeComponentMenu("Post-processing/SketchRendering/QuantizeLuminance")]
 public class QuantizeLuminanceVolumeComponent : VolumeComponent
 {
-    public EnumParameter<StrokeProjectionMethod> ProjectionMethod =
-        new EnumParameter<StrokeProjectionMethod>(StrokeProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE);
+    public EnumParameter<TextureProjectionMethod> ProjectionMethod =
+        new EnumParameter<TextureProjectionMethod>(TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE);
     public BoolParameter SmoothTransitions = new BoolParameter(false);
     public Vector2Parameter ToneScales = new Vector2Parameter(Vector2.one);
     public ClampedFloatParameter SkyboxRotation = new ClampedFloatParameter(0, 0, 1);

@@ -12,14 +12,17 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         get { return "SketchCompositionRenderPass"; }
     }
     
+    protected static readonly int materialShaderID = Shader.PropertyToID("_MaterialTex");
     protected static readonly int outlinesShaderID = Shader.PropertyToID("_OutlineTex");
     protected static readonly int luminanceShaderID = Shader.PropertyToID("_LuminanceTex");
     protected static readonly int outlineColorShaderID = Shader.PropertyToID("_OutlineColor");
     protected static readonly int shadingColorShaderID = Shader.PropertyToID("_ShadingColor");
     
+    public static readonly string DEBUG_MATERIAL = "DEBUG_MATERIAL";
     public static readonly string DEBUG_OUTLINES = "DEBUG_OUTLINES";
     public static readonly string DEBUG_LUMINANCE = "DEBUG_LUMINANCE";
 
+    private LocalKeyword debugMaterialKeyword;
     private LocalKeyword debugOutlinesKeyword;
     private LocalKeyword debugLuminanceKeyword;
     
@@ -32,6 +35,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
 
     private class PassData
     {
+        public TextureHandle materialTexture;
         public TextureHandle outlineTexture;
         public TextureHandle luminanceTexture;
         public Material material;
@@ -51,20 +55,29 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
 
     public void ConfigureMaterial()
     {
+        debugMaterialKeyword = new LocalKeyword(mat.shader, DEBUG_MATERIAL);
         debugOutlinesKeyword = new LocalKeyword(mat.shader, DEBUG_OUTLINES);
         debugLuminanceKeyword = new LocalKeyword(mat.shader, DEBUG_LUMINANCE);
         
         switch (passData.debugMode)
         {
             case SketchCompositionPassData.DebugMode.NONE:
+                mat.DisableKeyword(debugMaterialKeyword);
+                mat.DisableKeyword(debugOutlinesKeyword);
+                mat.DisableKeyword(debugLuminanceKeyword);
+                break;
+            case SketchCompositionPassData.DebugMode.MATERIAL:
+                mat.EnableKeyword(debugMaterialKeyword);
                 mat.DisableKeyword(debugOutlinesKeyword);
                 mat.DisableKeyword(debugLuminanceKeyword);
                 break;
             case SketchCompositionPassData.DebugMode.OUTLINES:
+                mat.DisableKeyword(debugMaterialKeyword);
                 mat.EnableKeyword(debugOutlinesKeyword);
                 mat.DisableKeyword(debugLuminanceKeyword);
                 break;
             case SketchCompositionPassData.DebugMode.LUMINANCE:
+                mat.DisableKeyword(debugMaterialKeyword);
                 mat.DisableKeyword(debugOutlinesKeyword);
                 mat.EnableKeyword(debugLuminanceKeyword);
                 break;
@@ -81,6 +94,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
 
     private static void ExecuteCompositionPass(PassData passData, RasterGraphContext context)
     {
+        passData.material.SetTexture(materialShaderID, passData.materialTexture);
         passData.material.SetTexture(outlinesShaderID, passData.outlineTexture);
         passData.material.SetTexture(luminanceShaderID, passData.luminanceTexture);
         Blitter.BlitTexture(context.cmd, passData.src, scaleBias, passData.material, 0);
@@ -107,6 +121,11 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         using (var builder = renderGraph.AddRasterRenderPass<PassData>(PassName, out var passData))
         {
             passData.material = mat;
+            if (sketchData.MaterialTexture.IsValid())
+            {
+                builder.UseTexture(sketchData.MaterialTexture);
+                passData.materialTexture = sketchData.MaterialTexture;
+            }
             if (sketchData.OutlinesTexture.IsValid())
             {
                 builder.UseTexture(sketchData.OutlinesTexture);

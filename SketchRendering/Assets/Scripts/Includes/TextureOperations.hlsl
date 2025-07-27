@@ -6,6 +6,12 @@
 //Kyle Halladay and bgolus:
 //https://discussions.unity.com/t/making-per-object-uvs-in-screen-space/672066/10
 
+#if defined(UVS_OBJECT_SPACE_CONSTANT)
+#define SAMPLE_TEX(tex, sampler, texel, mip, uv, scales) SAMPLE_TEXTURE2D_CONSTANT_SCALE(tex, sampler, texel, uv, scales)
+#else
+#define SAMPLE_TEX(tex, sampler, texel, mip, uv, scales) SAMPLE_TEXTURE2D_X_LOD(tex, sampler, uv * scales, mip)
+#endif
+
 //This returns the scales in X, Y and the blend factor in Z
 float3 ConstantScaleUVs2D(float texelSize, float2 uv)
 {

@@ -106,17 +106,17 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
 
         switch (passData.ProjectionMethod)
         {
-            case StrokeProjectionMethod.SCREEN_SPACE:
+            case TextureProjectionMethod.SCREEN_SPACE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, true);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
                 break;
-            case StrokeProjectionMethod.OBJECT_SPACE:
+            case TextureProjectionMethod.OBJECT_SPACE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, true);
                 luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
                 break;
-            case StrokeProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE:
+            case TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, true);
@@ -151,8 +151,8 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
                 return;
 
             if (this.passData.ProjectionMethod 
-                is StrokeProjectionMethod.OBJECT_SPACE
-                or StrokeProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE)
+                is TextureProjectionMethod.OBJECT_SPACE
+                or TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE)
             {
                 builder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
             }

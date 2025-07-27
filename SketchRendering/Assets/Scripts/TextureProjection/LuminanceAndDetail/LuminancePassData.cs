@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 public class LuminancePassData : ISketchRenderPassData<LuminancePassData>
 {
     public TonalArtMapAsset ActiveTonalMap;
-    public StrokeProjectionMethod ProjectionMethod;
+    public TextureProjectionMethod ProjectionMethod;
     public bool SmoothTransitions;
     public Vector2 ToneScales = Vector2.one;
     [Range(-1f, 1f)]
