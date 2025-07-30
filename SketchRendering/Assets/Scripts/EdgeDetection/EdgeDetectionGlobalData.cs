@@ -19,9 +19,10 @@ public static class EdgeDetectionGlobalData
 
     public enum EdgeDetectionOutputType
     {
-        OUTPUT_GREYSCALE, OUTPUT_DIRECTION_DATA
+        OUTPUT_GREYSCALE, OUTPUT_DIRECTION_DATA_ANGLE, OUTPUT_DIRECTION_DATA_VECTOR
     }
     
     public static readonly string OUTPUT_GREYSCALE_KEYWORD = "OUTPUT_GREYSCALE";
-    public static readonly string OUPUT_DIRECTION_KEYWORD = "OUTPUT_DIRECTION_DATA";
+    public static readonly string OUPUT_DIRECTION_ANGLE_KEYWORD = "OUTPUT_DIRECTION_DATA_ANGLE";
+    public static readonly string OUPUT_DIRECTION_VECTOR_KEYWORD = "OUTPUT_DIRECTION_DATA_VECTOR";
 }

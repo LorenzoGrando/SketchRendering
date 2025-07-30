@@ -78,7 +78,7 @@ Shader "Hidden/DepthNormalsSilhouette"
 
            #pragma multi_compile_local SOURCE_DEPTH SOURCE_DEPTH_NORMALS
            #pragma multi_compile_local SOBEL_KERNEL_3X3 SOBEL_KERNEL_1X3
-           #pragma multi_compile_local OUTPUT_GREYSCALE OUTPUT_DIRECTION_DATA
+           #pragma multi_compile_local OUTPUT_GREYSCALE OUTPUT_DIRECTION_DATA_ANGLE OUTPUT_DIRECTION_DATA_VECTOR
 
            int _OutlineOffset;
            float _OutlineThreshold;
@@ -156,7 +156,7 @@ Shader "Hidden/DepthNormalsSilhouette"
                    #elif defined(SOURCE_DEPTH_NORMALS)
                    return float4(max(0, max(depthGradient, normalGradient)).rrrr);
                    #endif
-               #elif defined(OUTPUT_DIRECTION_DATA)
+               #elif defined(OUTPUT_DIRECTION_DATA_ANGLE)
                     #if defined(SOURCE_DEPTH)
                     float angle = atan2(depthGradientVector.y, depthGradientVector.x);
                     angle /= PI;
@@ -173,6 +173,19 @@ Shader "Hidden/DepthNormalsSilhouette"
                     angle /= PI;
                     angle = (angle + 1) * 0.5;
                     return float4(edge, angle, 0.0, edge);
+                    #endif
+               #elif defined(OUTPUT_DIRECTION_DATA_VECTOR)
+                    #if defined(SOURCE_DEPTH)
+                    float2 direction = depthGradientVector.xy;
+                    float edge = max(0, depthGradient);
+                    return float4(edge, direction, edge);
+                    #elif defined(SOURCE_DEPTH_NORMALS)
+                    float edge = max(0, max(depthGradient, normalGradient));
+                    float directionNormalAttenuation = lerp(1.0, 0.0, depthGradient);
+                    float2 directionDepth = depthGradientVector.xy;
+                    float2 directionNormal = normalGradientVector.xy;
+                    float2 direction = ((directionDepth * depthGradient) + (directionNormal * normalGradient * directionNormalAttenuation))/(depthGradient + normalGradient + directionNormalAttenuation);
+                    return float4(edge, ((direction * 0.5) + 0.5) * edge, edge);
                     #endif
                #endif
            }

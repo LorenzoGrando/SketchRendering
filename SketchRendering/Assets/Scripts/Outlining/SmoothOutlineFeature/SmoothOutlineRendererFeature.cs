@@ -36,7 +36,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     public override void Create()
     {
         //Material accumulation still requires relevant direction data, so ensure this is the case
-        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA;
+        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA_VECTOR;
         
         edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
         edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);

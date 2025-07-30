@@ -24,7 +24,7 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
     public override void Create()
     {
         //This pass needs angles to calculate stroke directins, so set this here
-        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA;
+        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA_ANGLE;
         
         edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
         edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);

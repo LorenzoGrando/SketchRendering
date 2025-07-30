@@ -5,7 +5,7 @@ public class SketchCompositionPassData : ISketchRenderPassData<SketchComposition
 {
     public enum DebugMode
     {
-        NONE, MATERIAL, OUTLINES, LUMINANCE
+        NONE, MATERIAL_ALBEDO, MATERIAL_DIRECTION, OUTLINES, LUMINANCE
     }
     [Header("Debug")]
     public DebugMode debugMode = DebugMode.NONE;

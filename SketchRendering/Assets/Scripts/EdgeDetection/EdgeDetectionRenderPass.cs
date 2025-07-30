@@ -19,7 +19,8 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
     protected static readonly int outlineNormalSensitivityShaderID = Shader.PropertyToID("_OutlineNormalDistanceSensitivity");
     
     protected LocalKeyword outputGreyscaleKeyword;
-    protected LocalKeyword outputDirectionDataKeyword;
+    protected LocalKeyword outputDirectionAngleDataKeyword;
+    protected LocalKeyword outputDirectionVectorDataKeyword;
 
 
     public virtual void Setup(EdgeDetectionPassData passData, Material mat)
@@ -36,7 +37,8 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
     public virtual void ConfigureMaterial()
     {
         outputGreyscaleKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.OUTPUT_GREYSCALE_KEYWORD);
-        outputDirectionDataKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.OUPUT_DIRECTION_KEYWORD);
+        outputDirectionAngleDataKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.OUPUT_DIRECTION_ANGLE_KEYWORD);
+        outputDirectionVectorDataKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.OUPUT_DIRECTION_VECTOR_KEYWORD);
         
         edgeDetectionMaterial.SetInteger(outlineOffsetShaderID, passData.OutlineOffset);
         edgeDetectionMaterial.SetFloat(outlineThresholdShaderID, passData.OutlineThreshold);
@@ -48,11 +50,18 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
         {
             case EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_GREYSCALE:
                 edgeDetectionMaterial.SetKeyword(outputGreyscaleKeyword, true);
-                edgeDetectionMaterial.SetKeyword(outputDirectionDataKeyword, false);
+                edgeDetectionMaterial.SetKeyword(outputDirectionAngleDataKeyword, false);
+                edgeDetectionMaterial.SetKeyword(outputDirectionVectorDataKeyword, false);
                 break;
-            case EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA:
-                edgeDetectionMaterial.SetKeyword(outputDirectionDataKeyword, true);
+            case EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA_ANGLE:
                 edgeDetectionMaterial.SetKeyword(outputGreyscaleKeyword, false);
+                edgeDetectionMaterial.SetKeyword(outputDirectionAngleDataKeyword, true);
+                edgeDetectionMaterial.SetKeyword(outputDirectionVectorDataKeyword, false);
+                break;
+            case EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA_VECTOR:
+                edgeDetectionMaterial.SetKeyword(outputGreyscaleKeyword, false);
+                edgeDetectionMaterial.SetKeyword(outputDirectionAngleDataKeyword, false);
+                edgeDetectionMaterial.SetKeyword(outputDirectionVectorDataKeyword, true);
                 break;
         }
     }

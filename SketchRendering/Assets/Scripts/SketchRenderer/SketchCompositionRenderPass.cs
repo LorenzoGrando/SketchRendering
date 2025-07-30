@@ -21,11 +21,13 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     protected static readonly int materialAccumulationShaderID = Shader.PropertyToID("_MaterialAccumulationStrength");
     protected static readonly int luminanceBasisDirectionShaderID = Shader.PropertyToID("_LuminanceBasisDirection");
     
-    public static readonly string DEBUG_MATERIAL = "DEBUG_MATERIAL";
+    public static readonly string DEBUG_MATERIAL_ALBEDO = "DEBUG_MATERIAL_ALBEDO";
+    public static readonly string DEBUG_MATERIAL_DIRECTION = "DEBUG_MATERIAL_DIRECTION";
     public static readonly string DEBUG_OUTLINES = "DEBUG_OUTLINES";
     public static readonly string DEBUG_LUMINANCE = "DEBUG_LUMINANCE";
 
-    private LocalKeyword debugMaterialKeyword;
+    private LocalKeyword debugMaterialAlbedoKeyword;
+    private LocalKeyword debugMaterialDirectionKeyword;
     private LocalKeyword debugOutlinesKeyword;
     private LocalKeyword debugLuminanceKeyword;
     
@@ -60,29 +62,40 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
 
     public void ConfigureMaterial()
     {
-        debugMaterialKeyword = new LocalKeyword(mat.shader, DEBUG_MATERIAL);
+        debugMaterialAlbedoKeyword = new LocalKeyword(mat.shader, DEBUG_MATERIAL_ALBEDO);
+        debugMaterialDirectionKeyword = new LocalKeyword(mat.shader, DEBUG_MATERIAL_DIRECTION);
         debugOutlinesKeyword = new LocalKeyword(mat.shader, DEBUG_OUTLINES);
         debugLuminanceKeyword = new LocalKeyword(mat.shader, DEBUG_LUMINANCE);
         
         switch (passData.debugMode)
         {
             case SketchCompositionPassData.DebugMode.NONE:
-                mat.DisableKeyword(debugMaterialKeyword);
+                mat.DisableKeyword(debugMaterialAlbedoKeyword);
+                mat.DisableKeyword(debugMaterialDirectionKeyword);
                 mat.DisableKeyword(debugOutlinesKeyword);
                 mat.DisableKeyword(debugLuminanceKeyword);
                 break;
-            case SketchCompositionPassData.DebugMode.MATERIAL:
-                mat.EnableKeyword(debugMaterialKeyword);
+            case SketchCompositionPassData.DebugMode.MATERIAL_ALBEDO:
+                mat.EnableKeyword(debugMaterialAlbedoKeyword);
+                mat.DisableKeyword(debugMaterialDirectionKeyword);
+                mat.DisableKeyword(debugOutlinesKeyword);
+                mat.DisableKeyword(debugLuminanceKeyword);
+                break;
+            case SketchCompositionPassData.DebugMode.MATERIAL_DIRECTION:
+                mat.DisableKeyword(debugMaterialAlbedoKeyword);
+                mat.EnableKeyword(debugMaterialDirectionKeyword);
                 mat.DisableKeyword(debugOutlinesKeyword);
                 mat.DisableKeyword(debugLuminanceKeyword);
                 break;
             case SketchCompositionPassData.DebugMode.OUTLINES:
-                mat.DisableKeyword(debugMaterialKeyword);
+                mat.DisableKeyword(debugMaterialAlbedoKeyword);
+                mat.DisableKeyword(debugMaterialDirectionKeyword);
                 mat.EnableKeyword(debugOutlinesKeyword);
                 mat.DisableKeyword(debugLuminanceKeyword);
                 break;
             case SketchCompositionPassData.DebugMode.LUMINANCE:
-                mat.DisableKeyword(debugMaterialKeyword);
+                mat.DisableKeyword(debugMaterialAlbedoKeyword);
+                mat.DisableKeyword(debugMaterialDirectionKeyword);
                 mat.DisableKeyword(debugOutlinesKeyword);
                 mat.EnableKeyword(debugLuminanceKeyword);
                 break;

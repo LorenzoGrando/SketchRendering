@@ -171,8 +171,9 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
     }
     value = 1 - value;
     direction *= value;
+    direction = (direction + 1) * 0.5;
     // R: Value graphite, GB: Average direction of found strokes. A: Value mask
-    _OriginalSource[id.xy] = float4(value.r, direction.rg, value.r);
+    _OriginalSource[id.xy] = float4(value.r, direction.rg * value.r, value.r);
     //float u = float(idG.x)/(float)kernelSizes.x * (1- value);
     //float v = float(idG.y)/(float)kernelSizes.y * (1- value);
     //_OriginalSource[id.xy] = float4(u, v, 0.0, 1.0);

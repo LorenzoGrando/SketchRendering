@@ -73,7 +73,7 @@ MonoBehaviour:
     m_Value: 1
   ToneScales:
     m_OverrideState: 1
-    m_Value: {x: 15, y: 15}
+    m_Value: {x: 8, y: 8}
   SkyboxRotation:
     m_OverrideState: 1
     m_Value: 0
@@ -132,7 +132,7 @@ MonoBehaviour:
     m_Value: 0.601
   ThicknessRange:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 2
   ThicknessStrength:
     m_OverrideState: 1
     m_Value: 1
