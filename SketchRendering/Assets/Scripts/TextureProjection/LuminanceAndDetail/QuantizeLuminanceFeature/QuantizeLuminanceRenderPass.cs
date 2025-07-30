@@ -30,9 +30,6 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private readonly string DOUBLE_TAM_KEYWORD = "TAM_DOUBLE";
     private readonly string TRIPLE_TAM_KEYWORD = "TAM_TRIPLE";
     private readonly string QUANTIZE_KEYWORD = "QUANTIZE";
-    private readonly string UVS_SCREEN_SPACE_KEYWORD = "UVS_SCREEN_SPACE";
-    private readonly string UVS_OBJECT_SPACE_KEYWORD = "UVS_OBJECT_SPACE";
-    private readonly string UVS_OBJECT_SPACE_CONSTANT_KEYWORD = "UVS_OBJECT_SPACE_CONSTANT";
     
     private LocalKeyword SingleKeyword;
     private LocalKeyword DoubleKeyword;
@@ -41,6 +38,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
     private LocalKeyword UVsScreenSpaceKeyword;
     private LocalKeyword UVsObjectSpaceKeyword;
     private LocalKeyword UVsObjectSpaceConstantKeyword;
+    private LocalKeyword UVsObjectSpaceReversedConstantKeyword;
     
     // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
     // and z and w controls the offset.
@@ -69,9 +67,10 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
         DoubleKeyword = new LocalKeyword(luminanceMat.shader, DOUBLE_TAM_KEYWORD);
         TripleKeyword = new LocalKeyword(luminanceMat.shader, TRIPLE_TAM_KEYWORD);
         QuantizeKeyword = new LocalKeyword(luminanceMat.shader, QUANTIZE_KEYWORD);
-        UVsScreenSpaceKeyword = new LocalKeyword(luminanceMat.shader, UVS_SCREEN_SPACE_KEYWORD);
-        UVsObjectSpaceKeyword = new LocalKeyword(luminanceMat.shader, UVS_OBJECT_SPACE_KEYWORD);
-        UVsObjectSpaceConstantKeyword = new LocalKeyword(luminanceMat.shader, UVS_OBJECT_SPACE_CONSTANT_KEYWORD);
+        UVsScreenSpaceKeyword = new LocalKeyword(luminanceMat.shader, TextureProjectionGlobalData.UVS_SCREEN_SPACE_KEYWORD);
+        UVsObjectSpaceKeyword = new LocalKeyword(luminanceMat.shader, TextureProjectionGlobalData.UVS_OBJECT_SPACE_KEYWORD);
+        UVsObjectSpaceConstantKeyword = new LocalKeyword(luminanceMat.shader, TextureProjectionGlobalData.UVS_OBJECT_SPACE_CONSTANT_KEYWORD);
+        UVsObjectSpaceReversedConstantKeyword = new LocalKeyword(luminanceMat.shader, TextureProjectionGlobalData.UVS_OBJECT_SPACE_REVERSED_CONSTANT_KEYWORD);
 
         switch (passData.ActiveTonalMap.Tones.Length)
         {
@@ -106,23 +105,33 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
 
         switch (passData.ProjectionMethod)
         {
-            case TextureProjectionMethod.SCREEN_SPACE:
+            case TextureProjectionGlobalData.TextureProjectionMethod.SCREEN_SPACE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, true);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceReversedConstantKeyword, false);
                 break;
-            case TextureProjectionMethod.OBJECT_SPACE:
+            case TextureProjectionGlobalData.TextureProjectionMethod.OBJECT_SPACE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, true);
                 luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceReversedConstantKeyword, false);
                 break;
-            case TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE:
+            case TextureProjectionGlobalData.TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE:
                 luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
                 luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, true);
+                luminanceMat.SetKeyword(UVsObjectSpaceReversedConstantKeyword, false);
+                break;
+            case TextureProjectionGlobalData.TextureProjectionMethod.OBJECT_SPACE_REVERSED_CONSTANT_SCALE:
+                luminanceMat.SetKeyword(UVsScreenSpaceKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceConstantKeyword, false);
+                luminanceMat.SetKeyword(UVsObjectSpaceReversedConstantKeyword, true);
                 break;
         }
         luminanceMat.SetKeyword(QuantizeKeyword, !passData.SmoothTransitions);
+        luminanceMat.SetFloat(TextureProjectionGlobalData.CONSTANT_SCALE_FALLOFF_SHADER_ID, passData.ConstantScaleFalloffFactor);
     }
 
     public void Dispose()
@@ -151,8 +160,8 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
                 return;
 
             if (this.passData.ProjectionMethod 
-                is TextureProjectionMethod.OBJECT_SPACE
-                or TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE)
+                is TextureProjectionGlobalData.TextureProjectionMethod.OBJECT_SPACE
+                or TextureProjectionGlobalData.TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE)
             {
                 builder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
             }

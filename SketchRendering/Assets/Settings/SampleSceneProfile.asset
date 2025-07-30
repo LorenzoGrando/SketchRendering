@@ -68,6 +68,9 @@ MonoBehaviour:
   ProjectionMethod:
     m_OverrideState: 1
     m_Value: 2
+  ConstantScaleFalloffFactor:
+    m_OverrideState: 1
+    m_Value: 1.3
   SmoothTransitions:
     m_OverrideState: 1
     m_Value: 1

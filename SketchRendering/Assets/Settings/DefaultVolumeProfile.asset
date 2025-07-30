@@ -265,12 +265,21 @@ MonoBehaviour:
   m_Name: QuantizeLuminanceVolumeComponent
   m_EditorClassIdentifier: 
   active: 1
+  ProjectionMethod:
+    m_OverrideState: 1
+    m_Value: 2
+  ConstantScaleFalloffFactor:
+    m_OverrideState: 0
+    m_Value: 0
   SmoothTransitions:
     m_OverrideState: 1
     m_Value: 0
   ToneScales:
     m_OverrideState: 1
     m_Value: {x: 1, y: 1}
+  SkyboxRotation:
+    m_OverrideState: 1
+    m_Value: 0
   LuminanceOffset:
     m_OverrideState: 1
     m_Value: 0
@@ -489,6 +498,60 @@ MonoBehaviour:
   - {fileID: -1410297666881709256}
   - {fileID: 2047482595944166687}
   - {fileID: -5315700156913426753}
+  - {fileID: 4613055957280655704}
+  - {fileID: 544630824735710578}
+--- !u!114 &544630824735710578
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 875c69ed335440b2b21aedc73c222982, type: 3}
+  m_Name: SketchOutlineVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  Method:
+    m_OverrideState: 1
+    m_Value: 0
+  Source:
+    m_OverrideState: 1
+    m_Value: 0
+  Threshold:
+    m_OverrideState: 1
+    m_Value: 0
+  Offset:
+    m_OverrideState: 1
+    m_Value: 0
+  AngleSensitivity:
+    m_OverrideState: 1
+    m_Value: 0
+  AngleConstraint:
+    m_OverrideState: 1
+    m_Value: 0
+  NormalSensitivity:
+    m_OverrideState: 1
+    m_Value: 0
+  StrokeArea:
+    m_OverrideState: 1
+    m_Value: 1
+  StrokeScale:
+    m_OverrideState: 1
+    m_Value: 1
+  DoDownscale:
+    m_OverrideState: 1
+    m_Value: 1
+  DownscaleFactor:
+    m_OverrideState: 1
+    m_Value: 2
+  MinThresholdForStroke:
+    m_OverrideState: 1
+    m_Value: 0.1
+  FrameSmoothingFactor:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &853819529557874667
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -830,10 +893,22 @@ MonoBehaviour:
   AngleConstraint:
     m_OverrideState: 1
     m_Value: 0
+  NormalSensitivity:
+    m_OverrideState: 1
+    m_Value: 0
   ThicknessRange:
     m_OverrideState: 1
     m_Value: 0
   ThicknessStrength:
+    m_OverrideState: 1
+    m_Value: 0
+  BakeDistortion:
+    m_OverrideState: 1
+    m_Value: 0
+  DistortionRate:
+    m_OverrideState: 1
+    m_Value: 20
+  DistortionStrength:
     m_OverrideState: 1
     m_Value: 0
 --- !u!114 &3959858460715838825
@@ -898,6 +973,40 @@ MonoBehaviour:
   param:
     m_OverrideState: 1
     m_Value: 123
+--- !u!114 &4613055957280655704
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95af5a67ca2e497fb96646c1f48e4943, type: 3}
+  m_Name: OutlineVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  Method:
+    m_OverrideState: 1
+    m_Value: 0
+  Source:
+    m_OverrideState: 1
+    m_Value: 0
+  Threshold:
+    m_OverrideState: 1
+    m_Value: 0
+  Offset:
+    m_OverrideState: 1
+    m_Value: 0
+  AngleSensitivity:
+    m_OverrideState: 1
+    m_Value: 0
+  AngleConstraint:
+    m_OverrideState: 1
+    m_Value: 0
+  NormalSensitivity:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &4644742534064026673
 MonoBehaviour:
   m_ObjectHideFlags: 3

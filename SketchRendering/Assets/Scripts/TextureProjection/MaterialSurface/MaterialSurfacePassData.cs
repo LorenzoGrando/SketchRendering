@@ -4,7 +4,9 @@ using UnityEngine.Rendering;
 [System.Serializable]
 public class MaterialSurfacePassData : ISketchRenderPassData<MaterialSurfacePassData>
 {
-    public TextureProjectionMethod ProjectionMethod;
+    public TextureProjectionGlobalData.TextureProjectionMethod ProjectionMethod;
+    [Range(1f, 5f)]
+    public float ConstantScaleFalloffFactor = 2f;
     public Texture2D AlbedoTexture;
     public Texture2D NormalTexture;
     public Vector2Int Scale;

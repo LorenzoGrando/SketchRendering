@@ -23,7 +23,7 @@ MonoBehaviour:
     PressureFalloff: 0.5
   SelectedFalloffFunction: 1
   VariationData:
-    DirectionVariationRange: 0.132
+    DirectionVariationRange: 0.23
     ThicknessVariationRange: 0.034
     LengthVariationRange: 0.054
     PressureVariationRange: 0.015

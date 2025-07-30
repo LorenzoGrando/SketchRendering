@@ -17,7 +17,7 @@ Shader "Hidden/MaterialSurface"
            #pragma vertex Vert
            #pragma fragment Frag
            
-           #pragma multi_compile_local_fragment UVS_SCREEN_SPACE UVS_OBJECT_SPACE UVS_OBJECT_SPACE_CONSTANT
+           #pragma multi_compile_local_fragment UVS_SCREEN_SPACE UVS_OBJECT_SPACE UVS_OBJECT_SPACE_CONSTANT UVS_OBJECT_SPACE_REVERSED_CONSTANT
 
            TEXTURE2D(_CameraUVsTexture); 
            
@@ -32,7 +32,7 @@ Shader "Hidden/MaterialSurface"
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 screenSpaceUV = input.texcoord;
                float2 uv = screenSpaceUV;
-               #if defined UVS_OBJECT_SPACE || defined UVS_OBJECT_SPACE_CONSTANT
+               #if defined UVS_OBJECT_SPACE || defined UVS_OBJECT_SPACE_CONSTANT || defined UVS_OBJECT_SPACE_REVERSED_CONSTANT
                float2 objectUVs = SAMPLE_TEXTURE2D_X_LOD(_CameraUVsTexture, sampler_PointClamp, screenSpaceUV, _BlitMipLevel).xy;
                uv = objectUVs;
                #endif
