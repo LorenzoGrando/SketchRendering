@@ -12,6 +12,9 @@ public class MaterialSurfaceRenderPass : ScriptableRenderPass, ISketchRenderPass
 
     private Material materialMat;
     private MaterialSurfacePassData passData;
+
+    public readonly int ALBEDO_PASS_ID = 0;
+    public readonly int DIRECTIONAL_PASS_ID = 1;
     
     private readonly int ALBEDO_TEXTURE_ID = Shader.PropertyToID("_MaterialAlbedoTex");
     private readonly int ALBEDO_TEXTURE_TEXEL_ID = Shader.PropertyToID("_MaterialAlbedoTex_TexelSize");
@@ -88,12 +91,13 @@ public class MaterialSurfaceRenderPass : ScriptableRenderPass, ISketchRenderPass
     {
         public TextureHandle src;
         public TextureHandle dst;
+        public int passID;
         public Material mat;
     }
 
     private static void ExecuteMaterial(PassData data, RasterGraphContext context)
     {
-        Blitter.BlitTexture(context.cmd, data.src, scaleBias, data.mat, 0);
+        Blitter.BlitTexture(context.cmd, data.src, scaleBias, data.mat, data.passID);
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -112,7 +116,10 @@ public class MaterialSurfaceRenderPass : ScriptableRenderPass, ISketchRenderPass
             }
 
             var sketchData = frameData.GetOrCreate<SketchRendererContext>();
+            
+            passData.mat = materialMat;
 
+            //Projects Material Texture
             var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
             dstDesc.name = "MaterialTexture";
             dstDesc.format = GraphicsFormat.R8G8B8A8_UNorm;
@@ -125,11 +132,46 @@ public class MaterialSurfaceRenderPass : ScriptableRenderPass, ISketchRenderPass
             passData.src = resourceData.activeColorTexture;
             builder.SetRenderAttachment(dst, 0, AccessFlags.ReadWrite);
             passData.dst = dst;
-
-            passData.mat = materialMat;
-
+            
+            passData.passID = ALBEDO_PASS_ID;
             builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecuteMaterial(data, context));
             sketchData.MaterialTexture = dst;
+        }
+
+        using (var directionalBuilder = renderGraph.AddRasterRenderPass<PassData>(PassName + "_Directional", out var directionalPassData))
+        {
+            var resourceData = frameData.Get<UniversalResourceData>();
+            if(resourceData.isActiveTargetBackBuffer)
+                return;
+
+            if (this.passData.ProjectionMethod 
+                is TextureProjectionMethod.OBJECT_SPACE
+                or TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE)
+            {
+                directionalBuilder.UseGlobalTexture(ScreenUVRenderUtils.GetUVTextureID, AccessFlags.Read);
+            }
+
+            var sketchData = frameData.GetOrCreate<SketchRendererContext>();
+            
+            directionalPassData.mat = materialMat;
+            
+            //Project Directional Texture
+            var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
+            dstDesc.name = "MaterialDirectionalTexture";
+            dstDesc.format = GraphicsFormat.R8G8B8A8_UNorm;
+            dstDesc.clearBuffer = true;
+            dstDesc.msaaSamples = MSAASamples.None;
+            
+            TextureHandle directionalDst = renderGraph.CreateTexture(dstDesc);
+            
+            directionalBuilder.UseTexture(resourceData.activeColorTexture, AccessFlags.ReadWrite);
+            directionalPassData.src = resourceData.activeColorTexture;
+            directionalBuilder.SetRenderAttachment(directionalDst, 0, AccessFlags.ReadWrite);
+            directionalPassData.dst = directionalDst;
+
+            directionalPassData.passID = DIRECTIONAL_PASS_ID;
+            directionalBuilder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecuteMaterial(data, context));
+            sketchData.DirectionalTexture = directionalDst;
         }
     }
 }

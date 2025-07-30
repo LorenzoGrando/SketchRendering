@@ -13,10 +13,13 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     }
     
     protected static readonly int materialShaderID = Shader.PropertyToID("_MaterialTex");
+    protected static readonly int materialDirectionalShaderID = Shader.PropertyToID("_DirectionalTex");
     protected static readonly int outlinesShaderID = Shader.PropertyToID("_OutlineTex");
     protected static readonly int luminanceShaderID = Shader.PropertyToID("_LuminanceTex");
     protected static readonly int outlineColorShaderID = Shader.PropertyToID("_OutlineColor");
     protected static readonly int shadingColorShaderID = Shader.PropertyToID("_ShadingColor");
+    protected static readonly int materialAccumulationShaderID = Shader.PropertyToID("_MaterialAccumulationStrength");
+    protected static readonly int luminanceBasisDirectionShaderID = Shader.PropertyToID("_LuminanceBasisDirection");
     
     public static readonly string DEBUG_MATERIAL = "DEBUG_MATERIAL";
     public static readonly string DEBUG_OUTLINES = "DEBUG_OUTLINES";
@@ -36,8 +39,10 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     private class PassData
     {
         public TextureHandle materialTexture;
+        public TextureHandle directionalTexture;
         public TextureHandle outlineTexture;
         public TextureHandle luminanceTexture;
+        public Vector4 luminanceBasisDirection;
         public Material material;
         public TextureHandle src;
     }
@@ -85,6 +90,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         
         mat.SetColor(outlineColorShaderID, passData.OutlineStrokeColor);
         mat.SetColor(shadingColorShaderID, passData.ShadingStrokeColor);
+        mat.SetFloat(materialAccumulationShaderID, passData.MaterialAccumulationStrength);
     }
 
     public void Dispose()
@@ -95,8 +101,10 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     private static void ExecuteCompositionPass(PassData passData, RasterGraphContext context)
     {
         passData.material.SetTexture(materialShaderID, passData.materialTexture);
+        passData.material.SetTexture(materialDirectionalShaderID, passData.directionalTexture);
         passData.material.SetTexture(outlinesShaderID, passData.outlineTexture);
         passData.material.SetTexture(luminanceShaderID, passData.luminanceTexture);
+        passData.material.SetVector(luminanceBasisDirectionShaderID, passData.luminanceBasisDirection);
         Blitter.BlitTexture(context.cmd, passData.src, scaleBias, passData.material, 0);
     }
     
@@ -126,6 +134,12 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
                 builder.UseTexture(sketchData.MaterialTexture);
                 passData.materialTexture = sketchData.MaterialTexture;
             }
+
+            if (sketchData.DirectionalTexture.IsValid())
+            {
+                builder.UseTexture(sketchData.DirectionalTexture);
+                passData.directionalTexture = sketchData.DirectionalTexture;
+            }
             if (sketchData.OutlinesTexture.IsValid())
             {
                 builder.UseTexture(sketchData.OutlinesTexture);
@@ -136,6 +150,8 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
                 builder.UseTexture(sketchData.LuminanceTexture);
                 passData.luminanceTexture = sketchData.LuminanceTexture;
             }
+            
+            passData.luminanceBasisDirection = sketchData.LuminanceBasisDirection;
 
             builder.SetRenderAttachment(dst, 0, AccessFlags.Write);
             passData.src = dst;

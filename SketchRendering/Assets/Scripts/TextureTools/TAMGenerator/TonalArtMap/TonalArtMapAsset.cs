@@ -8,7 +8,10 @@ public class TonalArtMapAsset : ScriptableObject
     [Range(1, 9)]
     public int ExpectedTones;
     public Texture2D[] Tones = new Texture2D[1];
+    
     [SerializeField] [HideInInspector] public bool isPrePacked = false;
+    [SerializeField] [HideInInspector] public Vector4 TAMBasisDirection;
+    
     public bool IsPacked {get {return isPrePacked;}}
 
     private void OnEnable()

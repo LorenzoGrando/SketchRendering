@@ -514,6 +514,8 @@ public class TAMGenerator : TextureGenerator
         }
         if(PackTAMTextures)
             PackAllTAMTextures();
+
+        TAMAsset.TAMBasisDirection = StrokeDataAsset.StrokeData.Direction;
         
 #if UNITY_EDITOR
         EditorUtility.SetDirty(TAMAsset);

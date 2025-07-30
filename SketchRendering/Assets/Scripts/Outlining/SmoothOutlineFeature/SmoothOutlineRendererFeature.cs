@@ -35,8 +35,8 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     
     public override void Create()
     {
-        //This pass dosent care about direction data, so ensure it is greyscale
-        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_GREYSCALE;
+        //Material accumulation still requires relevant direction data, so ensure this is the case
+        EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA;
         
         edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
         edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);

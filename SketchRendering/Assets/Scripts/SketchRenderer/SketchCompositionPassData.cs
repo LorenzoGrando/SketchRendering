@@ -13,6 +13,8 @@ public class SketchCompositionPassData : ISketchRenderPassData<SketchComposition
     [Header("Composition")] 
     public Color OutlineStrokeColor = Color.black;
     public Color ShadingStrokeColor = Color.black;
+    [Range(0f, 1f)] 
+    public float MaterialAccumulationStrength;
     
     public bool IsAllPassDataValid()
     {

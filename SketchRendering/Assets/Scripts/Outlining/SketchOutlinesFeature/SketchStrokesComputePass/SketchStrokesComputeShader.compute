@@ -124,6 +124,7 @@ groupshared uint flatIndex;
 void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
 {
     float value = 1;
+    float4 direction = float4(0, 0, 0, 0);
     float widthScalar = (float)_TextureWidth/(float)kernelSizes.x;
     float heightScalar = (float)_TextureHeight/(float)kernelSizes.y;
     float baseScalar = (min(widthScalar, heightScalar)) / ((float)_DownscaleFactor);
@@ -161,11 +162,17 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
             {
                 float localValue = (float)SampleBaseSDFClampParamScalar(groupData, id.xy, float2(_TextureWidth, _TextureHeight), baseScalar, lengthSampleScalar)/255.0;
                 value *= localValue;
+                direction += groupData.direction;
+                // i.e. if not the very first iteration
+                if (y > -_StrokeSampleScale || x > -_StrokeSampleScale)
+                    direction /= 2.0;
             }
         }
     }
     value = 1 - value;
-    _OriginalSource[id.xy] = float4(value.rrrr);
+    direction *= value;
+    // R: Value graphite, GB: Average direction of found strokes. A: Value mask
+    _OriginalSource[id.xy] = float4(value.r, direction.rg, value.r);
     //float u = float(idG.x)/(float)kernelSizes.x * (1- value);
     //float v = float(idG.y)/(float)kernelSizes.y * (1- value);
     //_OriginalSource[id.xy] = float4(u, v, 0.0, 1.0);

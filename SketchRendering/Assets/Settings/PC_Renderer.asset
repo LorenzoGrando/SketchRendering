@@ -15,8 +15,8 @@ MonoBehaviour:
   m_Active: 1
   passData:
     debugMode: 0
-    OutlineStrokeColor: {r: 0.03773582, g: 0.03773582, b: 0.03773582, a: 1}
-    ShadingStrokeColor: {r: 0, g: 0, b: 0, a: 1}
+    OutlineStrokeColor: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
+    ShadingStrokeColor: {r: 0.11320752, g: 0.11320752, b: 0.11320752, a: 1}
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -45,11 +45,12 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: 7023177639391035692}
+  - {fileID: 1316582646619623578}
   - {fileID: 5934963878110555133}
   - {fileID: 1188875836155123097}
   - {fileID: 5881595255929910442}
   - {fileID: -1607903443327025348}
-  m_RendererFeatureMap: ad6b866f10d7b46c2c815e46da567761fdeb8dcd333a5d529955122846bc7f10aa345326b99f9f513c7f5d5b5694afe9
+  m_RendererFeatureMap: ad6b866f10d7b46c2c815e46da5677619ad03409f1704512fdeb8dcd333a5d529955122846bc7f10aa345326b99f9f513c7f5d5b5694afe9
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -109,6 +110,26 @@ MonoBehaviour:
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
   sketchStrokesComputeShader: {fileID: 7200000, guid: 1e9d703e3298464c9b8b9bc3a35d61ae, type: 3}
+--- !u!114 &1316582646619623578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fa2d16ecab541e0ad670c94165a9b51, type: 3}
+  m_Name: MaterialSurfaceRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  MaterialData:
+    ProjectionMethod: 2
+    AlbedoTexture: {fileID: 2800000, guid: a1b2e0a5a2aa1f340b235322776ddf1e, type: 3}
+    NormalTexture: {fileID: 2800000, guid: 1171083facf3914468151eeaa4d57f34, type: 3}
+    Scale: {x: 4, y: 4}
+    BaseColorBlendFactor: 0.13
+  materialSurfaceShader: {fileID: 4800000, guid: a74845ba45d54d8694dce827482dc810, type: 3}
 --- !u!114 &5881595255929910442
 MonoBehaviour:
   m_ObjectHideFlags: 0

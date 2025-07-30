@@ -67,13 +67,13 @@ MonoBehaviour:
   active: 1
   ProjectionMethod:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 2
   SmoothTransitions:
     m_OverrideState: 1
     m_Value: 1
   ToneScales:
     m_OverrideState: 1
-    m_Value: {x: 8, y: 8}
+    m_Value: {x: 15, y: 15}
   SkyboxRotation:
     m_OverrideState: 1
     m_Value: 0
@@ -117,7 +117,7 @@ MonoBehaviour:
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.275
+    m_Value: 0.15
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -132,7 +132,7 @@ MonoBehaviour:
     m_Value: 0.601
   ThicknessRange:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 0
   ThicknessStrength:
     m_OverrideState: 1
     m_Value: 1
@@ -141,7 +141,7 @@ MonoBehaviour:
     m_Value: 0
   DistortionRate:
     m_OverrideState: 1
-    m_Value: 30
+    m_Value: 95
   DistortionStrength:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.125

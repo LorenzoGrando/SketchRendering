@@ -158,6 +158,7 @@ public class QuantizeLuminanceRenderPass : ScriptableRenderPass, ISketchRenderPa
             }
 
             var sketchData = frameData.GetOrCreate<SketchRendererContext>();
+            sketchData.LuminanceBasisDirection = this.passData.ActiveTonalMap.TAMBasisDirection;
 
             var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
             dstDesc.name = "LuminanceTexture";

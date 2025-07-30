@@ -23,7 +23,7 @@ Shader "Hidden/ThicknessDilation"
                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                float2 uv = input.texcoord;
                float4 col = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel);
-               float maxOutline = col.r;
+               float3 maxOutline = col.rgb;
                float expectedStrength = lerp(0.0, _OutlineSize * _BlitTexture_TexelSize.x, _OutlineStrength);
                for (int x = -_OutlineSize; x <= _OutlineSize; x++)
                {
@@ -34,11 +34,11 @@ Shader "Hidden/ThicknessDilation"
                        if(d <= expectedStrength)
                        {
                            float4 fragOutline = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, saturate(uv + offset), _BlitMipLevel);
-                           maxOutline = max(fragOutline.r, maxOutline);
+                           maxOutline = max(fragOutline.rgb, maxOutline);
                        }
                    }
                }
-               return float4(maxOutline.rrrr);
+               return float4(maxOutline.rgbr);
            }
 
            ENDHLSL
