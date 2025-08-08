@@ -82,6 +82,7 @@ Shader "Hidden/DepthNormalsSilhouette"
 
            int _OutlineOffset;
            float _OutlineThreshold;
+           float _OutlineDistanceFalloff;
            float _OutlineShallowThresholdSensitivity;
            float _OutlineShallowThresholdStrength;
            float _OutlineNormalDistanceSensitivity;
@@ -124,8 +125,11 @@ Shader "Hidden/DepthNormalsSilhouette"
                //If normals texture is available, modify threshold depending on viewing angle to avoid thick edges in very shallow angles
                //Specifically, if view vector is almost perpendicular to surface normal, make the threshold higher.
                #if defined(SOURCE_DEPTH)
+               float depth = LinearEyeDepth(SampleSceneDepth(uv), _ZBufferParams);
                float2 depthGradientVector = float2(horizontalValue.r, depthEdge);
-               float depthGradient = step(_OutlineThreshold, length(depthGradientVector));
+               float thresholdScale = lerp(1.0, 5.0, _OutlineDistanceFalloff);
+               float threshold = _OutlineThreshold * lerp(1.0, thresholdScale * (1 + _OutlineOffset), depth/60);
+               float depthGradient = step(threshold, length(depthGradientVector));
                #elif defined (SOURCE_DEPTH_NORMALS)
                float3 surfaceNormal = SampleSceneNormals(uv);
                //Get view vector, see bgolus and keijiro: https://discussions.unity.com/t/help-with-view-space-normals/654031/12
@@ -133,7 +137,10 @@ Shader "Hidden/DepthNormalsSilhouette"
                float3 viewDir = -normalize(float3((uv * 2 - 1)/perspectiveProj, -1));
                
                half isShallow = step(1 - _OutlineShallowThresholdSensitivity, 1 - dot(viewDir, surfaceNormal));
-               float threshold = _OutlineThreshold + isShallow * (_OutlineThreshold * 20.0 * _OutlineShallowThresholdStrength);
+               float depth = LinearEyeDepth(SampleSceneDepth(uv), _ZBufferParams);
+               float thresholdScale = lerp(1.0, 50.0, _OutlineDistanceFalloff);
+               float threshold = _OutlineThreshold * lerp(1.0, thresholdScale * (1 + _OutlineOffset), depth/60);
+               threshold += isShallow * (_OutlineThreshold * 20.0 * _OutlineShallowThresholdStrength);
                float2 depthGradientVector = float2(horizontalValue.r, depthEdge);
                float depthGradient = step(threshold, length(depthGradientVector));
                #endif
@@ -166,13 +173,13 @@ Shader "Hidden/DepthNormalsSilhouette"
                     #elif defined(SOURCE_DEPTH_NORMALS)
                     float edge = max(0, max(depthGradient, normalGradient));
                     float angleDepth = atan2(depthGradientVector.y, depthGradientVector.x);
-                    float angleNormal = atan2(normalGradientVector.y, normalGradientVector.x);
-                    //the stronger the gradient depth, attenuate normals since depth is usually more consistely to the surface flow
-                    float angleNormalAttenuation = lerp(1.0, 0.0, depthGradient);
-                    float angle = ((angleDepth * depthGradient) + (angleNormal * normalGradient * angleNormalAttenuation))/(depthGradient + normalGradient * angleNormalAttenuation);
+                    float angleNormal = atan2(-normalGradientVector.y, normalGradientVector.x);
+                    float useDepth = step(1, depthGradient);
+                    float useNormal = 1 - useDepth;
+                    float angle = angleDepth * useDepth + angleNormal * useNormal;
                     angle /= PI;
                     angle = (angle + 1) * 0.5;
-                    return float4(edge, angle, 0.0, edge);
+                    return float4(edge, angle * edge, 0.0, edge);
                     #endif
                #elif defined(OUTPUT_DIRECTION_DATA_VECTOR)
                     #if defined(SOURCE_DEPTH)
@@ -181,10 +188,11 @@ Shader "Hidden/DepthNormalsSilhouette"
                     return float4(edge, direction, edge);
                     #elif defined(SOURCE_DEPTH_NORMALS)
                     float edge = max(0, max(depthGradient, normalGradient));
-                    float directionNormalAttenuation = lerp(1.0, 0.0, depthGradient);
                     float2 directionDepth = depthGradientVector.xy;
-                    float2 directionNormal = normalGradientVector.xy;
-                    float2 direction = ((directionDepth * depthGradient) + (directionNormal * normalGradient * directionNormalAttenuation))/(depthGradient + normalGradient + directionNormalAttenuation);
+                    float2 directionNormal = float2(-normalGradientVector.y, normalGradientVector.x);
+                    float useDepth = step(0.05, depthGradient);
+                    float useNormal = 1 - useDepth;
+                    float2 direction = normalize(directionDepth * useDepth + directionNormal * useNormal);
                     return float4(edge, ((direction * 0.5) + 0.5) * edge, edge);
                     #endif
                #endif

@@ -11,6 +11,7 @@ public class OutlineVolumeComponent : VolumeComponent
     public EnumParameter<EdgeDetectionGlobalData.EdgeDetectionSource> Source =
         new EnumParameter<EdgeDetectionGlobalData.EdgeDetectionSource>(EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH);
     public ClampedFloatParameter Threshold = new ClampedFloatParameter(0, 0, 1);
+    public ClampedFloatParameter DistanceFalloff = new ClampedFloatParameter(1f, 0, 1);
     public ClampedIntParameter Offset = new ClampedIntParameter(0, 0, 3);
     public ClampedFloatParameter AngleSensitivity = new ClampedFloatParameter(0, 0, 1);
     public ClampedFloatParameter AngleConstraint = new ClampedFloatParameter(0, 0, 1);

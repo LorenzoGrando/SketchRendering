@@ -11,6 +11,8 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
     public float OutlineThreshold;
     [Range(0, 3)]
     public int OutlineOffset;
+    [Range(0, 1)] 
+    public float OutlineDistanceFalloff;
     [Range(0,1)]
     public float OutlineAngleSensitivity;
     [Range(0,1)]
@@ -27,18 +29,20 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
         this.Source = EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH;
         this.OutlineOffset = 1;
         this.OutlineThreshold = 0.5f;
+        this.OutlineDistanceFalloff = 1f;
         this.OutlineAngleSensitivity = 1;
         this.OutlineAngleConstraint = 1;
         this.OutlineNormalSensitivity = 0.5f;
         this.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_GREYSCALE;
     }
 
-    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, EdgeDetectionGlobalData.EdgeDetectionOutputType outputType, float outlineThreshold, int outlineOffset, float outlineAngleSensitivity, float outlineAngleConstraint, float outlineNormalSensitivity)
+    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, EdgeDetectionGlobalData.EdgeDetectionOutputType outputType, float outlineThreshold, float outlineDistanceFalloff, int outlineOffset, float outlineAngleSensitivity, float outlineAngleConstraint, float outlineNormalSensitivity)
     {
         this.Method = method;
         this.Source = source;
         this.OutlineOffset = outlineOffset;
         this.OutlineThreshold = outlineThreshold;
+        this.OutlineDistanceFalloff = outlineDistanceFalloff;
         this.OutlineAngleSensitivity = outlineAngleSensitivity;
         this.OutlineAngleConstraint = outlineAngleConstraint;
         this.OutlineNormalSensitivity = outlineNormalSensitivity;
@@ -85,6 +89,7 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
             ? volumeComponent.Method.value : Method;
         overrideData.Source = volumeComponent.Source.overrideState ? volumeComponent.Source.value : Source;
         overrideData.OutlineThreshold = volumeComponent.Threshold.overrideState ? volumeComponent.Threshold.value : OutlineThreshold;
+        overrideData.OutlineDistanceFalloff = volumeComponent.DistanceFalloff.overrideState ? volumeComponent.DistanceFalloff.value : OutlineDistanceFalloff;
         overrideData.OutlineOffset = volumeComponent.Offset.overrideState ? volumeComponent.Offset.value : OutlineOffset;
         overrideData.OutlineAngleSensitivity = volumeComponent.AngleSensitivity.overrideState ? volumeComponent.AngleSensitivity.value : OutlineAngleSensitivity;
         overrideData.OutlineAngleConstraint = volumeComponent.AngleConstraint.overrideState ? volumeComponent.AngleConstraint.value : OutlineAngleConstraint;
