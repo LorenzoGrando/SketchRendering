@@ -5,6 +5,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 public class SketchRendererContext : ContextItem
 {
     public bool PrebakedDistortedUVs;
+    public bool PrebakedDistortedMultipleUVs;
     public Vector4 LuminanceBasisDirection;
     public TextureHandle MaterialTexture;
     public TextureHandle DirectionalTexture;

@@ -230,7 +230,7 @@ Shader "Hidden/MaterialGeneratorShader"
                 #endif
                 
                 //Combine all elements
-                float2 dir = ((granularityDir.xy * 0.75) + float2(crumpleDir * 0.25, 0));
+                float2 dir = ((granularityDir.xy * 0.25) + float2(crumpleDir * 0.75, 0));
                 dir = float2((dir + 1) * 0.5);
                 return float4(dir.xy, 1.0, 1.0);
             }

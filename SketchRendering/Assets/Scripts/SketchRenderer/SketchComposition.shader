@@ -45,19 +45,19 @@ Shader "Hidden/SketchComposition"
                #elif defined (DEBUG_MATERIAL_DIRECTION)
                return float4(direction.rgb, 1);
                #elif defined(DEBUG_OUTLINES)
-               outline = 1 - outline;
-               return float4(outline.rrr, 1);
+               float4 debugOutline = 1 - outline;
+               return float4(debugOutline.rrr, outline.a);
                #elif defined(DEBUG_LUMINANCE)
                return float4(luminance.rgb, 1);
                #endif
                float4 white = float4(1,1,1,1);
 
-               float isOutlineStroke = outline.a;
+               float isOutlineStroke = step(0.1, outline.a);
                float4 outlineShade = outline.rrrr * _OutlineColor;
                float4 outlineDirection = (float4(outline.gb, 0, 0) - 0.5) * 2.0;
-               outline = lerp(white, outlineShade, isOutlineStroke * _OutlineColor.a);
+               outline = lerp(white, outlineShade, isOutlineStroke * outline.a * _OutlineColor.a);
                float outlineAccumulation = 1.0 - dot(outlineDirection.rg, direction.rg);
-               outline *= lerp(1.0, 1.0 - _MaterialAccumulationStrength, outlineAccumulation * isOutlineStroke);
+               outline.rgb *= lerp(1.0, 1.0 - _MaterialAccumulationStrength, outlineAccumulation * isOutlineStroke);
 
                float isLuminanceStroke = (1 - luminance.a);
                float4 lumShade = (1 - luminance) * _ShadingColor;
@@ -68,7 +68,7 @@ Shader "Hidden/SketchComposition"
 
                //TODO: Make this an option
                //Outlines always on top
-               float3 blend = (outline * isOutlineStroke) + luminance * !isOutlineStroke;
+               float3 blend = (outline * outline.a * isOutlineStroke) + luminance * (1.0 - outline.a * isOutlineStroke);
 
                //Blended values
                //float3 blend = outline * luminance;

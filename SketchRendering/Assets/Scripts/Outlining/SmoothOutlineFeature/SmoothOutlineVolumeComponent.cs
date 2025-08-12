@@ -11,4 +11,7 @@ public class SmoothOutlineVolumeComponent : OutlineVolumeComponent
     public BoolParameter BakeDistortion = new BoolParameter(false);
     public FloatParameter DistortionRate = new FloatParameter(20f);
     public ClampedFloatParameter DistortionStrength = new ClampedFloatParameter(0, 0, 1);
+    public ClampedIntParameter AdditionalDistortionLines = new ClampedIntParameter(0, 0, 3);
+    public ClampedFloatParameter AdditionalLineTintPersistence = new ClampedFloatParameter(0, 0, 1);
+    public ClampedFloatParameter AdditionalLinesDistortionJitter = new ClampedFloatParameter(0, 0, 1);
 }

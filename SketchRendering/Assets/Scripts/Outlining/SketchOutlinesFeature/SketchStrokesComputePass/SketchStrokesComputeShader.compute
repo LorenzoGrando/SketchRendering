@@ -1,4 +1,4 @@
-#pragma kernel ComputeAverageStroke32
+ #pragma kernel ComputeAverageStroke32
 #pragma kernel ComputeAverageStroke16
 #pragma kernel ComputeAverageStroke8
 #pragma kernel ComputeAverageStroke4
