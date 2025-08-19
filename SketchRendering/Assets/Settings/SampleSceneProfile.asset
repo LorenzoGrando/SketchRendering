@@ -123,10 +123,10 @@ MonoBehaviour:
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.15
+    m_Value: 0.083
   DistanceFalloff:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.162
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -135,22 +135,34 @@ MonoBehaviour:
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 0.412
+    m_Value: 0.294
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 0.601
-  ThicknessRange:
-    m_OverrideState: 1
-    m_Value: 2
-  ThicknessStrength:
+    m_Value: 0.664
+  UseAccentedOutlines:
     m_OverrideState: 1
     m_Value: 1
+  ThicknessRange:
+    m_OverrideState: 1
+    m_Value: 0
+  ThicknessStrength:
+    m_OverrideState: 1
+    m_Value: 0
   BakeDistortion:
     m_OverrideState: 1
     m_Value: 0
   DistortionRate:
     m_OverrideState: 1
-    m_Value: 95
+    m_Value: 30
   DistortionStrength:
     m_OverrideState: 1
-    m_Value: 0.125
+    m_Value: 0.183
+  AdditionalDistortionLines:
+    m_OverrideState: 1
+    m_Value: 3
+  AdditionalLineTintPersistence:
+    m_OverrideState: 1
+    m_Value: 0.889
+  AdditionalLinesDistortionJitter:
+    m_OverrideState: 1
+    m_Value: 0.042

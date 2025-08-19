@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 [VolumeComponentMenu("Post-processing/SketchRendering/Sketch Outline")]
 public class SketchOutlineVolumeComponent : OutlineVolumeComponent
 {
+    [Header("Sketch Outlines")]
     public EnumParameter<ComputeData.KernelSize2D> StrokeArea = new (ComputeData.KernelSize2D.SIZE_8X8);
     public ClampedIntParameter StrokeScale = new (1, 1, 4);
     public BoolParameter DoDownscale = new (true);

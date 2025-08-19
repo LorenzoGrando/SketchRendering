@@ -74,7 +74,7 @@ public class AccentedOutlineRenderPass : ScriptableRenderPass, ISketchRenderPass
         if(bakedDistortionTexture2 != null)
             accentedMaterial.SetTexture(bakedDistortionTex2ShaderID, bakedDistortionTexture2);
 
-        accentedMaterial.SetKeyword(MaskKeyword, passData.PencilOutlineMask != null);
+        accentedMaterial.SetKeyword(MaskKeyword, passData.PencilOutlineMask != null && passData.MaskScale != Vector2.zero);
         
         accentedMaterial.SetKeyword(MultipleDistortionKeyword, passData.RequireMultipleTextures);
         accentedMaterial.SetInt(additionalLinesShaderID, passData.AdditionalLines);

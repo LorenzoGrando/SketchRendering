@@ -20,7 +20,7 @@ MonoBehaviour:
     Length: 0.547
     LengthThicknessFalloff: 0.804
     Pressure: 1
-    PressureFalloff: 0.5
+    PressureFalloff: 0.351
   SelectedFalloffFunction: 1
   VariationData:
     DirectionVariationRange: 0

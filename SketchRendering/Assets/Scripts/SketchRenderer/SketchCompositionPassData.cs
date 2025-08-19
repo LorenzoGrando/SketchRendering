@@ -15,6 +15,9 @@ public class SketchCompositionPassData : ISketchRenderPassData<SketchComposition
     public Color ShadingStrokeColor = Color.black;
     [Range(0f, 1f)] 
     public float MaterialAccumulationStrength;
+    public BlendingOperations StrokeBlendMode;
+    [Range(0f, 1f)]
+    public float BlendStrength;
     
     public bool IsAllPassDataValid()
     {

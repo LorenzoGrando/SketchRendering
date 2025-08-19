@@ -1,7 +1,11 @@
 #pragma once
 
+#ifndef PI
 #define PI 3.14159265
+#endif
+#ifndef TAU
 #define TAU 6.28318531
+#endif
 
 float invLerp(float from, float to, float value){
     return (value - from) / (to - from);
