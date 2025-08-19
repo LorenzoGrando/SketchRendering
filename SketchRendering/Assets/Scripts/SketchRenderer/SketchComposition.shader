@@ -11,13 +11,13 @@ Shader "Hidden/SketchComposition"
            HLSLPROGRAM
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
-           #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-           #include "Assets/Scripts/EdgeDetection/DepthNormals/SobelDepthNormalsInclude.hlsl"
+           #include "Assets/Scripts/Includes/Blending/BlendOperations.hlsl"
            
            #pragma vertex Vert
            #pragma fragment Frag
 
            #pragma multi_compile_local_fragment _ DEBUG_MATERIAL_ALBEDO DEBUG_MATERIAL_DIRECTION DEBUG_OUTLINES DEBUG_LUMINANCE
+           #pragma multi_compile_local_fragment BLEND_MULTIPLY BLEND_SCREEN BLEND_ADD BLEND_SUBTRACT
 
            Texture2D _MaterialTex;
            Texture2D _DirectionalTex;
@@ -29,6 +29,8 @@ Shader "Hidden/SketchComposition"
 
            float _MaterialAccumulationStrength;
            float4 _LuminanceBasisDirection;
+
+           float _BlendStrength;
            
            float4 Frag(Varyings input) : SV_Target0
            {
@@ -65,16 +67,17 @@ Shader "Hidden/SketchComposition"
                float luminanceAccumulation = 1.0 - dot(_LuminanceBasisDirection.rg, direction.rg) ;
                luminance *= lerp(1.0, 1.0 - _MaterialAccumulationStrength, luminanceAccumulation * isLuminanceStroke);
 
-
+               float isAnyStroke = saturate(isOutlineStroke + isLuminanceStroke);
                //TODO: Make this an option
                //Outlines always on top
                float3 blend = (outline * outline.a * isOutlineStroke) + luminance * (1.0 - outline.a * isOutlineStroke);
-
-               //Blended values
-               //float3 blend = outline * luminance;
+               float3 materialBlend = BLENDING_OPERATION(material.rgba, blend.rgb).rgb;
+               //First, apply an attenuation to the blend effect
+               materialBlend = lerp(blend, materialBlend, _BlendStrength);
+               //Then blend only if a stroke
+               materialBlend = lerp(material, materialBlend, isAnyStroke);
                
-               blend *= material;
-               return float4(blend.rgb, 1);
+               return float4(materialBlend.rgb, 1);
            }
 
            ENDHLSL

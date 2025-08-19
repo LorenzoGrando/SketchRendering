@@ -20,6 +20,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     protected static readonly int shadingColorShaderID = Shader.PropertyToID("_ShadingColor");
     protected static readonly int materialAccumulationShaderID = Shader.PropertyToID("_MaterialAccumulationStrength");
     protected static readonly int luminanceBasisDirectionShaderID = Shader.PropertyToID("_LuminanceBasisDirection");
+    protected static readonly int blendStrengthShaderID = Shader.PropertyToID("_BlendStrength");
     
     public static readonly string DEBUG_MATERIAL_ALBEDO = "DEBUG_MATERIAL_ALBEDO";
     public static readonly string DEBUG_MATERIAL_DIRECTION = "DEBUG_MATERIAL_DIRECTION";
@@ -30,6 +31,8 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     private LocalKeyword debugMaterialDirectionKeyword;
     private LocalKeyword debugOutlinesKeyword;
     private LocalKeyword debugLuminanceKeyword;
+    
+    private LocalKeyword[] blendingKeywords;
     
     // Scale bias is used to control how the blit operation is done. The x and y parameter controls the scale
     // and z and w controls the offset. TAKEN FROM URPSAMPLES
@@ -66,6 +69,19 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         debugMaterialDirectionKeyword = new LocalKeyword(mat.shader, DEBUG_MATERIAL_DIRECTION);
         debugOutlinesKeyword = new LocalKeyword(mat.shader, DEBUG_OUTLINES);
         debugLuminanceKeyword = new LocalKeyword(mat.shader, DEBUG_LUMINANCE);
+        
+        string[] blending = Enum.GetNames(typeof(BlendingOperations));
+        blendingKeywords = new LocalKeyword[blending.Length];
+        string selected = passData.StrokeBlendMode.ToString();
+        for (int i = 0; i < blending.Length; i++)
+        {
+            LocalKeyword blendKeyword = new LocalKeyword(mat.shader, blending[i]);
+            blendingKeywords[i] = blendKeyword;
+            if(blending[i] == selected)
+                mat.EnableKeyword(blendKeyword);
+            else
+                mat.DisableKeyword(blendKeyword);
+        }
         
         switch (passData.debugMode)
         {
@@ -104,6 +120,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         mat.SetColor(outlineColorShaderID, passData.OutlineStrokeColor);
         mat.SetColor(shadingColorShaderID, passData.ShadingStrokeColor);
         mat.SetFloat(materialAccumulationShaderID, passData.MaterialAccumulationStrength);
+        mat.SetFloat(blendStrengthShaderID, passData.BlendStrength);
     }
 
     public void Dispose()

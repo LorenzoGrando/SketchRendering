@@ -15,9 +15,11 @@ MonoBehaviour:
   m_Active: 1
   passData:
     debugMode: 0
-    OutlineStrokeColor: {r: 0.11320752, g: 0.11320752, b: 0.11320752, a: 1}
-    ShadingStrokeColor: {r: 0.20000002, g: 0.20000002, b: 0.20000002, a: 1}
-    MaterialAccumulationStrength: 0.315
+    OutlineStrokeColor: {r: 0.18867922, g: 0.18867922, b: 0.18867922, a: 1}
+    ShadingStrokeColor: {r: 0.1882353, g: 0.1882353, b: 0.1882353, a: 1}
+    MaterialAccumulationStrength: 0.378
+    StrokeBlendMode: 0
+    BlendStrength: 0.93
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -89,7 +91,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d59e31248b44ac93bfb91aab57250e, type: 3}
   m_Name: SketchOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   EdgeDetectionPassData:
     Method: 0
     Source: 1
@@ -131,7 +133,7 @@ MonoBehaviour:
     AlbedoTexture: {fileID: 2800000, guid: a1b2e0a5a2aa1f340b235322776ddf1e, type: 3}
     NormalTexture: {fileID: 2800000, guid: 3f54c1cbb65b96c4eaa96226d625c1b2, type: 3}
     Scale: {x: 4, y: 4}
-    BaseColorBlendFactor: 0.1
+    BaseColorBlendFactor: 0.091
   materialSurfaceShader: {fileID: 4800000, guid: a74845ba45d54d8694dce827482dc810, type: 3}
 --- !u!114 &5881595255929910442
 MonoBehaviour:
@@ -166,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d21521743bc98459d8d263ffa1defd, type: 3}
   m_Name: SmoothOutline
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   EdgeDetectionPassData:
     Method: 1
     Source: 1
@@ -177,16 +179,16 @@ MonoBehaviour:
     OutlineAngleConstraint: 1
     OutlineNormalSensitivity: 0.478
     OutputType: 2
-  UseAccentedOutlines: 1
   AccentedOutlinePassData:
+    UseAccentedOutlines: 0
     BakeDistortionDuringRuntime: 1
     Rate: 20
-    Strength: 0.267
-    AdditionalLines: 0
-    AdditionalLineTintPersistence: 0
-    AdditionalLineDistortionJitter: 0
-    PencilOutlineMask: {fileID: 0}
-    MaskScale: {x: 10, y: 10}
+    Strength: 0.524
+    AdditionalLines: 1
+    AdditionalLineTintPersistence: 0.229
+    AdditionalLineDistortionJitter: 0.187
+    PencilOutlineMask: {fileID: 2800000, guid: 48858ef36eeb6394a82d8b21da38a11f, type: 3}
+    MaskScale: {x: 3, y: 3}
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
   thicknessDilationDetectionShader: {fileID: 4800000, guid: f1af4bd89fe34c09a8c4b658727b17da, type: 3}
