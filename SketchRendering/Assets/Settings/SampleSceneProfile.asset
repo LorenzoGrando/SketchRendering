@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 875c69ed335440b2b21aedc73c222982, type: 3}
   m_Name: SketchOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   Method:
     m_OverrideState: 1
     m_Value: 0
@@ -114,7 +114,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a84c80c46746a197a431d994f71049, type: 3}
   m_Name: SmoothOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   Method:
     m_OverrideState: 1
     m_Value: 1
@@ -123,10 +123,10 @@ MonoBehaviour:
     m_Value: 1
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.15
+    m_Value: 0.083
   DistanceFalloff:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.162
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -135,22 +135,31 @@ MonoBehaviour:
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 0.412
+    m_Value: 0.294
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 0.601
+    m_Value: 0.664
   ThicknessRange:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 0
   ThicknessStrength:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   BakeDistortion:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   DistortionRate:
     m_OverrideState: 1
-    m_Value: 95
+    m_Value: 26
   DistortionStrength:
     m_OverrideState: 1
-    m_Value: 0.125
+    m_Value: 0.086
+  AdditionalDistortionLines:
+    m_OverrideState: 1
+    m_Value: 3
+  AdditionalLineTintPersistence:
+    m_OverrideState: 1
+    m_Value: 0.947
+  AdditionalLinesDistortionJitter:
+    m_OverrideState: 1
+    m_Value: 0.079

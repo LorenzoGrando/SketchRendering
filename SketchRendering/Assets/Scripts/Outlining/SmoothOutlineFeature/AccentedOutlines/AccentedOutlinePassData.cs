@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 [System.Serializable]
 public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePassData>
 {
+    public bool UseAccentedOutlines;
     [Header("Distortion Settings")] 
     public bool BakeDistortionDuringRuntime;
     public float Rate;
@@ -33,7 +34,7 @@ public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePass
     
     public bool IsAllPassDataValid()
     {
-        return Strength > 0 || PencilOutlineMask != null;
+        return UseAccentedOutlines && (Strength > 0 || (PencilOutlineMask != null && MaskScale != Vector2.zero));
     }
 
     public AccentedOutlinePassData GetPassDataByVolume()
@@ -42,7 +43,8 @@ public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePass
         if (volumeComponent == null)
             return this;
         AccentedOutlinePassData overrideData = new AccentedOutlinePassData();
-
+        
+        overrideData.UseAccentedOutlines = volumeComponent.UseAccentedOutlines.overrideState ? volumeComponent.UseAccentedOutlines.value : UseAccentedOutlines;
         overrideData.BakeDistortionDuringRuntime = volumeComponent.BakeDistortion.overrideState
             ? volumeComponent.BakeDistortion.value
             : BakeDistortionDuringRuntime;

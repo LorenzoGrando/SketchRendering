@@ -6,6 +6,8 @@ using UnityEngine.Rendering;
 [VolumeComponentMenu("Post-processing/SketchRendering/Outline")]
 public class OutlineVolumeComponent : VolumeComponent
 {
+    [Space(10)]
+    [Header("Edge Detection")]
     public EnumParameter<EdgeDetectionGlobalData.EdgeDetectionMethod> Method =
         new EnumParameter<EdgeDetectionGlobalData.EdgeDetectionMethod>(EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3);
     public EnumParameter<EdgeDetectionGlobalData.EdgeDetectionSource> Source =

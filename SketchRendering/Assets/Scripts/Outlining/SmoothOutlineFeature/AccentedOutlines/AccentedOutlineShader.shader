@@ -116,7 +116,7 @@ Shader "Hidden/AccentedOutline"
                #endif
 
                #if defined MASK_OUTLINES
-               col *= 1 - mask;
+               col = lerp((float4)0, col, 1.0 - mask);
                #endif
                
                return float4(col.rgb, col.r);

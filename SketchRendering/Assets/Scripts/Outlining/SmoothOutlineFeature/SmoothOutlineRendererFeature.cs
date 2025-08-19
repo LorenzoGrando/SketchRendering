@@ -15,7 +15,6 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
 
     [Header("Accented Effects")] 
     [Space(5)]
-    public bool UseAccentedOutlines;
     public AccentedOutlinePassData AccentedOutlinePassData = new AccentedOutlinePassData();
     public AccentedOutlinePassData CurrentAccentOutlinePassData { get { return AccentedOutlinePassData.GetPassDataByVolume(); } }
 
@@ -74,7 +73,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
             renderer.EnqueuePass(thicknessDilationPass);
         }
 
-        if (UseAccentedOutlines && CurrentAccentOutlinePassData.IsAllPassDataValid())
+        if (CurrentAccentOutlinePassData.IsAllPassDataValid())
         {
             accentedOutlinePass.Setup(CurrentAccentOutlinePassData, accentedOutlinesMaterial);
             renderer.EnqueuePass(accentedOutlinePass);
