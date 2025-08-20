@@ -19,7 +19,7 @@ MonoBehaviour:
     ShadingStrokeColor: {r: 0.1882353, g: 0.1882353, b: 0.1882353, a: 1}
     MaterialAccumulationStrength: 0.378
     StrokeBlendMode: 0
-    BlendStrength: 0.93
+    BlendStrength: 0.92
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -129,11 +129,11 @@ MonoBehaviour:
   m_Active: 1
   MaterialData:
     ProjectionMethod: 2
-    ConstantScaleFalloffFactor: 0
+    ConstantScaleFalloffFactor: 1
     AlbedoTexture: {fileID: 2800000, guid: a1b2e0a5a2aa1f340b235322776ddf1e, type: 3}
     NormalTexture: {fileID: 2800000, guid: 3f54c1cbb65b96c4eaa96226d625c1b2, type: 3}
-    Scale: {x: 4, y: 4}
-    BaseColorBlendFactor: 0.091
+    Scale: {x: 3, y: 3}
+    BaseColorBlendFactor: 0.104
   materialSurfaceShader: {fileID: 4800000, guid: a74845ba45d54d8694dce827482dc810, type: 3}
 --- !u!114 &5881595255929910442
 MonoBehaviour:
@@ -151,7 +151,7 @@ MonoBehaviour:
   LuminanceData:
     ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
     ProjectionMethod: 2
-    ConstantScaleFalloffFactor: 0
+    ConstantScaleFalloffFactor: 1
     SmoothTransitions: 1
     ToneScales: {x: 6, y: 6}
     luminanceOffset: 0

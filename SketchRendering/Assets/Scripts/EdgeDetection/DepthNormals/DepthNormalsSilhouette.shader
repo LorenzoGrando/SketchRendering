@@ -12,7 +12,7 @@ Shader "Hidden/DepthNormalsSilhouette"
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
            #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-           #include "Assets/Scripts/EdgeDetection/DepthNormals/SobelDepthNormalsInclude.hlsl"
+           #include "Assets/Scripts/EdgeDetection/DepthNormals/DepthNormalsInclude.hlsl"
 
            #pragma multi_compile_local SOURCE_DEPTH SOURCE_DEPTH_NORMALS
            #pragma multi_compile_local SOBEL_KERNEL_3X3 SOBEL_KERNEL_1X3
@@ -71,7 +71,8 @@ Shader "Hidden/DepthNormalsSilhouette"
            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
            #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-           #include "Assets/Scripts/EdgeDetection/DepthNormals/SobelDepthNormalsInclude.hlsl"
+           #include "Assets/Scripts/EdgeDetection/Sobel/SobelInclude.hlsl"
+           #include "Assets/Scripts/EdgeDetection/DepthNormals/DepthNormalsInclude.hlsl"
 
            #pragma vertex Vert
            #pragma fragment Frag
@@ -196,33 +197,6 @@ Shader "Hidden/DepthNormalsSilhouette"
                     return float4(edge, ((direction * 0.5) + 0.5) * edge, edge);
                     #endif
                #endif
-           }
-
-           ENDHLSL
-       }
-
-        Pass
-       {
-           Name "Roberts Cross"
-
-           HLSLPROGRAM
-           #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-           #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
-           #include "Assets/Scripts/Includes/NeighborhoodSample.hlsl"
-
-           #pragma vertex Vert
-           #pragma fragment Frag
-
-           #pragma multi_compile_local_fragment _ SOURCE_DEPTH SOURCE_DEPTH_NORMALS
-
-           float _OutlineThreshold;
-           
-           
-           float4 Frag(Varyings input) : SV_Target0
-           {
-               UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-               
-               return float4(1, 1, 1, 1);
            }
 
            ENDHLSL

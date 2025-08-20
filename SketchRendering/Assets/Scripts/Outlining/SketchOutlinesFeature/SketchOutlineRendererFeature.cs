@@ -14,6 +14,7 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
     
     [SerializeField] private Shader sobelEdgeDetectionShader;
     [SerializeField] private Shader depthNormalsEdgeDetectionShader;
+    [SerializeField] private Shader colorEdgeDetectionShader;
     [SerializeField] private ComputeShader sketchStrokesComputeShader;
     
     private Material edgeDetectionMaterial;
@@ -41,6 +42,9 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
         
         if(!renderingData.cameraData.postProcessEnabled)
             return;
+        
+        if(!AreCurrentDynamicsValid())
+            Create();
         
         if(!AreAllMaterialsValid())
             return;
@@ -87,18 +91,30 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
     {
         return edgeDetectionMaterial != null;
     }
+    
+    private bool AreCurrentDynamicsValid()
+    {
+        switch (CurrentEdgeDetectionPassData.Source)
+        {
+            case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
+                return (edgeDetectionMaterial != null && edgeDetectionMaterial.shader == colorEdgeDetectionShader);
+            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
+            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
+                return (edgeDetectionMaterial != null && edgeDetectionMaterial.shader == depthNormalsEdgeDetectionShader);
+        }
+        
+        return false;
+    }
 
     private Material CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource edgeDetectionMethod)
     {
         Material mat = null;
         switch (edgeDetectionMethod)
         {
-            /*
             case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
-                if(sobelEdgeDetectionShader != null)
-                    mat = new Material(sobelEdgeDetectionShader);
+                if(colorEdgeDetectionShader != null)
+                    mat = new Material(colorEdgeDetectionShader);
                 break;
-                */
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 if(depthNormalsEdgeDetectionShader != null)
@@ -114,8 +130,8 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
     {
         switch (source)
         {
-            //case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
-                //return new SobelEdgeDetectionRenderPass();
+            case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
+                return new ColorSilhouetteRenderPass();
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 return new DepthNormalsSilhouetteRenderPass();
