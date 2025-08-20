@@ -65,7 +65,7 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
         var sketchData = frameData.GetOrCreate<SketchRendererContext>();
         
         var dstDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-        dstDesc.name = "OutlineTexture";
+        dstDesc.name = IsSecondary ? OUTLINE_SECONDARY_TEXTURE_NAME : OUTLINE_TEXTURE_NAME;
         dstDesc.format = GraphicsFormat.R8G8B8A8_UNorm;
         dstDesc.clearBuffer = true;
         dstDesc.msaaSamples = MSAASamples.None;
@@ -83,7 +83,10 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
             RenderGraphUtils.BlitMaterialParameters verParams = new(ping, dst, edgeDetectionMaterial, 1);
             renderGraph.AddBlitPass(verParams, passName: PassName + "_SobelVertical");
         }
-
-        sketchData.OutlinesTexture = dst;
+        
+        if(!IsSecondary)
+            sketchData.OutlinesTexture = dst;
+        else
+            sketchData.OutlinesSecondaryTexture = dst;
     }
 }

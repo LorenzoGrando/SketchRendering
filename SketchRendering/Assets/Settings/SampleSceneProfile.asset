@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 875c69ed335440b2b21aedc73c222982, type: 3}
   m_Name: SketchOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   Method:
     m_OverrideState: 1
     m_Value: 0
   Source:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.085
+    m_Value: 0.108
   DistanceFalloff:
     m_OverrideState: 1
     m_Value: 0
@@ -114,19 +114,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a84c80c46746a197a431d994f71049, type: 3}
   m_Name: SmoothOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   Method:
     m_OverrideState: 1
     m_Value: 1
   Source:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 3
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.083
+    m_Value: 0.043
   DistanceFalloff:
     m_OverrideState: 1
-    m_Value: 0.162
+    m_Value: 0.427
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -165,4 +165,4 @@ MonoBehaviour:
     m_Value: 0.889
   AdditionalLinesDistortionJitter:
     m_OverrideState: 1
-    m_Value: 0.042
+    m_Value: 0.082

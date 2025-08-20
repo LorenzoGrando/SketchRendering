@@ -21,15 +21,20 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     [SerializeField] private Shader sobelEdgeDetectionShader;
     [SerializeField] private Shader depthNormalsEdgeDetectionShader;
     [SerializeField] private Shader colorEdgeDetectionShader;
+    [SerializeField] private Shader edgeDetectionCompositorShader;
 
     [SerializeField] private Shader thicknessDilationDetectionShader;
     [SerializeField] private Shader accentedOutlinesShader;
     
     private Material edgeDetectionMaterial;
+    private Material secondaryEdgeDetectionMaterial;
+    private Material edgeCompositorMaterial;
     private Material thicknessDilationMaterial;
     private Material accentedOutlinesMaterial;
     
     private EdgeDetectionRenderPass edgeDetectionPass;
+    private EdgeDetectionRenderPass secondaryEdgeDetectionPass;
+    private EdgeCompositorRenderPass edgeCompositorPass;
     private ThicknessDilationRenderPass thicknessDilationPass;
     private AccentedOutlineRenderPass accentedOutlinePass;
     
@@ -37,10 +42,24 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
     {
         //Material accumulation still requires relevant direction data, so ensure this is the case
         EdgeDetectionPassData.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_DIRECTION_DATA_VECTOR;
-        
-        edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
-        edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);
-        
+
+        if (CurrentEdgeDetectionPassData.Source != EdgeDetectionGlobalData.EdgeDetectionSource.ALL)
+        {
+            edgeDetectionMaterial = CreateEdgeDetectionMaterial(CurrentEdgeDetectionPassData.Source);
+            edgeDetectionPass = CreateEdgeDetectionPass(CurrentEdgeDetectionPassData.Source);
+            ReleaseSecondaryEdgeDetectionComponents();
+        }
+        else
+        {
+            edgeDetectionMaterial = CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS);
+            edgeDetectionPass = CreateEdgeDetectionPass(EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS);
+            secondaryEdgeDetectionMaterial = CreateEdgeDetectionMaterial(EdgeDetectionGlobalData.EdgeDetectionSource.COLOR);
+            secondaryEdgeDetectionPass = CreateEdgeDetectionPass(EdgeDetectionGlobalData.EdgeDetectionSource.COLOR);
+        }
+
+        edgeCompositorMaterial = new Material(edgeDetectionCompositorShader);
+        edgeCompositorPass = new EdgeCompositorRenderPass();
+
         thicknessDilationMaterial = new Material(thicknessDilationDetectionShader);
         thicknessDilationPass = new ThicknessDilationRenderPass();
         
@@ -67,8 +86,29 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
 
         if (CurrentEdgeDetectionPassData.IsAllPassDataValid())
         {
-            edgeDetectionPass.Setup(CurrentEdgeDetectionPassData, edgeDetectionMaterial);
-            renderer.EnqueuePass(edgeDetectionPass);
+            if (CurrentEdgeDetectionPassData.Source != EdgeDetectionGlobalData.EdgeDetectionSource.ALL)
+            {
+                edgeDetectionPass.Setup(CurrentEdgeDetectionPassData, edgeDetectionMaterial);
+                edgeDetectionPass.SetSecondary(false);
+                renderer.EnqueuePass(edgeDetectionPass);
+            }
+            else
+            {
+                EdgeDetectionPassData primaryData = CurrentEdgeDetectionPassData;
+                primaryData.Source = EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS;
+                edgeDetectionPass.Setup(primaryData, edgeDetectionMaterial);
+                edgeDetectionPass.SetSecondary(false);
+                
+                EdgeDetectionPassData secondaryData = CurrentEdgeDetectionPassData;
+                secondaryData.Source = EdgeDetectionGlobalData.EdgeDetectionSource.COLOR;
+                renderer.EnqueuePass(edgeDetectionPass);
+                secondaryEdgeDetectionPass.Setup(secondaryData, secondaryEdgeDetectionMaterial);
+                secondaryEdgeDetectionPass.SetSecondary(true);
+                renderer.EnqueuePass(secondaryEdgeDetectionPass);
+                
+                edgeCompositorPass.Setup(edgeCompositorMaterial);
+                renderer.EnqueuePass(edgeCompositorPass);
+            }
         }
 
         if (CurrentThicknessPassData.IsAllPassDataValid())
@@ -89,6 +129,11 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         edgeDetectionPass?.Dispose();
         edgeDetectionPass = null;
         
+        secondaryEdgeDetectionPass?.Dispose();
+        secondaryEdgeDetectionPass = null;
+
+        edgeCompositorPass = null;
+        
         thicknessDilationPass?.Dispose();
         thicknessDilationPass = null;
         
@@ -99,6 +144,10 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         {
             if (edgeDetectionMaterial)
                 Destroy(edgeDetectionMaterial);
+            if(secondaryEdgeDetectionMaterial)
+                Destroy(secondaryEdgeDetectionMaterial);
+            if(edgeCompositorMaterial)
+                Destroy(edgeCompositorMaterial);
             if(thicknessDilationMaterial)
                 Destroy(thicknessDilationMaterial);
             if(accentedOutlinesMaterial)
@@ -106,9 +155,22 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         }
     }
 
+    private void ReleaseSecondaryEdgeDetectionComponents()
+    {
+        secondaryEdgeDetectionPass?.Dispose();
+        secondaryEdgeDetectionPass = null;
+        
+        if (Application.isPlaying)
+        {
+            if (secondaryEdgeDetectionMaterial)
+                Destroy(edgeDetectionMaterial);
+            secondaryEdgeDetectionMaterial = null;
+        }
+    }
+
     private bool AreAllMaterialsValid()
     {
-        return edgeDetectionMaterial != null && thicknessDilationMaterial != null && accentedOutlinesMaterial != null;
+        return edgeDetectionMaterial != null && edgeCompositorMaterial != null && thicknessDilationMaterial != null && accentedOutlinesMaterial != null;
     }
 
     private bool AreCurrentDynamicsValid()
@@ -120,6 +182,9 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
             case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
                 return (edgeDetectionMaterial != null && edgeDetectionMaterial.shader == depthNormalsEdgeDetectionShader);
+            case EdgeDetectionGlobalData.EdgeDetectionSource.ALL:
+                return (edgeDetectionMaterial != null && edgeDetectionMaterial.shader == depthNormalsEdgeDetectionShader) && 
+                       (secondaryEdgeDetectionMaterial != null && secondaryEdgeDetectionMaterial.shader == colorEdgeDetectionShader);
         }
         
         return false;

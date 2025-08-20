@@ -98,11 +98,11 @@ Shader "Hidden/ColorSilhouette"
                     angle /= PI;
                     angle = (angle + 1) * 0.5;
                     float edge = max(0, colorGradient);
-                    return float4(edge, angle, 0.0, edge);
+                    return float4(edge, angle * edge, 0.0, edge);
                #elif defined(OUTPUT_DIRECTION_DATA_VECTOR)
                     float2 direction = colorGradientVector.xy;
                     float edge = max(0, colorGradient);
-                    return float4(edge, direction, edge);
+                    return float4(edge, direction * edge, edge);
                #endif
            }
 

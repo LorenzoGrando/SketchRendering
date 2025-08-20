@@ -10,6 +10,7 @@ public class SketchRendererContext : ContextItem
     public TextureHandle MaterialTexture;
     public TextureHandle DirectionalTexture;
     public TextureHandle OutlinesTexture;
+    public TextureHandle OutlinesSecondaryTexture;
     public TextureHandle LuminanceTexture;
     
     public override void Reset()
@@ -18,6 +19,7 @@ public class SketchRendererContext : ContextItem
         MaterialTexture = TextureHandle.nullHandle;
         DirectionalTexture = TextureHandle.nullHandle;
         OutlinesTexture = TextureHandle.nullHandle;
+        OutlinesSecondaryTexture = TextureHandle.nullHandle;
         LuminanceTexture = TextureHandle.nullHandle;
     }
 }
