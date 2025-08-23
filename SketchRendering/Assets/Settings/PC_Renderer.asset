@@ -17,9 +17,9 @@ MonoBehaviour:
     debugMode: 0
     OutlineStrokeColor: {r: 0.18867922, g: 0.18867922, b: 0.18867922, a: 1}
     ShadingStrokeColor: {r: 0.1882353, g: 0.1882353, b: 0.1882353, a: 1}
-    MaterialAccumulationStrength: 0.378
+    MaterialAccumulationStrength: 0.925
     StrokeBlendMode: 0
-    BlendStrength: 0.92
+    BlendStrength: 1
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_Active: 0
   EdgeDetectionPassData:
     Method: 0
-    Source: 2
+    Source: 1
     OutlineThreshold: 0.056
     OutlineOffset: 0
     OutlineDistanceFalloff: 1
@@ -105,7 +105,7 @@ MonoBehaviour:
   SketchStrokesPassData:
     OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
     SampleArea: 1
-    StrokeSampleScale: 4
+    StrokeSampleScale: 2
     DoDownscale: 1
     DownscaleFactor: 2
     StrokeThreshold: 0.03
@@ -135,7 +135,7 @@ MonoBehaviour:
     AlbedoTexture: {fileID: 2800000, guid: a1b2e0a5a2aa1f340b235322776ddf1e, type: 3}
     NormalTexture: {fileID: 2800000, guid: 3f54c1cbb65b96c4eaa96226d625c1b2, type: 3}
     Scale: {x: 3, y: 3}
-    BaseColorBlendFactor: 0.272
+    BaseColorBlendFactor: 0.027
   materialSurfaceShader: {fileID: 4800000, guid: a74845ba45d54d8694dce827482dc810, type: 3}
 --- !u!114 &5881595255929910442
 MonoBehaviour:

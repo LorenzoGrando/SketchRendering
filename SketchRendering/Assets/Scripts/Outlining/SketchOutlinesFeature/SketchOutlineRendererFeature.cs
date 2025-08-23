@@ -151,7 +151,7 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
 
     private bool AreAllMaterialsValid()
     {
-        return edgeDetectionMaterial != null && edgeCompositorMaterial != null;
+        return edgeDetectionMaterial != null && edgeCompositorMaterial != null && (CurrentEdgeDetectionPassData.Source != EdgeDetectionGlobalData.EdgeDetectionSource.ALL || secondaryEdgeDetectionMaterial != null);
     }
     
     private bool AreCurrentDynamicsValid()

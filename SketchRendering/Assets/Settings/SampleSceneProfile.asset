@@ -18,13 +18,13 @@ MonoBehaviour:
     m_Value: 0
   Source:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 2
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.108
+    m_Value: 0.101
   DistanceFalloff:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.504
   Offset:
     m_OverrideState: 1
     m_Value: 0
@@ -33,10 +33,10 @@ MonoBehaviour:
     m_Value: 1
   AngleConstraint:
     m_OverrideState: 1
-    m_Value: 0.542
+    m_Value: 0.236
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 0.156
+    m_Value: 0.455
   StrokeArea:
     m_OverrideState: 1
     m_Value: 0
@@ -120,7 +120,7 @@ MonoBehaviour:
     m_Value: 1
   Source:
     m_OverrideState: 1
-    m_Value: 3
+    m_Value: 2
   Threshold:
     m_OverrideState: 1
     m_Value: 0.043
@@ -156,7 +156,7 @@ MonoBehaviour:
     m_Value: 30
   DistortionStrength:
     m_OverrideState: 1
-    m_Value: 0.183
+    m_Value: 0.166
   AdditionalDistortionLines:
     m_OverrideState: 1
     m_Value: 3
@@ -165,4 +165,4 @@ MonoBehaviour:
     m_Value: 0.889
   AdditionalLinesDistortionJitter:
     m_OverrideState: 1
-    m_Value: 0.082
+    m_Value: 0.052

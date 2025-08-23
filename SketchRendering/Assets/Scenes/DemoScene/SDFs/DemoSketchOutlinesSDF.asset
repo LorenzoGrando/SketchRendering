@@ -19,11 +19,11 @@ MonoBehaviour:
     ThicknessFalloffConstraint: 0.34
     Length: 0.547
     LengthThicknessFalloff: 0.804
-    Pressure: 1
-    PressureFalloff: 0.351
+    Pressure: 0.773
+    PressureFalloff: 0.288
   SelectedFalloffFunction: 1
   VariationData:
-    DirectionVariationRange: 0
-    ThicknessVariationRange: 0.034
-    LengthVariationRange: 0.054
-    PressureVariationRange: 0.015
+    DirectionVariationRange: 0.068
+    ThicknessVariationRange: 0
+    LengthVariationRange: 0.106
+    PressureVariationRange: 0

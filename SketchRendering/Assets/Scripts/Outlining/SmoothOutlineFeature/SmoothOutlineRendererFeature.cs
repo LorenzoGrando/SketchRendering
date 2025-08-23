@@ -170,7 +170,7 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
 
     private bool AreAllMaterialsValid()
     {
-        return edgeDetectionMaterial != null && edgeCompositorMaterial != null && thicknessDilationMaterial != null && accentedOutlinesMaterial != null;
+        return edgeDetectionMaterial != null && edgeCompositorMaterial != null && thicknessDilationMaterial != null && accentedOutlinesMaterial != null && (CurrentEdgeDetectionPassData.Source != EdgeDetectionGlobalData.EdgeDetectionSource.ALL || secondaryEdgeDetectionMaterial != null);
     }
 
     private bool AreCurrentDynamicsValid()
