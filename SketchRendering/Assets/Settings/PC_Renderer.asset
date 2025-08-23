@@ -17,9 +17,9 @@ MonoBehaviour:
     debugMode: 0
     OutlineStrokeColor: {r: 0.18867922, g: 0.18867922, b: 0.18867922, a: 1}
     ShadingStrokeColor: {r: 0.1882353, g: 0.1882353, b: 0.1882353, a: 1}
-    MaterialAccumulationStrength: 0.378
+    MaterialAccumulationStrength: 0.925
     StrokeBlendMode: 0
-    BlendStrength: 0.93
+    BlendStrength: 1
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -91,7 +91,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d59e31248b44ac93bfb91aab57250e, type: 3}
   m_Name: SketchOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   EdgeDetectionPassData:
     Method: 0
     Source: 1
@@ -105,7 +105,7 @@ MonoBehaviour:
   SketchStrokesPassData:
     OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
     SampleArea: 1
-    StrokeSampleScale: 4
+    StrokeSampleScale: 2
     DoDownscale: 1
     DownscaleFactor: 2
     StrokeThreshold: 0.03
@@ -113,6 +113,8 @@ MonoBehaviour:
     UsePerpendicularDirection: 0
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
+  colorEdgeDetectionShader: {fileID: 4800000, guid: 6d949bc6d600494d90904c5915a691f2, type: 3}
+  edgeDetectionCompositorShader: {fileID: 4800000, guid: 7b6947d644be4dc8a273948e541306f4, type: 3}
   sketchStrokesComputeShader: {fileID: 7200000, guid: 1e9d703e3298464c9b8b9bc3a35d61ae, type: 3}
 --- !u!114 &1316582646619623578
 MonoBehaviour:
@@ -129,11 +131,11 @@ MonoBehaviour:
   m_Active: 1
   MaterialData:
     ProjectionMethod: 2
-    ConstantScaleFalloffFactor: 0
+    ConstantScaleFalloffFactor: 1
     AlbedoTexture: {fileID: 2800000, guid: a1b2e0a5a2aa1f340b235322776ddf1e, type: 3}
     NormalTexture: {fileID: 2800000, guid: 3f54c1cbb65b96c4eaa96226d625c1b2, type: 3}
-    Scale: {x: 4, y: 4}
-    BaseColorBlendFactor: 0.091
+    Scale: {x: 3, y: 3}
+    BaseColorBlendFactor: 0.027
   materialSurfaceShader: {fileID: 4800000, guid: a74845ba45d54d8694dce827482dc810, type: 3}
 --- !u!114 &5881595255929910442
 MonoBehaviour:
@@ -151,7 +153,7 @@ MonoBehaviour:
   LuminanceData:
     ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
     ProjectionMethod: 2
-    ConstantScaleFalloffFactor: 0
+    ConstantScaleFalloffFactor: 1
     SmoothTransitions: 1
     ToneScales: {x: 6, y: 6}
     luminanceOffset: 0
@@ -168,10 +170,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d21521743bc98459d8d263ffa1defd, type: 3}
   m_Name: SmoothOutline
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   EdgeDetectionPassData:
     Method: 1
-    Source: 1
+    Source: 0
     OutlineThreshold: 0.525
     OutlineOffset: 1
     OutlineDistanceFalloff: 1
@@ -191,6 +193,8 @@ MonoBehaviour:
     MaskScale: {x: 3, y: 3}
   sobelEdgeDetectionShader: {fileID: 4800000, guid: 553a0a154c634fd28f7cce9a86c7aeb5, type: 3}
   depthNormalsEdgeDetectionShader: {fileID: 4800000, guid: e6798242600043cd9f54b07c0855c27f, type: 3}
+  colorEdgeDetectionShader: {fileID: 4800000, guid: 6d949bc6d600494d90904c5915a691f2, type: 3}
+  edgeDetectionCompositorShader: {fileID: 4800000, guid: 7b6947d644be4dc8a273948e541306f4, type: 3}
   thicknessDilationDetectionShader: {fileID: 4800000, guid: f1af4bd89fe34c09a8c4b658727b17da, type: 3}
   accentedOutlinesShader: {fileID: 4800000, guid: 7a4f32e09b6d4d4e8e4132f8136510cc, type: 3}
 --- !u!114 &7023177639391035692

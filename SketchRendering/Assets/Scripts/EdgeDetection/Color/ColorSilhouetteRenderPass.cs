@@ -1,20 +1,15 @@
-using System;
-using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
 
-public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
+public class ColorSilhouetteRenderPass : EdgeDetectionRenderPass
 {
-    public override string PassName => "DepthNormalsSilhouette";
+    public override string PassName => "ColorBufferSilhouette";
     
     private LocalKeyword edgeSobel3x3Keyword;
     private LocalKeyword edgeSobel1x3Keyword;
-    
-    private LocalKeyword sourceDepthKeyword;
-    private LocalKeyword sourceDepthNormalsKeyword;
 
     public override void ConfigureMaterial()
     {
@@ -22,9 +17,6 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
         
         edgeSobel3x3Keyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.SOBEL_3X3_KEYWORD);
         edgeSobel1x3Keyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.SOBEL_1X3_KEYWORD);
-        
-        sourceDepthKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.DEPTH_KEYWORD);
-        sourceDepthNormalsKeyword = new LocalKeyword(edgeDetectionMaterial.shader, EdgeDetectionGlobalData.DEPTH_NORMALS_KEYWORD);
 
         switch (passData.Method)
         {
@@ -38,21 +30,7 @@ public class DepthNormalsSilhouetteRenderPass : EdgeDetectionRenderPass
                 break;
         }
 
-        switch (passData.Source)
-        {
-            //case EdgeDetectionGlobalData.EdgeDetectionSource.COLOR:
-                //break;
-            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH:
-                ConfigureInput(ScriptableRenderPassInput.Depth);
-                edgeDetectionMaterial.EnableKeyword(sourceDepthKeyword);
-                edgeDetectionMaterial.DisableKeyword(sourceDepthNormalsKeyword);
-                break;
-            case EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS:
-                ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal);
-                edgeDetectionMaterial.DisableKeyword(sourceDepthKeyword);
-                edgeDetectionMaterial.EnableKeyword(sourceDepthNormalsKeyword);
-                break;
-        }
+        ConfigureInput(ScriptableRenderPassInput.Color);
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)

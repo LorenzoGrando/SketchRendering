@@ -10,6 +10,7 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
     
     protected Material edgeDetectionMaterial;
     protected EdgeDetectionPassData passData;
+    public bool IsSecondary { get; protected set; }
     
     protected static readonly int outlineOffsetShaderID = Shader.PropertyToID("_OutlineOffset");
     protected static readonly int outlineThresholdShaderID = Shader.PropertyToID("_OutlineThreshold");
@@ -18,10 +19,12 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
     protected static readonly int outlineAngleConstraintShaderID = Shader.PropertyToID("_OutlineShallowThresholdStrength");
     protected static readonly int outlineNormalSensitivityShaderID = Shader.PropertyToID("_OutlineNormalDistanceSensitivity");
     
+    protected const string OUTLINE_TEXTURE_NAME = "OutlineTexture";
+    protected const string OUTLINE_SECONDARY_TEXTURE_NAME = "OutlineSecondaryTexture";
+    
     protected LocalKeyword outputGreyscaleKeyword;
     protected LocalKeyword outputDirectionAngleDataKeyword;
     protected LocalKeyword outputDirectionVectorDataKeyword;
-
 
     public virtual void Setup(EdgeDetectionPassData passData, Material mat)
     {
@@ -33,6 +36,8 @@ public abstract class EdgeDetectionRenderPass : ScriptableRenderPass, ISketchRen
         
         ConfigureMaterial();
     }
+    
+    public void SetSecondary(bool isSecondary) => this.IsSecondary = isSecondary;
 
     public virtual void ConfigureMaterial()
     {
