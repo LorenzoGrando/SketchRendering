@@ -120,10 +120,10 @@ MonoBehaviour:
     m_Value: 1
   Source:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 3
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.043
+    m_Value: 0.181
   DistanceFalloff:
     m_OverrideState: 1
     m_Value: 0.427
@@ -138,7 +138,7 @@ MonoBehaviour:
     m_Value: 0.294
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 0.664
+    m_Value: 0.766
   UseAccentedOutlines:
     m_OverrideState: 1
     m_Value: 1
@@ -165,4 +165,4 @@ MonoBehaviour:
     m_Value: 0.889
   AdditionalLinesDistortionJitter:
     m_OverrideState: 1
-    m_Value: 0.052
+    m_Value: 0.093

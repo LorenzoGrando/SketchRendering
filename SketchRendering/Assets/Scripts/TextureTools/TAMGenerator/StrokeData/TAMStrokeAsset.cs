@@ -16,7 +16,7 @@ public class TAMStrokeAsset : ScriptableObject
 
     public virtual TAMStrokeData UpdatedDataByFillRate(float fillRate)
     {
-        return StrokeData;
+        return PackAdditionalData(StrokeData);
     }
     
     public virtual TAMStrokeData Randomize(float fillRate)
@@ -27,15 +27,19 @@ public class TAMStrokeAsset : ScriptableObject
             Direction = VariationData.DirectionVariationRange == 0 ? StrokeData.Direction : 
                 new Vector4(GetRangeConstrainedSmoothRandom(StrokeData.Direction.x, VariationData.DirectionVariationRange, -1, 1), 
                     GetRangeConstrainedSmoothRandom(StrokeData.Direction.y, VariationData.DirectionVariationRange, -1, 1), 0, 0),
+            AdditionalPackedData = Vector4.zero,
             Thickness = VariationData.ThicknessVariationRange == 0 ? StrokeData.Thickness : GetRangeConstrainedSmoothRandom(StrokeData.Thickness, VariationData.ThicknessVariationRange),
             ThicknessFalloffConstraint = StrokeData.ThicknessFalloffConstraint,
             Length = VariationData.LengthVariationRange == 0 ? StrokeData.Length : GetRangeConstrainedSmoothRandom(StrokeData.Length, VariationData.LengthVariationRange),
             LengthThicknessFalloff = StrokeData.LengthThicknessFalloff,
             Pressure = VariationData.PressureVariationRange == 0 ? StrokeData.Pressure : GetRangeConstrainedSmoothRandom(StrokeData.Pressure, VariationData.PressureVariationRange),
-            PressureFalloff = StrokeData.PressureFalloff
+            PressureFalloff = StrokeData.PressureFalloff,
+            Iterations = StrokeData.Iterations
         };
         
         output.OriginPoint = new Vector4(Random.value, Random.value, 0, 0);
+        output = PackAdditionalData(output);
+        
         return StrokeData;
     }
     
@@ -45,13 +49,16 @@ public class TAMStrokeAsset : ScriptableObject
         {
             OriginPoint = new Vector4(0.25f, 0.5f, 0f, 0f),
             Direction = StrokeData.Direction,
+            AdditionalPackedData = StrokeData.AdditionalPackedData,
             Thickness = StrokeData.Thickness,
             ThicknessFalloffConstraint = StrokeData.ThicknessFalloffConstraint,
             Length = StrokeData.Length,
             LengthThicknessFalloff = StrokeData.LengthThicknessFalloff,
             Pressure = StrokeData.Pressure,
-            PressureFalloff = StrokeData.PressureFalloff
+            PressureFalloff = StrokeData.PressureFalloff,
+            Iterations = StrokeData.Iterations
         };
+        output = PackAdditionalData(output);
         
         return output;
     }
@@ -73,4 +80,6 @@ public class TAMStrokeAsset : ScriptableObject
         float rand = Mathf.Lerp(min, max, t);
         return rand;
     }
+    
+    protected virtual TAMStrokeData PackAdditionalData(TAMStrokeData data) =>  data;
 }

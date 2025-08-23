@@ -5,6 +5,8 @@ public struct TAMStrokeData
 {
     public Vector4 OriginPoint;
     public Vector4 Direction;
+    [HideInInspector] 
+    public Vector4 AdditionalPackedData;
     [Range(0, 1)]
     public float Thickness;
     [Range(0, 1)] 
@@ -17,10 +19,12 @@ public struct TAMStrokeData
     public float Pressure;
     [Range(0, 1)] 
     public float PressureFalloff;
+    [HideInInspector] 
+    public int Iterations;
 
     public int GetStrideLength()
     {
         //Vector4 + float + float
-        return (sizeof(float) * 4) * 2 + sizeof(float) * 6;
+        return (sizeof(float) * 4) * 3 + sizeof(float) * 6 + sizeof(int);
     }
 }
