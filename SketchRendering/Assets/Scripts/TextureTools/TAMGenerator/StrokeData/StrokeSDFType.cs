@@ -1,4 +1,4 @@
 public enum StrokeSDFType
 {
-    SIMPLE, HATCHING, ZIGZAG  
+    SIMPLE, HATCHING, ZIGZAG, FEATHERING
 }
