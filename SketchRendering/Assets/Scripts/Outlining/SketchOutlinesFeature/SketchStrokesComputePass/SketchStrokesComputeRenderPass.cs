@@ -43,6 +43,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
 
     private LocalKeyword PerpendicularDirectionKeyword;
     private LocalKeyword SmoothingThresholdKeyword;
+    private LocalKeyword[] strokeTypeLocalKeywords;
 
     private readonly int GRADIENT_VECTOR_STRIDE_LENGTH = sizeof(float) * 4;
     
@@ -65,6 +66,23 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
 
     private void ConfigureComputeShader()
     {
+        PerpendicularDirectionKeyword = new LocalKeyword(sketchComputeShader, PERPENDICULAR_DIRECTION_KEYWORD_ID);
+        SmoothingThresholdKeyword = new LocalKeyword(sketchComputeShader, SMOOTHING_KEYWORD_ID);
+        sketchComputeShader.SetKeyword(PerpendicularDirectionKeyword, passData.UsePerpendicularDirection);
+        sketchComputeShader.SetKeyword(SmoothingThresholdKeyword, passData.FrameSmoothingFactor > 0);
+        
+        string[] sdfTypes = Enum.GetNames(typeof(StrokeSDFType));
+        strokeTypeLocalKeywords = new LocalKeyword[sdfTypes.Length];
+        string selectedType = passData.OutlineStrokeData.PatternType.ToString();
+        for (int t = 0; t < sdfTypes.Length; t++)
+        {
+            strokeTypeLocalKeywords[t] = new LocalKeyword(sketchComputeShader, sdfTypes[t]);
+            if (sdfTypes[t] == selectedType)
+                sketchComputeShader.EnableKeyword(strokeTypeLocalKeywords[t]);
+            else
+                sketchComputeShader.DisableKeyword(strokeTypeLocalKeywords[t]);
+        }
+        
         computeStrokeKernelID = sketchComputeShader.FindKernel(Get1DAreaReliantKernelID(COMPUTE_STROKE_KERNEL, passData.SampleArea));
         sketchComputeShader.GetKernelThreadGroupSizes(computeStrokeKernelID, out uint x, out uint y, out uint z);
         strokesKernelThreads = new Vector3Int((int)x, (int)y, (int)z);
@@ -72,12 +90,6 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
         computeApplyStrokeKernelID = sketchComputeShader.FindKernel(Get1DAreaReliantKernelID(APPLY_STROKES_KERNEL, passData.SampleArea));
         sketchComputeShader.GetKernelThreadGroupSizes(computeApplyStrokeKernelID, out uint x1, out uint y1, out uint z1);
         applyKernelThreads = new Vector3Int((int)x1, (int)y1, (int)z1);
-
-        PerpendicularDirectionKeyword = new LocalKeyword(sketchComputeShader, PERPENDICULAR_DIRECTION_KEYWORD_ID);
-        SmoothingThresholdKeyword = new LocalKeyword(sketchComputeShader, SMOOTHING_KEYWORD_ID);
-        
-        sketchComputeShader.SetKeyword(PerpendicularDirectionKeyword, passData.UsePerpendicularDirection);
-        sketchComputeShader.SetKeyword(SmoothingThresholdKeyword, passData.FrameSmoothingFactor > 0);
     }
 
     private string Get1DAreaReliantKernelID(string kernelName, ComputeData.KernelSize2D kernelSize)
@@ -290,7 +302,7 @@ public class SketchStrokesComputeRenderPass : ScriptableRenderPass
             {
                 strokeDataBuffer = new ComputeBuffer(1, passData.OutlineStrokeData.StrokeData.GetStrideLength());
             }
-            strokeDataBuffer.SetData(new [] {passData.OutlineStrokeData.StrokeData});
+            strokeDataBuffer.SetData(new [] {passData.OutlineStrokeData.GetSampleReadyData()});
             computePassData.strokeDataBuffer = strokeDataBuffer;
             
             if (strokeVariationDataBuffer == null)

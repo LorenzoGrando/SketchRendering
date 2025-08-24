@@ -4,7 +4,7 @@
 #pragma kernel BlitFinalSelectedStroke
 #pragma kernel PackStrokeTextures
 
-#pragma multi_compile_local _ SIMPLE HATCHING ZIGZAG FEATHERING
+#pragma multi_compile_local SIMPLE HATCHING ZIGZAG FEATHERING
 #pragma multi_compile_local _ FALLOFF_LINEAR FALLOFF_EASE_INOUT_SINE FALLOFF_EASE_OUT_ELASTIC
 #pragma multi_compile_local _ IS_FIRST_ITERATION
 #pragma multi_compile_local _ IS_LAST_REDUCTION

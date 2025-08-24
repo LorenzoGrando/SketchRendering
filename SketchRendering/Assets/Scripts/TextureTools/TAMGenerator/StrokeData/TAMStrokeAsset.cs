@@ -19,6 +19,8 @@ public class TAMStrokeAsset : ScriptableObject
         return PackAdditionalData(StrokeData);
     }
     
+    public virtual TAMStrokeData GetSampleReadyData() => UpdatedDataByFillRate(0f);
+    
     public virtual TAMStrokeData Randomize(float fillRate)
     {
         TAMStrokeData output = new TAMStrokeData()

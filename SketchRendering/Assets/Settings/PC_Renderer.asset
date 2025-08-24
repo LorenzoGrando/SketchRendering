@@ -91,7 +91,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d59e31248b44ac93bfb91aab57250e, type: 3}
   m_Name: SketchOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   EdgeDetectionPassData:
     Method: 0
     Source: 1
@@ -103,8 +103,8 @@ MonoBehaviour:
     OutlineNormalSensitivity: 0.446
     OutputType: 1
   SketchStrokesPassData:
-    OutlineStrokeData: {fileID: 11400000, guid: 585118e0ecfaf0f4db44b1adf2179a66, type: 2}
-    SampleArea: 1
+    OutlineStrokeData: {fileID: 11400000, guid: a32a9e9d0cf0c3f468e3697ca9111742, type: 2}
+    SampleArea: 2
     StrokeSampleScale: 2
     DoDownscale: 1
     DownscaleFactor: 2
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d21521743bc98459d8d263ffa1defd, type: 3}
   m_Name: SmoothOutline
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   EdgeDetectionPassData:
     Method: 1
     Source: 0
