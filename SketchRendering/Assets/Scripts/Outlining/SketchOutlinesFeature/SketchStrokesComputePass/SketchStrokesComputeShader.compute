@@ -1,4 +1,4 @@
- #pragma kernel ComputeAverageStroke32
+#pragma kernel ComputeAverageStroke32
 #pragma kernel ComputeAverageStroke16
 #pragma kernel ComputeAverageStroke8
 #pragma kernel ComputeAverageStroke4
@@ -7,6 +7,7 @@
 #pragma kernel ApplyStrokes8
 #pragma kernel ApplyStrokes4
 
+#pragma multi_compile_local SIMPLE HATCHING ZIGZAG FEATHERING
 #pragma multi_compile_local _ USE_PERPENDICULAR_DIRECTION
 #pragma multi_compile_local _ FRAME_SMOOTHING
 
@@ -114,6 +115,21 @@ void ComputeAverageStroke4 (uint3 id : SV_DispatchThreadID, uint3 idG : SV_Group
     ComputeAverageStroke(id, idG, idGs, uint2(4, 4));
 }
 
+float SampleStrokeSDF(StrokeData data, float2 pointID, float2 dimensions, float thicknessScalar, float lengthScalar)
+{
+    uint sample = 0;
+
+    #if defined(SIMPLE) || defined(HATCHING)
+    sample = SampleBaseSDFClampParamScalar(data, pointID, dimensions, thicknessScalar, lengthScalar);
+    #elif defined(ZIGZAG)
+    sample = SampleRepeatingSDFClampParamScalar(data, pointID, dimensions, thicknessScalar, lengthScalar);
+    #elif defined(FEATHERING)
+    sample = SampleLoopRepeatingSDFClampParamScalar(data, pointID, dimensions, thicknessScalar, lengthScalar);
+    #endif
+
+    return (float)sample;
+}
+
 
 RWStructuredBuffer<StrokeData> _OutlineStrokeData;
 StructuredBuffer<VariationData> _OutlineStrokeVariationData;
@@ -160,7 +176,7 @@ void ApplyStrokeSDFs(uint3 id, uint2 idG, uint3 idGs, uint2 kernelSizes)
 
             if (isEdge)
             {
-                float localValue = (float)SampleBaseSDFClampParamScalar(groupData, id.xy, float2(_TextureWidth, _TextureHeight), baseScalar, lengthSampleScalar)/255.0;
+                float localValue = SampleStrokeSDF(groupData, id.xy, float2(_TextureWidth, _TextureHeight), baseScalar, lengthSampleScalar)/255.0;
                 value *= localValue;
                 direction += groupData.direction;
                 // i.e. if not the very first iteration

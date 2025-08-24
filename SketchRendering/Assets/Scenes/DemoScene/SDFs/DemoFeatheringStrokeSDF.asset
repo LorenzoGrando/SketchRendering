@@ -9,25 +9,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5ea0dd3d53d4fa390c5153ec607defa, type: 3}
-  m_Name: DemoHatchingStrokeSDF
+  m_Script: {fileID: 11500000, guid: 2bdc93f5572b4f4f9516f04d95caba45, type: 3}
+  m_Name: DemoFeatheringStrokeSDF
   m_EditorClassIdentifier: 
   StrokeData:
     OriginPoint: {x: 0.25, y: 0.5, z: 0, w: 0}
     Direction: {x: 1, y: 0, z: 0, w: 0}
     AdditionalPackedData: {x: 0, y: 0, z: 0, w: 0}
-    Thickness: 0.281
+    Thickness: 0.042
     ThicknessFalloffConstraint: 0.1
-    Length: 0.73316646
-    LengthThicknessFalloff: 0.64720166
+    Length: 0.34
+    LengthThicknessFalloff: 0.607
     Pressure: 1
-    PressureFalloff: 0.7864787
+    PressureFalloff: 0.25
     Iterations: 0
   SelectedFalloffFunction: 1
   VariationData:
-    DirectionVariationRange: 0.06277202
-    ThicknessVariationRange: 0.043
-    LengthVariationRange: 0.419
-    PressureVariationRange: 0.137
-  MinCrossHatchingThreshold: 0.45402387
-  MaxCrossHatchingThreshold: 0.876
+    DirectionVariationRange: 0.073
+    ThicknessVariationRange: 0.007
+    LengthVariationRange: 0.307
+    PressureVariationRange: 0.058
+  FirstSubStrokeDirectionOffset: -0.985
+  FirstSubStrokeLengthMultiplier: 0.75
+  SecondSubStrokeDirectionOffset: -0.025
+  SecondSubStrokeLengthMultiplier: 0.35
+  Repetitions: 2

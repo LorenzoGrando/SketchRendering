@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 875c69ed335440b2b21aedc73c222982, type: 3}
   m_Name: SketchOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   Method:
     m_OverrideState: 1
     m_Value: 0
@@ -39,7 +39,7 @@ MonoBehaviour:
     m_Value: 0.455
   StrokeArea:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   StrokeScale:
     m_OverrideState: 1
     m_Value: 4
@@ -114,16 +114,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a84c80c46746a197a431d994f71049, type: 3}
   m_Name: SmoothOutlineVolumeComponent
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   Method:
     m_OverrideState: 1
     m_Value: 1
   Source:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 3
   Threshold:
     m_OverrideState: 1
-    m_Value: 0.043
+    m_Value: 0.181
   DistanceFalloff:
     m_OverrideState: 1
     m_Value: 0.427
@@ -138,7 +138,7 @@ MonoBehaviour:
     m_Value: 0.294
   NormalSensitivity:
     m_OverrideState: 1
-    m_Value: 0.664
+    m_Value: 0.766
   UseAccentedOutlines:
     m_OverrideState: 1
     m_Value: 1
@@ -165,4 +165,4 @@ MonoBehaviour:
     m_Value: 0.889
   AdditionalLinesDistortionJitter:
     m_OverrideState: 1
-    m_Value: 0.052
+    m_Value: 0.093
