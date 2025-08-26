@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UseGranularity: 1
   Granularity:
-    Scale: {x: 4, y: 4}
+    Scale: {x: 8, y: 8}
     DetailLevel: 5
     DetailFrequency: 5
     DetailPersistence: 0.35
@@ -32,11 +32,22 @@ MonoBehaviour:
   UseCrumples: 1
   Crumples:
     CrumpleScale: {x: 4, y: 4}
-    CrumplesJitter: 0.75
+    CrumplesJitter: 0.4
     CrumpleStrength: 1
     CrumpleDetailLevel: 3
     CrumpleDetailFrequency: 3
     CrumpleDetailPersistence: 0.25
-    CrumpleTintStrength: 0.5
-    CrumpleTintSharpness: 5
+    CrumpleTintStrength: 1
+    CrumpleTintSharpness: 3
     CrumpleTint: {r: 0.4811321, g: 0.4189102, b: 0.374466, a: 1}
+  UseNotebookLines: 1
+  NotebookLines:
+    NotebookLineGranularitySensitivity: 0.1
+    HorizontalLineFrequency: 20
+    HorizontalLineOffset: 0
+    HorizontalLineThickness: 0.005
+    HorizontalLineTint: {r: 0.14627092, g: 0.15130092, b: 0.1792453, a: 0.27450982}
+    VerticalLineFrequency: 20
+    VerticalLineOffset: 0
+    VerticalLineThickness: 0.005
+    VerticalLineTint: {r: 0.14509805, g: 0.15294118, b: 0.18039216, a: 0.27450982}
