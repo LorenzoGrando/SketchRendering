@@ -16,6 +16,7 @@ Shader "Hidden/MaterialGeneratorShader"
             #pragma multi_compile_local_fragment _ USE_GRANULARITY
             #pragma multi_compile_local_fragment _ USE_LAID_LINES
             #pragma multi_compile_local_fragment _ USE_CRUMPLES
+            #pragma multi_compile_local_fragment _ USE_NOTEBOOK_LINES
 
             struct Attributes
             {
@@ -60,6 +61,15 @@ Shader "Hidden/MaterialGeneratorShader"
             float _CrumplesTintSharpness;
             float _CrumplesTintStrength;
 
+            //Notebook Lines
+            float2 _NotebookLinePhase;
+            float2 _NotebookLineFrequency;
+            float2 _NotebookLineSize;
+            float _NotebookLineGranularitySensitivity;
+            float4 _NotebookLineHorizontalTint;
+            float4 _NotebookLineVerticalTint;
+            
+
             Varyings Vert(Attributes i)
             {
                 Varyings o;
@@ -72,7 +82,8 @@ Shader "Hidden/MaterialGeneratorShader"
             float4 Frag(Varyings i) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                float2 uv = i.texcoord;
+                float2 unmutableUV = i.texcoord;
+                float2 uv = unmutableUV;
 
                 //Create polygonal-esque bumps in the paper, to simulate being crumpled and flattened
                 float crumpleTint = 0;
@@ -127,14 +138,30 @@ Shader "Hidden/MaterialGeneratorShader"
                 laidLines = smoothstep((1.0 - _LaidLineThickness), 1.0, laidLines);
                 laidLines *= _LaidLineStrength;
                 #endif
+
+                float2 notebookLines = 0;
+                #if defined(USE_NOTEBOOK_LINES)
+                notebookLines = unmutableUV.yx;
+                notebookLines = abs(sin((notebookLines + (_NotebookLinePhase/2.0)) * _NotebookLineFrequency * PI));
+                notebookLines = step(1.0 - (_NotebookLineSize), notebookLines);
+                float notebookSensitivity = 1.0;
+                #if defined(USE_GRANULARITY)
+                notebookSensitivity = step(_NotebookLineGranularitySensitivity, 1.0 - granularity);
+                #endif
+                notebookLines *= notebookSensitivity;
+                #endif
                 
                 //Combine all elements
                 float4 paperColor = lerp(_GranularityTint * _GranularityValueRange.x, _GranularityTint * _GranularityValueRange.y, granularity);
                 float4 laidLineColor = _LaidLineTint * laidLines;
                 float4 crumpleColor = _CrumplesTint * crumpleTint;
+                float4 horizontalNotebookColor = notebookLines.x * _NotebookLineHorizontalTint;
+                float4 verticalNotebookColor = notebookLines.y * _NotebookLineVerticalTint;
                 //float paperHeightmap = granularity + crumpleTint - laidLines;
                 float4 composite = lerp(paperColor, laidLineColor, laidLineColor.a);
                 composite = lerp(composite, crumpleColor, crumpleColor.a);
+                composite = lerp(composite, horizontalNotebookColor, horizontalNotebookColor.a);
+                composite = lerp(composite, verticalNotebookColor, verticalNotebookColor.a);
                 return float4(composite.rgb, 1.0);
             }
             ENDHLSL

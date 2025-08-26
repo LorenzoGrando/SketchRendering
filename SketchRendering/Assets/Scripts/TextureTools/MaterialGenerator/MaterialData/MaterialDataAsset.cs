@@ -14,4 +14,8 @@ public class MaterialDataAsset : ScriptableObject
     [Space(10)]
     public bool UseCrumples;
     public CrumpleData Crumples;
+    
+    [Space(10)]
+    public bool UseNotebookLines;
+    public NotebookLineData NotebookLines;
 }

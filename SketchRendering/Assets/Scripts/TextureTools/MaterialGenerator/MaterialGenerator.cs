@@ -64,14 +64,24 @@ public class MaterialGenerator : TextureGenerator
     private readonly int CRUMPLES_SHARPNESS_ID = Shader.PropertyToID("_CrumplesTintSharpness");
     private readonly int CRUMPLES_TINT_ID = Shader.PropertyToID("_CrumplesTint");
     
+    //Notebook Lines
+    private readonly int NOTEBOOK_FREQUENCY_ID = Shader.PropertyToID("_NotebookLineFrequency");
+    private readonly int NOTEBOOK_OFFSET_ID = Shader.PropertyToID("_NotebookLinePhase");
+    private readonly int NOTEBOOK_THICKNESS_ID = Shader.PropertyToID("_NotebookLineSize");
+    private readonly int NOTEBOOK_GRANULARITY_SENSITIVITY_ID = Shader.PropertyToID("_NotebookLineGranularitySensitivity");
+    private readonly int NOTEBOOK_HORIZONTAL_TINT_ID = Shader.PropertyToID("_NotebookLineHorizontalTint");
+    private readonly int NOTEBOOK_VERTICAL_TINT_ID = Shader.PropertyToID("_NotebookLineVerticalTint");
+    
     //Shader Keywords
     private readonly string USE_GRANULARITY_KEYWORD = "USE_GRANULARITY";
     private readonly string USE_LAID_LINES_KEYWORD = "USE_LAID_LINES";
     private readonly string USE_CRUMPLES_KEYWORD = "USE_CRUMPLES";
+    private readonly string USE_NOTEBOOK_LINES_KEYWORD = "USE_NOTEBOOK_LINES";
 
     private LocalKeyword GranularityKeyword;
     private LocalKeyword LaidLineKeyword;
     private LocalKeyword CrumpleKeyword;
+    private LocalKeyword NotebookLineKeyword;
     
     public override void ConfigureGeneratorData()
     {
@@ -113,6 +123,9 @@ public class MaterialGenerator : TextureGenerator
         
         CrumpleKeyword = new LocalKeyword(MaterialGeneratorShader, USE_CRUMPLES_KEYWORD);
         blitMaterial.SetKeyword(CrumpleKeyword, MaterialData.UseCrumples);
+        
+        NotebookLineKeyword = new LocalKeyword(MaterialGeneratorShader, USE_NOTEBOOK_LINES_KEYWORD);
+        blitMaterial.SetKeyword(NotebookLineKeyword, MaterialData.UseNotebookLines);
     }
 
     private void UpdateShaderMaterialData()
@@ -148,6 +161,16 @@ public class MaterialGenerator : TextureGenerator
             blitMaterial.SetFloat(CRUMPLES_TINT_STRENGTH_ID, MaterialData.Crumples.CrumpleTintStrength);
             blitMaterial.SetFloat(CRUMPLES_SHARPNESS_ID, MaterialData.Crumples.CrumpleTintSharpness);
             blitMaterial.SetVector(CRUMPLES_TINT_ID, MaterialData.Crumples.CrumpleTint);
+        }
+
+        if (MaterialData.UseNotebookLines)
+        {
+            blitMaterial.SetVector(NOTEBOOK_FREQUENCY_ID, new Vector4(MaterialData.NotebookLines.HorizontalLineFrequency, MaterialData.NotebookLines.VerticalLineFrequency, 0, 0));
+            blitMaterial.SetVector(NOTEBOOK_OFFSET_ID, new Vector4(MaterialData.NotebookLines.HorizontalLineOffset, MaterialData.NotebookLines.VerticalLineOffset, 0, 0));
+            blitMaterial.SetVector(NOTEBOOK_THICKNESS_ID, new Vector4(MaterialData.NotebookLines.HorizontalLineThickness, MaterialData.NotebookLines.VerticalLineThickness, 0, 0));
+            blitMaterial.SetFloat(NOTEBOOK_GRANULARITY_SENSITIVITY_ID, MaterialData.NotebookLines.NotebookLineGranularitySensitivity);
+            blitMaterial.SetColor(NOTEBOOK_HORIZONTAL_TINT_ID, MaterialData.NotebookLines.HorizontalLineTint);
+            blitMaterial.SetColor(NOTEBOOK_VERTICAL_TINT_ID, MaterialData.NotebookLines.VerticalLineTint);
         }
     }
     

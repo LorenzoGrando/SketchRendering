@@ -49,3 +49,27 @@ public struct CrumpleData
     public float CrumpleTintSharpness;
     public Color CrumpleTint;
 }
+
+[System.Serializable]
+public struct NotebookLineData
+{
+    [Header("Common")]
+    [Range(0, 1)]
+    public float NotebookLineGranularitySensitivity;
+    
+    [Header("Horizontal Lines")]
+    public float HorizontalLineFrequency;
+    [Range(0, 1)]
+    public float HorizontalLineOffset;
+    [Range(0, 1)]
+    public float HorizontalLineThickness;
+    public Color HorizontalLineTint;
+    
+    [Header("Vertical Lines")]
+    public float VerticalLineFrequency;
+    [Range(0, 1)]
+    public float VerticalLineOffset;
+    [Range(0, 1)]
+    public float VerticalLineThickness;
+    public Color VerticalLineTint;
+}
