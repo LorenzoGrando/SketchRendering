@@ -1,0 +1,4 @@
+public enum SketchRendererFeatureType
+{
+    UVS, OUTLINE_SMOOTH, OUTLINE_SKETCH, LUMINANCE, MATERIAL, COMPOSITOR
+}

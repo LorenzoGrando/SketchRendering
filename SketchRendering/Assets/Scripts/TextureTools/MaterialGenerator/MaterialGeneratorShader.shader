@@ -10,8 +10,8 @@ Shader "Hidden/MaterialGeneratorShader"
             
             HLSLPROGRAM
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Assets/Scripts/Includes/NoiseFunctions.hlsl"
-            #include "Assets/Scripts/Includes/MathUtils.hlsl"
+            #include "Assets/Scripts/Rendering/Includes/NoiseFunctions.hlsl"
+            #include "Assets/Scripts/Rendering/Includes/MathUtils.hlsl"
 
             #pragma multi_compile_local_fragment _ USE_GRANULARITY
             #pragma multi_compile_local_fragment _ USE_LAID_LINES
@@ -173,8 +173,8 @@ Shader "Hidden/MaterialGeneratorShader"
             
             HLSLPROGRAM
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Assets/Scripts/Includes/NoiseFunctions.hlsl"
-            #include "Assets/Scripts/Includes/MathUtils.hlsl"
+            #include "Assets/Scripts/Rendering/Includes/NoiseFunctions.hlsl"
+            #include "Assets/Scripts/Rendering/Includes/MathUtils.hlsl"
 
             #pragma multi_compile_local_fragment _ USE_GRANULARITY
             #pragma multi_compile_local_fragment _ USE_CRUMPLES

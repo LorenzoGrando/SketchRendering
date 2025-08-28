@@ -1,9 +1,9 @@
 #ifndef STROKE_SDFS
 #define STROKE_SDFS
 
-#include "Assets/Scripts/Includes/Falloff/FalloffFunctions.hlsl"
-#include "Assets/Scripts/Includes/HashingFunctions.hlsl"
-#include "Assets/Scripts/Includes/MathUtils.hlsl"
+#include "Assets/Scripts/Rendering/Includes/Falloff/FalloffFunctions.hlsl"
+#include "Assets/Scripts/Rendering/Includes/HashingFunctions.hlsl"
+#include "Assets/Scripts/Rendering/Includes/MathUtils.hlsl"
 
 #define MAX_STROKE_ITERATIONS 5
 
