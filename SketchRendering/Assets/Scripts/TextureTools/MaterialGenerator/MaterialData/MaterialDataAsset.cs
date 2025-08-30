@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "MaterialDataAsset", menuName = "SketchRendering/Scriptable Objects/MaterialDataAsset")]
+[CreateAssetMenu(fileName = "MaterialDataAsset", menuName = SketchRendererPackageData.PackageAssetItemPath + "MaterialDataAsset")]
 public class MaterialDataAsset : ScriptableObject
 {
     public bool UseGranularity;

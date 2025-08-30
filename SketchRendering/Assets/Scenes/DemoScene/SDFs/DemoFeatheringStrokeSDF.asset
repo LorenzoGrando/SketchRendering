@@ -18,7 +18,7 @@ MonoBehaviour:
     AdditionalPackedData: {x: 0, y: 0, z: 0, w: 0}
     Thickness: 0.042
     ThicknessFalloffConstraint: 0.1
-    Length: 0.34
+    Length: 0.544
     LengthThicknessFalloff: 0.607
     Pressure: 1
     PressureFalloff: 0.25
@@ -32,5 +32,5 @@ MonoBehaviour:
   FirstSubStrokeDirectionOffset: -0.985
   FirstSubStrokeLengthMultiplier: 0.75
   SecondSubStrokeDirectionOffset: -0.025
-  SecondSubStrokeLengthMultiplier: 0.35
+  SecondSubStrokeLengthMultiplier: 0.5
   Repetitions: 2

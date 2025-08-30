@@ -2,6 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+[System.Serializable]
 public class ThicknessDilationPassData : ISketchRenderPassData<ThicknessDilationPassData>
 {
     [Range(0, 5)]
@@ -14,6 +15,12 @@ public class ThicknessDilationPassData : ISketchRenderPassData<ThicknessDilation
         ThicknessRange = 1;
         ThicknessStrength = 1;
     }
+
+    public void CopyFrom(ThicknessDilationPassData passData)
+    {
+        ThicknessRange = passData.ThicknessRange;
+        ThicknessStrength = passData.ThicknessStrength;
+    }
     
     public bool IsAllPassDataValid()
     {
@@ -22,6 +29,8 @@ public class ThicknessDilationPassData : ISketchRenderPassData<ThicknessDilation
 
     public ThicknessDilationPassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         SmoothOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SmoothOutlineVolumeComponent>();
         if (volumeComponent == null)
             return this;

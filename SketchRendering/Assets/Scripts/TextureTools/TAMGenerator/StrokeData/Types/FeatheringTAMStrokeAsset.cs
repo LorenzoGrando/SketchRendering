@@ -2,8 +2,7 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-[CreateAssetMenu(fileName = "FeatheringStrokeAsset",
-    menuName = "SketchRendering/Scriptable Objects/TAMStrokeAssets/FeatheringStrokeAsset")]
+[CreateAssetMenu(fileName = "FeatheringStrokeAsset", menuName = SketchRendererPackageData.PackageAssetItemPath + "TAMStrokeAssets/FeatheringStrokeAsset")]
 public class FeatheringTAMStrokeAsset : TAMStrokeAsset
 {
     public override StrokeSDFType PatternType => StrokeSDFType.FEATHERING;

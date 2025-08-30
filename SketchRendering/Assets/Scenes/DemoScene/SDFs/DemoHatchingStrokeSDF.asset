@@ -16,12 +16,12 @@ MonoBehaviour:
     OriginPoint: {x: 0.25, y: 0.5, z: 0, w: 0}
     Direction: {x: 1, y: 0, z: 0, w: 0}
     AdditionalPackedData: {x: 0, y: 0, z: 0, w: 0}
-    Thickness: 0.281
+    Thickness: 0.061
     ThicknessFalloffConstraint: 0.1
-    Length: 0.73316646
-    LengthThicknessFalloff: 0.64720166
+    Length: 0.086
+    LengthThicknessFalloff: 0.39
     Pressure: 1
-    PressureFalloff: 0.7864787
+    PressureFalloff: 0.7221783
     Iterations: 0
   SelectedFalloffFunction: 1
   VariationData:
@@ -30,4 +30,4 @@ MonoBehaviour:
     LengthVariationRange: 0.419
     PressureVariationRange: 0.137
   MinCrossHatchingThreshold: 0.45402387
-  MaxCrossHatchingThreshold: 0.876
+  MaxCrossHatchingThreshold: 1

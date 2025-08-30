@@ -2,7 +2,7 @@ using Unity.Mathematics.Geometry;
 using UnityEngine;
 
 [System.Serializable]
-[CreateAssetMenu(fileName = "SimpleStrokeAsset", menuName = "SketchRendering/Scriptable Objects/TAMStrokeAssets/SimpleStrokeAsset")]
+[CreateAssetMenu(fileName = "SimpleStrokeAsset", menuName = SketchRendererPackageData.PackageAssetItemPath + "TAMStrokeAssets/SimpleStrokeAsset")]
 public class TAMStrokeAsset : ScriptableObject
 {
     public TAMStrokeData StrokeData;

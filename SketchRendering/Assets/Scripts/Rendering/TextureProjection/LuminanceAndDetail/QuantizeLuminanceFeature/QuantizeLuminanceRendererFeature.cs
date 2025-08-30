@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class QuantizeLuminanceRendererFeature : ScriptableRendererFeature
+public class QuantizeLuminanceRendererFeature : ScriptableRendererFeature, ISketchRendererFeature
 {
     [Header("Parameters")] [Space(5)] [SerializeField]
     public LuminancePassData LuminanceData = new LuminancePassData();
@@ -22,6 +22,15 @@ public class QuantizeLuminanceRendererFeature : ScriptableRendererFeature
         
         luminanceMaterial = CreateLuminanceMaterial();
         luminanceRenderPass = new QuantizeLuminanceRenderPass();
+    }
+    
+    public void ConfigureByContext(SketchRendererContext context)
+    {
+        if (context.UseLuminanceFeature)
+        {
+            LuminanceData.CopyFrom(context.LuminanceFeatureData);
+            Create();
+        }
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

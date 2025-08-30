@@ -3,12 +3,12 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class RenderUVsRendererFeature : ScriptableRendererFeature
+public class RenderUVsRendererFeature : ScriptableRendererFeature, ISketchRendererFeature
 {
     [Header("Base Parameters")] 
     [Space(5)] 
-    [SerializeField] public RenderUVsPassData uvsPassData = new RenderUVsPassData();
-    private RenderUVsPassData CurrentUVsPassData { get { return uvsPassData.GetPassDataByVolume(); } }
+    [SerializeField] public RenderUVsPassData UvsPassData = new RenderUVsPassData();
+    private RenderUVsPassData CurrentUVsPassData { get { return UvsPassData.GetPassDataByVolume(); } }
 
     [SerializeField] private Shader renderUVsShader;
     
@@ -20,6 +20,15 @@ public class RenderUVsRendererFeature : ScriptableRendererFeature
     {
         renderUVsMaterial = new Material(renderUVsShader);
         renderUVsRenderPass = new RenderUVsRenderPass();
+    }
+    
+    public void ConfigureByContext(SketchRendererContext context)
+    {
+        if (context.UseSketchyOutlineFeature)
+        {
+            UvsPassData.CopyFrom(context.UVSFeatureData);
+            Create();
+        }
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -36,7 +45,7 @@ public class RenderUVsRendererFeature : ScriptableRendererFeature
         if(!AreAllMaterialsValid())
             return;
         
-        if(!uvsPassData.IsAllPassDataValid())
+        if(!UvsPassData.IsAllPassDataValid())
             return;
         
         renderUVsRenderPass.Setup(CurrentUVsPassData, renderUVsMaterial);

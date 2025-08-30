@@ -29,7 +29,7 @@ MonoBehaviour:
     LineGranularityDisplacement: 0.127
     LineGranularityMasking: 0.554
     LineTint: {r: 0.5849056, g: 0.5180442, b: 0.40005338, a: 1}
-  UseCrumples: 1
+  UseCrumples: 0
   Crumples:
     CrumpleScale: {x: 4, y: 4}
     CrumplesJitter: 0.4
@@ -40,7 +40,7 @@ MonoBehaviour:
     CrumpleTintStrength: 1
     CrumpleTintSharpness: 3
     CrumpleTint: {r: 0.4811321, g: 0.4189102, b: 0.374466, a: 1}
-  UseNotebookLines: 1
+  UseNotebookLines: 0
   NotebookLines:
     NotebookLineGranularitySensitivity: 0.1
     HorizontalLineFrequency: 20

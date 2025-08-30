@@ -18,18 +18,18 @@ MonoBehaviour:
     AdditionalPackedData: {x: 0, y: 0, z: 0, w: 0}
     Thickness: 0.058
     ThicknessFalloffConstraint: 0.1
-    Length: 0.555
+    Length: 1
     LengthThicknessFalloff: 0.102
     Pressure: 1
-    PressureFalloff: 0.358
+    PressureFalloff: 0.722
     Iterations: 0
   SelectedFalloffFunction: 0
   VariationData:
-    DirectionVariationRange: 0.073
+    DirectionVariationRange: 0.124
     ThicknessVariationRange: 0.007
     LengthVariationRange: 0.307
     PressureVariationRange: 0.058
-  SubStrokeDirectionOffset: 0.8
+  SubStrokeDirectionOffset: 0.95
   SubStrokeLengthMultiplier: 0.75
   OnlyMultiplyZigStroke: 0
-  Repetitions: 2
+  Repetitions: 1

@@ -3,10 +3,10 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class SketchCompositionRendererFeature : ScriptableRendererFeature
+public class SketchCompositionRendererFeature : ScriptableRendererFeature, ISketchRendererFeature
 {
     [Header("Parameters")] [Space(5)] [SerializeField]
-    public SketchCompositionPassData passData = new SketchCompositionPassData();
+    public SketchCompositionPassData CompositionPassData = new SketchCompositionPassData();
     
     [SerializeField]
     private Shader sketchCompositionShader;
@@ -19,6 +19,12 @@ public class SketchCompositionRendererFeature : ScriptableRendererFeature
     {
         sketchMaterial = CreateSketchMaterial();
         sketchRenderPass = new SketchCompositionRenderPass();
+    }
+    
+    public void ConfigureByContext(SketchRendererContext context)
+    {
+        CompositionPassData.CopyFrom(context.CompositionFeatureData);
+        Create();
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -35,10 +41,10 @@ public class SketchCompositionRendererFeature : ScriptableRendererFeature
         if (!AreAllMaterialsValid())
            return;
         
-        if(!passData.IsAllPassDataValid())
+        if(!CompositionPassData.IsAllPassDataValid())
             return;
 
-        sketchRenderPass.Setup(passData, sketchMaterial);
+        sketchRenderPass.Setup(CompositionPassData, sketchMaterial);
         renderer.EnqueuePass(sketchRenderPass);
     }
 

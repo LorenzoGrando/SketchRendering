@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEditor;
 
 public static class SketchRendererDataWrapper
 {
@@ -77,14 +77,17 @@ public static class SketchRendererDataWrapper
         }
         return null;
     }
-    
-    public static RenderUVsRendererFeature GetUVsFeature() => (RenderUVsRendererFeature)GetRendererFeature(rendererFeatureTypes[SketchRendererFeatureType.UVS]);
-    public static SmoothOutlineRendererFeature GetSmoothOutlineFeature() => (SmoothOutlineRendererFeature)GetRendererFeature(rendererFeatureTypes[SketchRendererFeatureType.OUTLINE_SMOOTH]);
-    public static SketchOutlineRendererFeature GetSketchOutlineFeature() => (SketchOutlineRendererFeature)GetRendererFeature(rendererFeatureTypes[SketchRendererFeatureType.OUTLINE_SKETCH]);
-    public static QuantizeLuminanceRendererFeature GetQuantizeLuminanceFeature() => (QuantizeLuminanceRendererFeature)GetRendererFeature(rendererFeatureTypes[SketchRendererFeatureType.LUMINANCE]);
-    public static MaterialSurfaceRendererFeature GetMaterialSurfaceFeature() => (MaterialSurfaceRendererFeature)GetRendererFeature(rendererFeatureTypes[SketchRendererFeatureType.MATERIAL]);
-    public static SketchCompositionRendererFeature GetSketchCompositionRendererFeature() => (SketchCompositionRendererFeature)GetRendererFeature(rendererFeatureTypes[SketchRendererFeatureType.COMPOSITOR]);
 
+    private static ISketchRendererFeature GetSketchRendererFeature(Type featureType)
+    {
+        ScriptableRendererFeature feature = GetRendererFeature(featureType);
+        ISketchRendererFeature sketchRendererFeature = feature as ISketchRendererFeature;
+        if(sketchRendererFeature != null)
+            return sketchRendererFeature;
+        else
+            throw new Exception("[SketchRendererDataWrapper] Renderer feature does not implement ISketchRendererFeature interface.");
+    }
+    
     public static void AddRendererFeature(SketchRendererFeatureType featureType)
     {
         if(CheckHasActiveFeature(featureType))
@@ -112,8 +115,7 @@ public static class SketchRendererDataWrapper
         if (EditorUtility.IsPersistent(data))
             AssetDatabase.AddObjectToAsset(feature, data);
         AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out var guid, out long localId);
-
-        Debug.Log($"Adding feature to data of size {renderFeaturesProp.arraySize} at index {targetHierarchyIndex}");
+        
         if (targetHierarchyIndex > renderFeaturesProp.arraySize || renderFeaturesProp.arraySize == 0)
             renderFeaturesProp.arraySize++;
         else
@@ -131,6 +133,7 @@ public static class SketchRendererDataWrapper
         if (EditorUtility.IsPersistent(data))
         {
             AssetDatabase.SaveAssetIfDirty(data);
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(data), ImportAssetOptions.ForceUpdate);
         }
 
         serializedObject.ApplyModifiedProperties();
@@ -166,6 +169,31 @@ public static class SketchRendererDataWrapper
         }
 
         return 0;
+    }
+    
+    public static void ConfigureRendererFeature(SketchRendererFeatureType featureType, SketchRendererContext rendererContext)
+    {
+        if(!CheckHasActiveFeature(featureType))
+            AddRendererFeature(featureType);
+        
+        UpdateRendererFeatureByContext(featureType, rendererContext);
+        UniversalRendererData rendererData = GetCurrentRendererData();
+        if (EditorUtility.IsPersistent(rendererData))
+        {
+            AssetDatabase.SaveAssetIfDirty(rendererData);
+        }
+    }
+
+    private static void UpdateRendererFeatureByContext(SketchRendererFeatureType featureType, SketchRendererContext context)
+    {
+        if(context == null)
+            throw new ArgumentNullException("[SketchRendererDataWrapper] Missing SketchRendererContext in attempt to configure current renderer.");
+        
+        ISketchRendererFeature sketchFeature = GetSketchRendererFeature(rendererFeatureTypes[featureType]);
+        if (sketchFeature != null)
+        {
+            sketchFeature.ConfigureByContext(context);
+        }
     }
     
     public static void RemoveRendererFeature(SketchRendererFeatureType featureType)
@@ -205,12 +233,14 @@ public static class SketchRendererDataWrapper
             renderFeaturesMapProp.DeleteArrayElementAtIndex(foundIndex);
             
             serializedObject.ApplyModifiedProperties();
-            
+
             if (EditorUtility.IsPersistent(data))
             {
                 AssetDatabase.RemoveObjectFromAsset(feature);
+                //Ensure data is dirty from removal
                 data.SetDirty();
                 AssetDatabase.SaveAssetIfDirty(data);
+                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(data), ImportAssetOptions.ForceUpdate);
                 Editor.DestroyImmediate(feature);
             }
         }

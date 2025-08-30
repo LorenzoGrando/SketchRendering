@@ -31,6 +31,19 @@ public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePass
     }
     
     public bool RequireMultipleTextures => AdditionalLines > 1;
+
+    public void CopyFrom(AccentedOutlinePassData passData)
+    {
+        UseAccentedOutlines = passData.UseAccentedOutlines;
+        BakeDistortionDuringRuntime = passData.BakeDistortionDuringRuntime;
+        Rate = passData.Rate;
+        Strength = passData.Strength;
+        AdditionalLines = passData.AdditionalLines;
+        AdditionalLineTintPersistence = passData.AdditionalLineTintPersistence;
+        AdditionalLineDistortionJitter = passData.AdditionalLineDistortionJitter;
+        PencilOutlineMask = passData.PencilOutlineMask;
+        MaskScale = new Vector2(passData.MaskScale.x, passData.MaskScale.y);
+    }
     
     public bool IsAllPassDataValid()
     {
@@ -39,6 +52,8 @@ public class AccentedOutlinePassData : ISketchRenderPassData<AccentedOutlinePass
 
     public AccentedOutlinePassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         SmoothOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SmoothOutlineVolumeComponent>();
         if (volumeComponent == null)
             return this;

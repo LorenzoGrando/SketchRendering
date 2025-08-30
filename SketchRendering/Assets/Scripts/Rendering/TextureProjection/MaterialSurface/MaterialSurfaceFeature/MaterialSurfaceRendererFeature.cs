@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class MaterialSurfaceRendererFeature : ScriptableRendererFeature
+public class MaterialSurfaceRendererFeature : ScriptableRendererFeature, ISketchRendererFeature
 {
     [Header("Parameters")] [Space(5)] [SerializeField]
     public MaterialSurfacePassData MaterialData = new MaterialSurfacePassData();
@@ -21,6 +21,15 @@ public class MaterialSurfaceRendererFeature : ScriptableRendererFeature
         
         materialMat = CreateLuminanceMaterial();
         materialRenderPass = new MaterialSurfaceRenderPass();
+    }
+    
+    public void ConfigureByContext(SketchRendererContext context)
+    {
+        if (context.UseMaterialFeature)
+        {
+            MaterialData.CopyFrom(context.MaterialFeatureData);
+            Create();
+        }
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

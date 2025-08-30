@@ -32,5 +32,5 @@ MonoBehaviour:
   FirstSubStrokeDirectionOffset: -0.985
   FirstSubStrokeLengthMultiplier: 0.75
   SecondSubStrokeDirectionOffset: -0.025
-  SecondSubStrokeLengthMultiplier: 0.35
+  SecondSubStrokeLengthMultiplier: 0.5
   Repetitions: 2

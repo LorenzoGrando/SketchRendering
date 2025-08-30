@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bd02b9e94fc4b019113c55bf8a6c221, type: 3}
+  m_Name: DefaultSketchRendererContext
+  m_EditorClassIdentifier: 
+  UVSFeatureData:
+    SkyboxRotation: 0
+    SkyboxRotationMatrix:
+      e00: 0.000000011924881
+      e01: 1
+      e02: 0
+      e03: 0
+      e10: -1
+      e11: 0.000000011924881
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 0
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 0
+  UseMaterialFeature: 1
+  MaterialFeatureData:
+    ProjectionMethod: 2
+    ConstantScaleFalloffFactor: 1
+    AlbedoTexture: {fileID: 2800000, guid: d0da124dd4a12b44f98c556e0a987ea6, type: 3}
+    NormalTexture: {fileID: 2800000, guid: 02c936802c5a2894b94f4d2b8d307cfc, type: 3}
+    Scale: {x: 5, y: 5}
+    BaseColorBlendFactor: 0.14
+  UseLuminanceFeature: 1
+  LuminanceFeatureData:
+    ActiveTonalMap: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
+    ProjectionMethod: 2
+    ConstantScaleFalloffFactor: 1.3
+    SmoothTransitions: 1
+    ToneScales: {x: 8, y: 8}
+    LuminanceScalar: 0
+  EdgeDetectionFeatureData:
+    Method: 1
+    Source: 2
+    OutlineThreshold: 0.079
+    OutlineOffset: 1
+    OutlineDistanceFalloff: 1
+    OutlineAngleSensitivity: 1
+    OutlineAngleConstraint: 1
+    OutlineNormalSensitivity: 0.478
+    OutputType: 1
+  UseSmoothOutlineFeature: 0
+  AccentedOutlineFeatureData:
+    UseAccentedOutlines: 1
+    BakeDistortionDuringRuntime: 1
+    Rate: 20
+    Strength: 0.524
+    AdditionalLines: 3
+    AdditionalLineTintPersistence: 0.229
+    AdditionalLineDistortionJitter: 0.187
+    PencilOutlineMask: {fileID: 2800000, guid: 48858ef36eeb6394a82d8b21da38a11f, type: 3}
+    MaskScale: {x: 3, y: 3}
+  ThicknessDilationFeatureData:
+    ThicknessRange: 0
+    ThicknessStrength: 0
+  UseSketchyOutlineFeature: 0
+  SketchyOutlineFeatureData:
+    OutlineStrokeData: {fileID: 11400000, guid: a32a9e9d0cf0c3f468e3697ca9111742, type: 2}
+    SampleArea: 0
+    StrokeSampleScale: 4
+    DoDownscale: 1
+    DownscaleFactor: 2
+    StrokeThreshold: 0.03
+    FrameSmoothingFactor: 0
+    UsePerpendicularDirection: 0
+  CompositionFeatureData:
+    debugMode: 0
+    OutlineStrokeColor: {r: 0, g: 0, b: 0, a: 1}
+    ShadingStrokeColor: {r: 0, g: 0, b: 0, a: 1}
+    MaterialAccumulationStrength: 0
+    StrokeBlendMode: 0
+    BlendStrength: 1
+    featuresToCompose: 00000000030000000400000005000000

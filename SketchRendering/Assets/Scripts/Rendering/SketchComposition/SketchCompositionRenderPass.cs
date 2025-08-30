@@ -26,11 +26,19 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
     public static readonly string DEBUG_MATERIAL_DIRECTION = "DEBUG_MATERIAL_DIRECTION";
     public static readonly string DEBUG_OUTLINES = "DEBUG_OUTLINES";
     public static readonly string DEBUG_LUMINANCE = "DEBUG_LUMINANCE";
+    
+    public static readonly string HAS_MATERIAL_KEYWORD_ID = "HAS_MATERIAL";
+    public static readonly string HAS_OUTLINE_KEYWORD_ID = "HAS_OUTLINES";
+    public static readonly string HAS_LUMINANCE_KEYWORD_ID = "HAS_LUMINANCE";
 
     private LocalKeyword debugMaterialAlbedoKeyword;
     private LocalKeyword debugMaterialDirectionKeyword;
     private LocalKeyword debugOutlinesKeyword;
     private LocalKeyword debugLuminanceKeyword;
+    
+    private LocalKeyword hasMaterialKeyword;
+    private LocalKeyword hasOutlinesKeyword;
+    private LocalKeyword hasLuminanceKeyword;
     
     private LocalKeyword[] blendingKeywords;
     
@@ -49,7 +57,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         public TextureHandle luminanceTexture;
         public Vector4 luminanceBasisDirection;
         public Material material;
-        public TextureHandle src;
+        public TextureHandle dst;
     }
 
     public void Setup(SketchCompositionPassData passData, Material material)
@@ -69,6 +77,10 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         debugMaterialDirectionKeyword = new LocalKeyword(mat.shader, DEBUG_MATERIAL_DIRECTION);
         debugOutlinesKeyword = new LocalKeyword(mat.shader, DEBUG_OUTLINES);
         debugLuminanceKeyword = new LocalKeyword(mat.shader, DEBUG_LUMINANCE);
+        
+        hasMaterialKeyword = new LocalKeyword(mat.shader, HAS_MATERIAL_KEYWORD_ID);
+        hasOutlinesKeyword = new LocalKeyword(mat.shader, HAS_OUTLINE_KEYWORD_ID);
+        hasLuminanceKeyword = new LocalKeyword(mat.shader, HAS_LUMINANCE_KEYWORD_ID);
         
         string[] blending = Enum.GetNames(typeof(BlendingOperations));
         blendingKeywords = new LocalKeyword[blending.Length];
@@ -116,6 +128,12 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
                 mat.EnableKeyword(debugLuminanceKeyword);
                 break;
         }
+
+        if(passData.RequiresColorTexture())
+            ConfigureInput(ScriptableRenderPassInput.Color);
+        mat.SetKeyword(hasMaterialKeyword, passData.FeaturesToCompose.Contains(SketchRendererFeatureType.MATERIAL));
+        mat.SetKeyword(hasOutlinesKeyword, passData.FeaturesToCompose.Contains(SketchRendererFeatureType.OUTLINE_SMOOTH) || passData.FeaturesToCompose.Contains(SketchRendererFeatureType.OUTLINE_SKETCH));
+        mat.SetKeyword(hasLuminanceKeyword, passData.FeaturesToCompose.Contains(SketchRendererFeatureType.LUMINANCE));
         
         mat.SetColor(outlineColorShaderID, passData.OutlineStrokeColor);
         mat.SetColor(shadingColorShaderID, passData.ShadingStrokeColor);
@@ -135,7 +153,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         passData.material.SetTexture(outlinesShaderID, passData.outlineTexture);
         passData.material.SetTexture(luminanceShaderID, passData.luminanceTexture);
         passData.material.SetVector(luminanceBasisDirectionShaderID, passData.luminanceBasisDirection);
-        Blitter.BlitTexture(context.cmd, passData.src, scaleBias, passData.material, 0);
+        Blitter.BlitTexture(context.cmd, passData.dst, scaleBias, passData.material, 0);
     }
     
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -153,8 +171,9 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
         dstDesc.name = "FinalSketchColor";
         dstDesc.clearBuffer = true;
         dstDesc.msaaSamples = MSAASamples.None;
-            
         TextureHandle dst = renderGraph.CreateTexture(dstDesc);
+        
+        bool usingColorTexture = passData.RequiresColorTexture();
 
         using (var builder = renderGraph.AddRasterRenderPass<PassData>(PassName, out var passData))
         {
@@ -163,6 +182,11 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
             {
                 builder.UseTexture(sketchData.MaterialTexture);
                 passData.materialTexture = sketchData.MaterialTexture;
+            }
+            else if (usingColorTexture)
+            {
+                builder.UseTexture(resourceData.activeColorTexture);
+                passData.materialTexture = resourceData.activeColorTexture;
             }
 
             if (sketchData.DirectionalTexture.IsValid())
@@ -184,7 +208,7 @@ public class SketchCompositionRenderPass : ScriptableRenderPass, ISketchRenderPa
             passData.luminanceBasisDirection = sketchData.LuminanceBasisDirection;
 
             builder.SetRenderAttachment(dst, 0, AccessFlags.Write);
-            passData.src = dst;
+            passData.dst = dst;
             
             builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecuteCompositionPass(data, context));
         }

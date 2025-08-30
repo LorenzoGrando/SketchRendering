@@ -13,4 +13,18 @@ public static class TextureProjectionGlobalData
     public static readonly string UVS_OBJECT_SPACE_REVERSED_CONSTANT_KEYWORD = "UVS_OBJECT_SPACE_REVERSED_CONSTANT";
 
     public static readonly int CONSTANT_SCALE_FALLOFF_SHADER_ID = Shader.PropertyToID("_ConstantScaleFalloff");
+
+    public static bool CheckProjectionRequiresUVFeature(TextureProjectionMethod method)
+    {
+        switch (method)
+        {
+            case TextureProjectionMethod.SCREEN_SPACE:
+                return false;
+            case TextureProjectionMethod.OBJECT_SPACE:
+            case TextureProjectionMethod.OBJECT_SPACE_CONSTANT_SCALE:
+            case TextureProjectionMethod.OBJECT_SPACE_REVERSED_CONSTANT_SCALE:
+                return true;
+        }
+        return false;
+    }
 }

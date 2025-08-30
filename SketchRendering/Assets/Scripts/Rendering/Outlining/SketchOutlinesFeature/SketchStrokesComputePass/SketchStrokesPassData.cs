@@ -17,13 +17,19 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
     [Range(0f, 1f)] 
     public float FrameSmoothingFactor;
     
-
     [HideInInspector] 
     public bool UsePerpendicularDirection;
-    
-    public SketchStrokesPassData()
+
+    public void CopyFrom(SketchStrokesPassData passData)
     {
-        StrokeThreshold = 0;
+        OutlineStrokeData = passData.OutlineStrokeData;
+        SampleArea = passData.SampleArea;
+        StrokeSampleScale = passData.StrokeSampleScale;
+        DoDownscale = passData.DoDownscale;
+        DownscaleFactor = passData.DownscaleFactor;
+        StrokeThreshold = passData.StrokeThreshold;
+        FrameSmoothingFactor = passData.FrameSmoothingFactor;
+        UsePerpendicularDirection = passData.UsePerpendicularDirection;
     }
 
     public bool IsAllPassDataValid()
@@ -43,10 +49,11 @@ public class SketchStrokesPassData : ISketchRenderPassData<SketchStrokesPassData
                 break;
         }
     }
-    
 
     public SketchStrokesPassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         SketchOutlineVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<SketchOutlineVolumeComponent>();
         if (volumeComponent == null)
             return this;

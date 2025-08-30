@@ -70,10 +70,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d59e31248b44ac93bfb91aab57250e, type: 3}
   m_Name: SketchOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   EdgeDetectionPassData:
     Method: 0
-    Source: 1
+    Source: 3
     OutlineThreshold: 0.056
     OutlineOffset: 0
     OutlineDistanceFalloff: 1
@@ -83,7 +83,7 @@ MonoBehaviour:
     OutputType: 1
   SketchStrokesPassData:
     OutlineStrokeData: {fileID: 11400000, guid: a32a9e9d0cf0c3f468e3697ca9111742, type: 2}
-    SampleArea: 2
+    SampleArea: 1
     StrokeSampleScale: 2
     DoDownscale: 1
     DownscaleFactor: 2
@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d21521743bc98459d8d263ffa1defd, type: 3}
   m_Name: SmoothOutline
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   EdgeDetectionPassData:
     Method: 1
     Source: 0
@@ -160,6 +160,9 @@ MonoBehaviour:
     OutlineAngleConstraint: 1
     OutlineNormalSensitivity: 0.478
     OutputType: 2
+  ThicknessPassData:
+    ThicknessRange: 1
+    ThicknessStrength: 1
   AccentedOutlinePassData:
     UseAccentedOutlines: 0
     BakeDistortionDuringRuntime: 1
@@ -189,15 +192,15 @@ MonoBehaviour:
   m_Name: RenderUVsRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  uvsPassData:
+  UvsPassData:
     SkyboxRotation: 0
     SkyboxRotationMatrix:
-      e00: 0.000000011924881
-      e01: 1
+      e00: 0
+      e01: 0
       e02: 0
       e03: 0
-      e10: -1
-      e11: 0.000000011924881
+      e10: 0
+      e11: 0
       e12: 0
       e13: 0
       e20: 0
@@ -222,13 +225,14 @@ MonoBehaviour:
   m_Name: SketchCompositionRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  passData:
+  CompositionPassData:
     debugMode: 0
     OutlineStrokeColor: {r: 0, g: 0, b: 0, a: 1}
     ShadingStrokeColor: {r: 0, g: 0, b: 0, a: 1}
-    MaterialAccumulationStrength: 0.564
+    MaterialAccumulationStrength: 0
     StrokeBlendMode: 0
-    BlendStrength: 0.953
+    BlendStrength: 1
+    featuresToCompose: 
   sketchCompositionShader: {fileID: 4800000, guid: 0571a2773704463ba1233bca24610aea, type: 3}
 --- !u!114 &7833122117494664109
 MonoBehaviour:

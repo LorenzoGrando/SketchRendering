@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class SmoothOutlineRendererFeature : ScriptableRendererFeature
+public class SmoothOutlineRendererFeature : ScriptableRendererFeature, ISketchRendererFeature
 {
     [Header("Base Parameters")]
     [Space(5)]
@@ -66,6 +66,17 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
         accentedOutlinesMaterial = new Material(accentedOutlinesShader);
         accentedOutlinePass = new AccentedOutlineRenderPass();
     }
+    
+    public void ConfigureByContext(SketchRendererContext context)
+    {
+        if (context.UseSmoothOutlineFeature)
+        {
+            EdgeDetectionPassData.CopyFrom(context.EdgeDetectionFeatureData);
+            AccentedOutlinePassData.CopyFrom(context.AccentedOutlineFeatureData);
+            ThicknessPassData.CopyFrom(context.ThicknessDilationFeatureData);
+            Create();
+        }
+    }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
@@ -94,12 +105,14 @@ public class SmoothOutlineRendererFeature : ScriptableRendererFeature
             }
             else
             {
-                EdgeDetectionPassData primaryData = CurrentEdgeDetectionPassData;
+                EdgeDetectionPassData primaryData = new EdgeDetectionPassData();
+                primaryData.CopyFrom(CurrentEdgeDetectionPassData);
                 primaryData.Source = EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS;
                 edgeDetectionPass.Setup(primaryData, edgeDetectionMaterial);
                 edgeDetectionPass.SetSecondary(false);
                 
-                EdgeDetectionPassData secondaryData = CurrentEdgeDetectionPassData;
+                EdgeDetectionPassData secondaryData = new EdgeDetectionPassData();
+                secondaryData.CopyFrom(CurrentEdgeDetectionPassData);
                 secondaryData.Source = EdgeDetectionGlobalData.EdgeDetectionSource.COLOR;
                 renderer.EnqueuePass(edgeDetectionPass);
                 secondaryEdgeDetectionPass.Setup(secondaryData, secondaryEdgeDetectionMaterial);

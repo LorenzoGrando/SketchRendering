@@ -18,6 +18,13 @@ public class RenderUVsPassData : ISketchRenderPassData<RenderUVsPassData>
             return rot > 0f && rot < 360f;
         }
     }
+
+    public void CopyFrom(RenderUVsPassData passData)
+    {
+        SkyboxRotation = passData.SkyboxRotation;
+        SkyboxRotationMatrix = ConstructRotationMatrix(ExpectedRotation);
+    }
+    
     public bool IsAllPassDataValid()
     {
         return true;
@@ -25,6 +32,8 @@ public class RenderUVsPassData : ISketchRenderPassData<RenderUVsPassData>
 
     public RenderUVsPassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         QuantizeLuminanceVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<QuantizeLuminanceVolumeComponent>();
         if (volumeComponent != null)
             SkyboxRotation = volumeComponent.SkyboxRotation.overrideState ? Mathf.Lerp(0, 360,volumeComponent.SkyboxRotation.value) : SkyboxRotation;

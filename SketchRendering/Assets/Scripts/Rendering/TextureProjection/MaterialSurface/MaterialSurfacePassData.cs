@@ -12,6 +12,16 @@ public class MaterialSurfacePassData : ISketchRenderPassData<MaterialSurfacePass
     public Vector2Int Scale;
     [Range(0f, 1f)]
     public float BaseColorBlendFactor;
+
+    public void CopyFrom(MaterialSurfacePassData passData)
+    {
+        ProjectionMethod = passData.ProjectionMethod;
+        ConstantScaleFalloffFactor = passData.ConstantScaleFalloffFactor;
+        AlbedoTexture = passData.AlbedoTexture;
+        NormalTexture = passData.NormalTexture;
+        Scale = new Vector2Int(passData.Scale.x, passData.Scale.y);
+        BaseColorBlendFactor = passData.BaseColorBlendFactor;
+    }
     
     public bool IsAllPassDataValid()
     {
@@ -20,6 +30,8 @@ public class MaterialSurfacePassData : ISketchRenderPassData<MaterialSurfacePass
 
     public MaterialSurfacePassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         QuantizeLuminanceVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<QuantizeLuminanceVolumeComponent>();
         if (volumeComponent == null)
             return this;
@@ -32,5 +44,10 @@ public class MaterialSurfacePassData : ISketchRenderPassData<MaterialSurfacePass
         overrideData.BaseColorBlendFactor = BaseColorBlendFactor;
         
         return overrideData;
+    }
+
+    public bool RequiresTextureCoordinateFeature()
+    {
+        return TextureProjectionGlobalData.CheckProjectionRequiresUVFeature(GetPassDataByVolume().ProjectionMethod);
     }
 }

@@ -22,33 +22,17 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
     
     [HideInInspector]
     public EdgeDetectionGlobalData.EdgeDetectionOutputType OutputType;
-    
-    public EdgeDetectionPassData()
+    public void CopyFrom(EdgeDetectionPassData passData)
     {
-        this.Method = EdgeDetectionGlobalData.EdgeDetectionMethod.SOBEL_3X3;
-        this.Source = EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH;
-        this.OutlineOffset = 1;
-        this.OutlineThreshold = 0.5f;
-        this.OutlineDistanceFalloff = 1f;
-        this.OutlineAngleSensitivity = 1;
-        this.OutlineAngleConstraint = 1;
-        this.OutlineNormalSensitivity = 0.5f;
-        this.OutputType = EdgeDetectionGlobalData.EdgeDetectionOutputType.OUTPUT_GREYSCALE;
+        Method = passData.Method;
+        Source = passData.Source;
+        OutlineThreshold = passData.OutlineThreshold;
+        OutlineDistanceFalloff = passData.OutlineDistanceFalloff;
+        OutlineAngleSensitivity = passData.OutlineAngleSensitivity;
+        OutlineAngleConstraint = passData.OutlineAngleConstraint;
+        OutlineNormalSensitivity = passData.OutlineNormalSensitivity;
+        OutputType = passData.OutputType;
     }
-
-    public EdgeDetectionPassData(EdgeDetectionGlobalData.EdgeDetectionMethod method, EdgeDetectionGlobalData.EdgeDetectionSource source, EdgeDetectionGlobalData.EdgeDetectionOutputType outputType, float outlineThreshold, float outlineDistanceFalloff, int outlineOffset, float outlineAngleSensitivity, float outlineAngleConstraint, float outlineNormalSensitivity)
-    {
-        this.Method = method;
-        this.Source = source;
-        this.OutlineOffset = outlineOffset;
-        this.OutlineThreshold = outlineThreshold;
-        this.OutlineDistanceFalloff = outlineDistanceFalloff;
-        this.OutlineAngleSensitivity = outlineAngleSensitivity;
-        this.OutlineAngleConstraint = outlineAngleConstraint;
-        this.OutlineNormalSensitivity = outlineNormalSensitivity;
-        this.OutputType = outputType;
-    }
-
     public bool IsAllPassDataValid()
     {
         return true;
@@ -79,8 +63,10 @@ public class EdgeDetectionPassData : ISketchRenderPassData<EdgeDetectionPassData
 
     public EdgeDetectionPassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         OutlineVolumeComponent volumeComponent = UpdateTargetVolume();
-        if (volumeComponent == null)
+        if (volumeComponent == null || !volumeComponent.active)
             return this;
 
         EdgeDetectionPassData overrideData = new EdgeDetectionPassData();

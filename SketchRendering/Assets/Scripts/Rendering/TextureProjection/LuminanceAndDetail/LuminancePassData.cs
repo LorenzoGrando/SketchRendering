@@ -11,17 +11,27 @@ public class LuminancePassData : ISketchRenderPassData<LuminancePassData>
     public bool SmoothTransitions;
     public Vector2 ToneScales = Vector2.one;
     [Range(-1f, 1f)]
-    [SerializeField] private float luminanceOffset = 0;
+    public float LuminanceScalar = 0;
     public float LuminanceOffset
     {
         get
         {
-            if (luminanceOffset < 0)
-                return Mathf.Lerp(1, 0, Mathf.Abs(luminanceOffset));
+            if (LuminanceScalar < 0)
+                return Mathf.Lerp(1, 0, Mathf.Abs(LuminanceScalar));
             else
-                return Mathf.Lerp(1, 9, luminanceOffset);
+                return Mathf.Lerp(1, 9, LuminanceScalar);
         }
-        set => luminanceOffset = Mathf.Clamp(value, -1f, 1f);
+        set => LuminanceScalar = Mathf.Clamp(value, -1f, 1f);
+    }
+
+    public void CopyFrom(LuminancePassData passData)
+    {
+        ActiveTonalMap = passData.ActiveTonalMap;
+        ProjectionMethod = passData.ProjectionMethod;
+        ConstantScaleFalloffFactor = passData.ConstantScaleFalloffFactor;
+        SmoothTransitions = passData.SmoothTransitions;
+        ToneScales = new Vector2(passData.ToneScales.x, passData.ToneScales.y);
+        LuminanceScalar = passData.LuminanceScalar;
     }
 
     public bool IsAllPassDataValid()
@@ -31,6 +41,8 @@ public class LuminancePassData : ISketchRenderPassData<LuminancePassData>
 
     public LuminancePassData GetPassDataByVolume()
     {
+        if(VolumeManager.instance == null || VolumeManager.instance.stack == null)
+            return this;
         QuantizeLuminanceVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<QuantizeLuminanceVolumeComponent>();
         if (volumeComponent == null)
             return this;
@@ -41,10 +53,15 @@ public class LuminancePassData : ISketchRenderPassData<LuminancePassData>
             ? volumeComponent.SmoothTransitions.value : SmoothTransitions;
         overrideData.ConstantScaleFalloffFactor = volumeComponent.ConstantScaleFalloffFactor.overrideState ? volumeComponent.ConstantScaleFalloffFactor.value : 2f;
         overrideData.ToneScales = volumeComponent.ToneScales.overrideState ? volumeComponent.ToneScales.value : ToneScales;
-        overrideData.LuminanceOffset = volumeComponent.LuminanceOffset.overrideState ? volumeComponent.LuminanceOffset.value : luminanceOffset;
+        overrideData.LuminanceOffset = volumeComponent.LuminanceOffset.overrideState ? volumeComponent.LuminanceOffset.value : LuminanceScalar;
         
         overrideData.ActiveTonalMap = ActiveTonalMap;
         
         return overrideData;
+    }
+    
+    public bool RequiresTextureCoordinateFeature()
+    {
+        return TextureProjectionGlobalData.CheckProjectionRequiresUVFeature(GetPassDataByVolume().ProjectionMethod);
     }
 }

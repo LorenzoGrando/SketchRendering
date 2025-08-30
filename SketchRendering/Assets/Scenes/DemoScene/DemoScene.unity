@@ -1703,7 +1703,7 @@ MonoBehaviour:
   OverwriteTexturesOutputPath: 
   TAMGeneratorShader: {fileID: 7200000, guid: 5fa007b2afa8c484ea868c8714b8ed75, type: 3}
   IterationsPerStroke: 100
-  TargetFillRate: 0.519
+  TargetFillRate: 0.75
   StrokeDataAsset: {fileID: 11400000, guid: b4ceec28477a9624390168c9f39a20f7, type: 2}
   TAMAsset: {fileID: 11400000, guid: 6b48e633eea97c640b8f5502c746bf46, type: 2}
   PackTAMTextures: 1

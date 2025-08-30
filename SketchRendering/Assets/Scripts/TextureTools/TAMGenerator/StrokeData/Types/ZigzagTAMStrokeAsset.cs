@@ -2,8 +2,7 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-[CreateAssetMenu(fileName = "ZigzagStrokeAsset",
-    menuName = "SketchRendering/Scriptable Objects/TAMStrokeAssets/ZigzagStrokeAsset")]
+[CreateAssetMenu(fileName = "ZigzagStrokeAsset", menuName = SketchRendererPackageData.PackageAssetItemPath + "TAMStrokeAssets/ZigzagStrokeAsset")]
 public class ZigzagTAMStrokeAsset : TAMStrokeAsset
 {
     public override StrokeSDFType PatternType => StrokeSDFType.ZIGZAG;

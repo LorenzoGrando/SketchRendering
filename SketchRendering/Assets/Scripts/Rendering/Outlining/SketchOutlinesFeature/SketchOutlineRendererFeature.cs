@@ -3,13 +3,13 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class SketchOutlineRendererFeature : ScriptableRendererFeature
+public class SketchOutlineRendererFeature : ScriptableRendererFeature, ISketchRendererFeature
 {
     [Header("Base Parameters")]
     [Space(5)]
-    public EdgeDetectionPassData EdgeDetectionPassData = new EdgeDetectionPassData();
+    public EdgeDetectionPassData EdgeDetectionPassData;
     private EdgeDetectionPassData CurrentEdgeDetectionPassData { get { return EdgeDetectionPassData.GetPassDataByVolume(); } }
-    public SketchStrokesPassData SketchStrokesPassData = new SketchStrokesPassData();
+    public SketchStrokesPassData SketchStrokesPassData;
     private SketchStrokesPassData CurrentSketchStrokesPassData { get { return SketchStrokesPassData.GetPassDataByVolume(); } }
     
     [SerializeField] private Shader sobelEdgeDetectionShader;
@@ -52,6 +52,16 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
         strokesComputePass = new SketchStrokesComputeRenderPass();
     }
 
+    public void ConfigureByContext(SketchRendererContext context)
+    {
+        if (context.UseSketchyOutlineFeature)
+        {
+            EdgeDetectionPassData.CopyFrom(context.EdgeDetectionFeatureData);
+            SketchStrokesPassData.CopyFrom(context.SketchyOutlineFeatureData);
+            Create();
+        }
+    }
+
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         if(renderingData.cameraData.cameraType == CameraType.SceneView)
@@ -84,12 +94,14 @@ public class SketchOutlineRendererFeature : ScriptableRendererFeature
             }
             else
             {
-                EdgeDetectionPassData primaryData = CurrentEdgeDetectionPassData;
+                EdgeDetectionPassData primaryData = new EdgeDetectionPassData();
+                primaryData.CopyFrom(CurrentEdgeDetectionPassData);
                 primaryData.Source = EdgeDetectionGlobalData.EdgeDetectionSource.DEPTH_NORMALS;
                 edgeDetectionPass.Setup(primaryData, edgeDetectionMaterial);
                 edgeDetectionPass.SetSecondary(false);
                 
-                EdgeDetectionPassData secondaryData = CurrentEdgeDetectionPassData;
+                EdgeDetectionPassData secondaryData = new EdgeDetectionPassData();
+                secondaryData.CopyFrom(CurrentEdgeDetectionPassData);
                 secondaryData.Source = EdgeDetectionGlobalData.EdgeDetectionSource.COLOR;
                 renderer.EnqueuePass(edgeDetectionPass);
                 secondaryEdgeDetectionPass.Setup(secondaryData, secondaryEdgeDetectionMaterial);
